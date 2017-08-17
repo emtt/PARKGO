@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">PARKGO</string>
+    <string name="action_settings">Settings</string>
+    <string-array name="espacios_array">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+</resources>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/content_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/content_padding_left"
+        android:paddingRight="@dimen/content_padding_right">
+
+    <ImageView
+        android:id="@+id/imageParkGOIcon"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/auto_logo"
+        android:layout_marginTop="15dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="30dp"
+        android:id="@+id/textViewTituloAPP"
+        android:layout_below="@+id/imageParkGOIcon"
+        android:layout_centerHorizontal="true" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:id="@+id/space2"
+        android:layout_below="@+id/textViewTituloAPP"
+        android:layout_alignParentStart="true"
+        android:layout_height="15dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/textView"
+        android:layout_below="@+id/space2" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/activity_text_size_small"
+        android:text=" "
+        android:id="@+id/LB_UsuarioCodigo"
+        android:layout_below="@+id/space2"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_text_height"
+        android:paddingLeft="@dimen/activity_text_padding"
+        android:paddingRight="@dimen/activity_text_padding"
+        android:id="@+id/EDT_UsuarioCodigo"
+        android:layout_below="@+id/LB_UsuarioCodigo"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/text_border_selector"
+        android:hint="Usuario"
+        android:inputType="textPersonName"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/activity_text_padding"
+        android:text=" "
+        android:textColor="@color/alert"
+        android:id="@+id/MSJ_UsuarioCodigo"
+        android:layout_below="@+id/EDT_UsuarioCodigo"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=" "
+        android:textSize="@dimen/activity_text_size_small"
+        android:id="@+id/LB_UsuarioClave"
+        android:layout_below="@+id/MSJ_UsuarioCodigo"
+        android:layout_alignParentStart="true" />
+
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_text_height"
+        android:paddingLeft="@dimen/activity_text_padding"
+        android:paddingRight="@dimen/activity_text_padding"
+        android:id="@+id/EDT_UsuarioClave"
+        android:layout_below="@+id/LB_UsuarioClave"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/text_border_selector"
+        android:hint="Clave"
+        android:inputType="textPassword" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/activity_text_padding"
+        android:text=" "
+        android:textColor="@color/alert"
+        android:id="@+id/MSJ_UsuarioClave"
+        android:layout_below="@+id/EDT_UsuarioClave"
+        android:layout_centerHorizontal="true" />
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="15dp"
+        android:layout_below="@+id/MSJ_UsuarioClave"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/space4" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_button_height"
+        android:text="Ingresar"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/activity_button_text_size"
+        android:id="@+id/BTN_Login"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/space4"
+        android:background="@drawable/button_selector" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="15dp"
+        android:layout_below="@+id/BTN_Login"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/space5" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="15dp"
+        android:layout_below="@+id/space5"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/space6" />
+
+    </RelativeLayout>

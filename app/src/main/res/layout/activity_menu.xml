@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_menu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="cl.suministra.parkgo.Menu">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Bienvenido"
+        android:id="@+id/TV_Titulo"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/space"
+        android:layout_below="@+id/TV_Titulo"
+        android:layout_height="15dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Usuario_Nombre"
+        android:layout_below="@+id/space"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Cliente_Razon_Social"
+        android:layout_below="@+id/TV_Usuario_Nombre"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Usuario_Ubicacion"
+        android:layout_below="@+id/TV_Cliente_Razon_Social"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Usuario_Ubicacion_Dir"
+        android:layout_below="@+id/TV_Usuario_Ubicacion"/>
+
+    <Space
+        android:layout_width="match_parent"
+        android:id="@+id/space1"
+        android:layout_height="15dp"
+        android:layout_below="@+id/TV_Usuario_Ubicacion_Dir"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_button_height"
+        android:text="INGRESAR VEHÍCULO"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/activity_button_text_size"
+        android:id="@+id/BTN_IngresoPatente"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/button_selector"
+        android:layout_below="@+id/space1"/>
+
+    <Space
+        android:layout_width="match_parent"
+        android:id="@+id/space2"
+        android:layout_below="@+id/BTN_IngresoPatente"
+        android:layout_height="15dp" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_button_height"
+        android:text="RETIRAR VEHÍCULO"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/activity_button_text_size"
+        android:id="@+id/BTN_RetiroPatente"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/button_selector"
+        android:layout_below="@+id/space2"/>
+
+    <Space
+        android:layout_width="match_parent"
+        android:id="@+id/space3"
+        android:layout_below="@+id/BTN_RetiroPatente"
+        android:layout_height="15dp" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_button_height"
+        android:text="LISTAR VEHÍCULOS"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/activity_button_text_size"
+        android:id="@+id/BTN_ListaPatente"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/button_selector"
+        android:layout_below="@+id/space3"/>
+
+
+</RelativeLayout>

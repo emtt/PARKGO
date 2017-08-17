@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <!--mensajes -->
+    <color name="informative_message">#329AD6</color>
+    <color name="alert">#AC1600</color>
+    <color name="success">#37A51C</color>
+    <color name="warning">#E94700</color>
+
+    <!--botones -->
+    <color name="button_default">#329ad6</color>
+    <color name="button_pressed">#2a5c91</color>
+
+    <!-- texto -->
+    <color name="text_border_default">#303232</color>
+    <color name="text_border_selected">#4EA9DC</color>
+
+    <!--colores -->
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+
+
+</resources>

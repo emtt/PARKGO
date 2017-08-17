@@ -1,0 +1,23 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        minSdkVersion 17
+        targetSdkVersion 21
+        versionCode 1
+        versionName "1.0"
+        ndk {
+            moduleName "setGPIO"
+            ldLibs "log"
+            abiFilters "armeabi", "armeabi-v7a", "arm64-v8a"
+        }
+        sourceSets{
+            main{
+                jni.srcDirs = []
+            }
+        }
+    }
+}
