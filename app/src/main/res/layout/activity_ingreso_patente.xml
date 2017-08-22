@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_ingreso_patente"
     android:layout_width="match_parent"
@@ -31,18 +32,18 @@
         android:layout_below="@+id/TV_Titulo"
         android:layout_centerHorizontal="true" />
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/activity_text_height"
-            android:paddingLeft="@dimen/activity_text_padding"
-            android:paddingRight="@dimen/activity_text_padding"
-            android:id="@+id/EDT_Patente"
-            android:background="@drawable/text_border_selector"
-            android:hint="Patente"
-            android:inputType="textCapCharacters"
-            android:textAllCaps="true"
-            android:layout_below="@+id/LB_Patente"
-            android:layout_alignParentStart="true" />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_text_height"
+        android:paddingLeft="@dimen/activity_text_padding"
+        android:paddingRight="@dimen/activity_text_padding"
+        android:id="@+id/EDT_Patente"
+        android:background="@drawable/text_border_selector"
+        android:hint="Patente"
+        android:inputType="textCapCharacters"
+        android:textAllCaps="true"
+        android:layout_below="@+id/LB_Patente"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:layout_width="match_parent"
@@ -72,7 +73,9 @@
         android:text="es"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/LB_Espacios"/>
+        android:layout_below="@+id/LB_Espacios"
+        android:layout_toStartOf="@+id/BTN_Camara"
+        android:layout_alignParentEnd="true" />
 
     <TextView
         android:layout_width="match_parent"
@@ -86,16 +89,55 @@
         android:layout_below="@+id/SPIN_Espacios"
         android:layout_centerHorizontal="true" />
 
-    <Button
+    <ImageView
+        android:id="@+id/IMG_IngresoPatente"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_button_height"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/BTN_IngresoPatente"
+        android:layout_below="@+id/MSJ_Espacios"
+        android:layout_centerInParent="true"
+        android:adjustViewBounds="false"
+        android:background="@android:color/darker_gray"
+        android:scaleType="center"
+        app:srcCompat="@drawable/ic_photo" />
+
+
+<!--
+    <Button
+        android:id="@+id/BTN_IngresoPatente"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_selector"
         android:text="ACEPTAR"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="@dimen/activity_button_text_size"
+        android:layout_alignParentBottom="true" />
+        -->
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/BTN_Camara"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:clickable="true"
+        app:backgroundTint="?attr/colorPrimary"
+        app:elevation="10dp"
+        app:fabSize="normal"
+        app:srcCompat="@android:drawable/ic_menu_camera" />
+
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/BTN_IngresoPatente"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/button_selector"
-        android:layout_below="@+id/MSJ_Espacios" />
+        android:clickable="true"
+        app:backgroundTint="@color/success"
+        app:elevation="10dp"
+        app:fabSize="normal"
+        app:srcCompat="@android:drawable/ic_menu_save" />
+
 
 </RelativeLayout>

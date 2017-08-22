@@ -2,9 +2,17 @@ package cl.suministra.parkgo;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,6 +21,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,6 +29,12 @@ import android.widget.Toast;
 import com.obm.mylibrary.PrintConnect;
 import com.obm.mylibrary.PrintUnits;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,9 +43,16 @@ public class IngresoPatente extends AppCompatActivity {
 
 
     public static PrintConnect mPrintConnect;
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+
     private EditText EDT_Patente;
     private Spinner  SPIN_Espacios;
-    private Button   BTN_IngresoPatente;
+    private FloatingActionButton BTN_IngresoPatente;
+
+    private FloatingActionButton BTN_Camara;
+    private ImageView IMG_IngresoPatente;
+    private String ArchivoImagenPath;
+    private String ArchivoImagenNombre;
 
     //Variables utilizadas para finalizar la salida de la patente.
     private String g_fecha_hora_in;
@@ -43,7 +65,6 @@ public class IngresoPatente extends AppCompatActivity {
         mPrintConnect = new PrintConnect(this);
         inicio();
     }
-
 
     private void inicio(){
 
@@ -81,19 +102,14 @@ public class IngresoPatente extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         SPIN_Espacios.setAdapter(adapter);
 
-        BTN_IngresoPatente = (Button) findViewById(R.id.BTN_IngresoPatente);
+        BTN_IngresoPatente = (FloatingActionButton) findViewById(R.id.BTN_IngresoPatente);
         BTN_IngresoPatente.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick (View v){
 
-                 String patente = EDT_Patente.getText().toString();
-                if (patente == null || patente.isEmpty()) {
-                    TextView view = (TextView) findViewById(R.id.MSJ_Patente);
-                    view.setText(EDT_Patente.getHint() + " no puede ser vacío");
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        EDT_Patente.setBackground(getDrawable(R.drawable.text_border_error));
-                    }
+                String patente = EDT_Patente.getText().toString();
+                if (validaPatente() == 0){
                     return;
                 }
 
@@ -102,6 +118,16 @@ public class IngresoPatente extends AppCompatActivity {
 
             }
 
+        });
+
+        IMG_IngresoPatente = (ImageView) findViewById(R.id.IMG_IngresoPatente);
+
+        BTN_Camara = (FloatingActionButton) findViewById(R.id.BTN_Camara);
+        BTN_Camara.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                abrirCamara();
+            }
         });
 
     }
@@ -119,7 +145,7 @@ public class IngresoPatente extends AppCompatActivity {
                         }else if (Resultado.equals("0")){ //patente no existe (inserta)
                             Resultado = insertaPatenteIngreso(patente, espacios);
                             if(Resultado.equals("1")){
-                                imprimeVoucherIngreso(patente, espacios);
+                                //imprimeVoucherIngreso(patente, espacios);
                                 reiniciaIngreso();
                                 Toast.makeText(getApplicationContext(),"Patente: "+patente+" registrada correctamente",Toast.LENGTH_LONG).show();
                             }else{ //error SQL inserta patente
@@ -170,9 +196,9 @@ public class IngresoPatente extends AppCompatActivity {
         g_fecha_hora_in   = fechaHoraFormat.format(fechahora_in);
         try{
             AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patente "+
-                                                "(patente, espacios, fecha_hora_in, fecha_hora_out, minutos, finalizado, enviado)"+
+                                                "(patente, espacios, fecha_hora_in, usuario_in, maquina_in, imagen_in, fecha_hora_out, usuario_out, maquina_out, minutos, finalizado, enviado)"+
                                                 "VALUES " +
-                                                "('"+patente+"','"+espacios+"','"+g_fecha_hora_in+"','','0','0','0');");
+                                                "('"+patente+"','"+espacios+"','"+g_fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"','"+AppHelper.getSerialNum()+"' ,'"+ArchivoImagenNombre+"', '', '', '','0','0','0');");
             // datetime('now','localtime')
         }catch(SQLException e){  return e.getMessage(); }
 
@@ -229,8 +255,75 @@ public class IngresoPatente extends AppCompatActivity {
 
     private void reiniciaIngreso(){
         EDT_Patente.setText("");
+        IMG_IngresoPatente.setScaleType(ImageView.ScaleType.CENTER);
+        IMG_IngresoPatente.setImageResource(R.drawable.ic_photo);
         g_fecha_hora_in = "";
+    }
 
+    private int validaPatente(){
+
+        String patente = EDT_Patente.getText().toString();
+        if (patente == null || patente.isEmpty()) {
+            TextView view = (TextView) findViewById(R.id.MSJ_Patente);
+            view.setText(EDT_Patente.getHint() + " no puede ser vacío");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                EDT_Patente.setBackground(getDrawable(R.drawable.text_border_error));
+            }
+            return 0;
+        }
+        return 100;
+    }
+
+    private void abrirCamara() {
+
+        String patente = EDT_Patente.getText().toString();
+        if (validaPatente() == 0){
+            return;
+        }
+
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = creaArchivoImagen(patente);
+            } catch (IOException ex) {
+                Toast.makeText(getApplicationContext(),"Error al crear archivo imagen "+ex.getMessage(),Toast.LENGTH_LONG).show();
+            }
+
+            if (photoFile != null) {
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,  Uri.fromFile(photoFile));
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    private File creaArchivoImagen(String patente) throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = patente+"_" + timeStamp + "_";
+        File storageDir = AppHelper.getImageDir(this);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+        // Save a file: path for use with ACTION_VIEW intents
+        ArchivoImagenPath   = image.getAbsolutePath();
+        ArchivoImagenNombre = image.getName();
+        return image;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            //recupera muestra la imagen de la camara.
+            Bitmap imagenBitmap = BitmapFactory.decodeFile(ArchivoImagenPath);
+            IMG_IngresoPatente.setScaleType(ImageView.ScaleType.FIT_XY);
+            IMG_IngresoPatente.setImageBitmap(imagenBitmap);
+        }else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_CANCELED) {
+            File file = new File(ArchivoImagenPath);
+            file.delete();
+        }
     }
 
     @Override

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -17,6 +18,8 @@ public class Menu extends AppCompatActivity {
     private Button BTN_RetiroPatente;
     private Button BTN_ListaPatente;
 
+
+    private TextView TV_Num_Serie_Equipo;
     private TextView TV_Usuario_Nombre;
     private TextView TV_Cliente_Razon_Social;
     private TextView TV_Usuario_Ubicacion;
@@ -34,8 +37,13 @@ public class Menu extends AppCompatActivity {
 
         Date fecha_actual = new Date();
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-
         this.setTitle("PARKGO "+dateFormat.format(fecha_actual));
+
+        Toast.makeText(getApplicationContext(), AppHelper.getUsuario_rut(), Toast.LENGTH_LONG).show();
+
+
+        TV_Num_Serie_Equipo       = (TextView) findViewById(R.id.TV_Num_Serie_Equipo);
+        TV_Num_Serie_Equipo.setText("N° Serie:    "+AppHelper.getSerialNum());
         TV_Usuario_Nombre       = (TextView) findViewById(R.id.TV_Usuario_Nombre);
         TV_Cliente_Razon_Social = (TextView) findViewById(R.id.TV_Cliente_Razon_Social);
         TV_Usuario_Ubicacion    = (TextView) findViewById(R.id.TV_Usuario_Ubicacion);

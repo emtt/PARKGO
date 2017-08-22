@@ -31,6 +31,7 @@ public class Login extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         AppHelper.initParkgoDB(this);
+        AppHelper.initSerialNum(this);
         init();
     }
 
@@ -147,7 +148,7 @@ public class Login extends AppCompatActivity {
         try {
             String[] args = new String[]{UsuarioCodigo, UsuarioClave};
 
-            String qry = "SELECT tu.nombre AS nombre_usuario, tc.razon_social AS razon_social,\n" +
+            String qry = "SELECT tu.rut AS rut_usuario, tu.nombre AS nombre_usuario, tc.razon_social AS razon_social,\n" +
                                 "tcu.descripcion AS ubicacion, tcu.direccion AS ubicacion_dir\n" +
                           "FROM tb_usuario tu\n" +
                           "LEFT JOIN tb_cliente_ubicaciones tcu ON tcu.id = tu.id_cliente_ubicacion\n" +
@@ -156,10 +157,12 @@ public class Login extends AppCompatActivity {
 
             c = AppHelper.getParkgoSQLite().rawQuery(qry, args);
             if (c.moveToFirst()) {
-                String rs_usuario_nombre       = c.getString(0);
-                String rs_cliente_razon_social = c.getString(1);
-                String rs_usuario_ubicacion    = c.getString(2);
-                String rs_usuario_ubicacion_dir= c.getString(3);
+                String rs_usuario_rut          = c.getString(0);
+                AppHelper.setUsuario_rut(rs_usuario_rut);
+                String rs_usuario_nombre       = c.getString(1);
+                String rs_cliente_razon_social = c.getString(2);
+                String rs_usuario_ubicacion    = c.getString(3);
+                String rs_usuario_ubicacion_dir= c.getString(4);
 
                 Intent intent = new Intent(this, Menu.class);
                 intent.putExtra("usuario_nombre", rs_usuario_nombre);

@@ -7,8 +7,8 @@
     <!--mensajes -->
     <color name="informative_message">#329AD6</color>
     <color name="alert">#AC1600</color>
-    <color name="success">#37A51C</color>
-    <color name="warning">#E94700</color>
+    <color name="success">#37a51c</color>
+    <color name="warning">#e94700</color>
 
     <!--botones -->
     <color name="button_default">#329ad6</color>
@@ -16,7 +16,7 @@
 
     <!-- texto -->
     <color name="text_border_default">#303232</color>
-    <color name="text_border_selected">#4EA9DC</color>
+    <color name="text_border_selected">#4ea9dc</color>
 
     <!--colores -->
     <color name="white">#ffffff</color>

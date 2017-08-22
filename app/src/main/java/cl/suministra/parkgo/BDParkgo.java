@@ -16,7 +16,12 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[patente] VARCHAR(10)  NULL,\n" +
                            "[espacios] INTEGER NULL,\n" +
                            "[fecha_hora_in] TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL,\n" +
+                           "[usuario_in] VARCHAR(12)  NULL,\n" +
+                           "[maquina_in] VARCHAR(255)  NULL,\n" +
+                           "[imagen_in] VARCHAR(255)  NULL,\n" +
                            "[fecha_hora_out] TIMESTAMP  NULL,\n" +
+                           "[usuario_out] VARCHAR(12)  NULL,\n" +
+                           "[maquina_out] VARCHAR(255)  NULL,\n" +
                            "[minutos] INTEGER NULL,\n" +
                            "[finalizado] INTEGER NULL,\n" +
                            "[enviado] INTEGER NULL\n" +

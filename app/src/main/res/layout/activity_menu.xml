@@ -26,6 +26,16 @@
         android:layout_below="@+id/TV_Titulo"
         android:layout_height="15dp" />
 
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Num_Serie_Equipo"
+        android:layout_below="@+id/space"/>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -33,7 +43,7 @@
         android:text=""
         android:textColor="@color/black"
         android:id="@+id/TV_Usuario_Nombre"
-        android:layout_below="@+id/space"/>
+        android:layout_below="@+id/TV_Num_Serie_Equipo"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -70,16 +80,16 @@
         android:layout_alignParentStart="true" />
 
     <Button
+        android:id="@+id/BTN_IngresoPatente"
         android:layout_width="match_parent"
         android:layout_height="@dimen/activity_button_height"
+        android:layout_below="@+id/space1"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/button_selector"
         android:text="INGRESAR VEHÍCULO"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        android:textSize="@dimen/activity_button_text_size"
-        android:id="@+id/BTN_IngresoPatente"
-        android:layout_centerHorizontal="true"
-        android:background="@drawable/button_selector"
-        android:layout_below="@+id/space1"/>
+        android:textSize="@dimen/activity_button_text_size" />
 
     <Space
         android:layout_width="match_parent"

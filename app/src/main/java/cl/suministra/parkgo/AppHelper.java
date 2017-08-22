@@ -3,6 +3,11 @@ package cl.suministra.parkgo;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
+import android.widget.Toast;
+
+import java.io.File;
+import java.lang.reflect.Method;
 
 /**
  * Created by LENOVO on 02-08-2017.
@@ -11,9 +16,12 @@ import android.database.sqlite.SQLiteDatabase;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 3;
+    private static int db_version    = 1;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
+    private static String serial_no  = "";
+
+    private static String usuario_rut= "";
 
     public static int minutos_gratis = 5;
     public static int valor_minuto   = 10;
@@ -27,5 +35,31 @@ public class AppHelper {
         return SQLiteParkgo;
     }
 
+    public static String getUsuario_rut() {
+        return usuario_rut;
+    }
+
+    public static void setUsuario_rut(String usuario_rut) {
+        AppHelper.usuario_rut = usuario_rut;
+    }
+
+    public static void initSerialNum(Context context){
+        try {
+            Class<?> c = Class.forName("android.os.SystemProperties");
+            Method get = c.getMethod("get", String.class);
+            serial_no = (String) get.invoke(c, "ro.serialno");
+        }catch (Exception e) {Toast.makeText(context,"Ocurrió un error al obtener número de serie "+e.getMessage(),Toast.LENGTH_LONG).show();}
+    }
+
+    public static String getSerialNum(){
+        return serial_no;
+    }
+
+    //retorna directorio de almacenamiento para las imagenes de la camara.
+    public static File getImageDir(Context context){
+        File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DCIM);
+        return storageDir;
+
+    }
 
 }
