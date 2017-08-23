@@ -55,33 +55,60 @@
         android:layout_below="@+id/EDT_Patente"
         android:layout_centerHorizontal="true" />
 
-
-    <TextView
+    <LinearLayout
+        android:id="@+id/CNT_Botones"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textSize="@dimen/activity_text_size_small"
-        android:text="Espacios"
-        android:id="@+id/LB_Espacios"
-        android:layout_below="@+id/MSJ_Patente"
-        android:layout_centerHorizontal="true" />
+        android:orientation="horizontal"
+        android:layout_below="@+id/MSJ_Patente">
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_button_height"
-        android:text="ACEPTAR"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="@dimen/activity_button_text_size"
-        android:id="@+id/BTN_RetiroPatente"
-        android:layout_centerHorizontal="true"
-        android:background="@drawable/button_selector"
-        android:layout_below="@+id/MSJ_Patente" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1" >
+
+            <Button
+                android:layout_height="@dimen/activity_button_height"
+                android:layout_width="match_parent"
+                android:id="@+id/BTN_Efectivo"
+                android:textColor="@color/white"
+                android:text="EFECTIVO"
+                android:layout_centerHorizontal="true"
+                android:textSize="@dimen/activity_button_text_size"
+                android:textAllCaps="false"
+                android:background="@drawable/button_selector"
+                android:layout_marginRight="10dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1" >
+
+            <Button
+                android:id="@+id/BTN_Prepago"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/activity_button_height"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/button_selector"
+                android:text="PREPAGO"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/activity_button_text_size" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
 
     <Space
         android:layout_width="match_parent"
         android:id="@+id/space"
-        android:layout_below="@+id/BTN_RetiroPatente"
+        android:layout_below="@+id/CNT_Botones"
         android:layout_height="15dp" />
 
     <Space
@@ -97,7 +124,8 @@
         android:text=""
         android:textColor="@color/black"
         android:id="@+id/TV_RS_Patente"
-        android:layout_below="@+id/space1"/>
+        android:layout_below="@+id/space1"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:layout_width="match_parent"

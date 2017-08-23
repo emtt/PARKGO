@@ -196,7 +196,7 @@ public class IngresoPatente extends AppCompatActivity {
         g_fecha_hora_in   = fechaHoraFormat.format(fechahora_in);
         try{
             AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patente "+
-                                                "(patente, espacios, fecha_hora_in, usuario_in, maquina_in, imagen_in, fecha_hora_out, usuario_out, maquina_out, minutos, finalizado, enviado)"+
+                                                "(patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, fecha_hora_out, rut_usuario_out, maquina_out, minutos, finalizado, enviado)"+
                                                 "VALUES " +
                                                 "('"+patente+"','"+espacios+"','"+g_fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"','"+AppHelper.getSerialNum()+"' ,'"+ArchivoImagenNombre+"', '', '', '','0','0','0');");
             // datetime('now','localtime')

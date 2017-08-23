@@ -149,7 +149,8 @@ public class Login extends AppCompatActivity {
             String[] args = new String[]{UsuarioCodigo, UsuarioClave};
 
             String qry = "SELECT tu.rut AS rut_usuario, tu.nombre AS nombre_usuario, tc.razon_social AS razon_social,\n" +
-                                "tcu.descripcion AS ubicacion, tcu.direccion AS ubicacion_dir\n" +
+                                "tcu.descripcion AS ubicacion, tcu.direccion AS ubicacion_dir, \n" +
+                                "tcu.minutos_gratis AS minutos_gratis, tcu.valor_minuto AS valor_minuto \n"+
                           "FROM tb_usuario tu\n" +
                           "LEFT JOIN tb_cliente_ubicaciones tcu ON tcu.id = tu.id_cliente_ubicacion\n" +
                           "LEFT JOIN tb_cliente tc ON tc.id = tcu.id_cliente\n" +
@@ -158,11 +159,16 @@ public class Login extends AppCompatActivity {
             c = AppHelper.getParkgoSQLite().rawQuery(qry, args);
             if (c.moveToFirst()) {
                 String rs_usuario_rut          = c.getString(0);
-                AppHelper.setUsuario_rut(rs_usuario_rut);
                 String rs_usuario_nombre       = c.getString(1);
                 String rs_cliente_razon_social = c.getString(2);
                 String rs_usuario_ubicacion    = c.getString(3);
                 String rs_usuario_ubicacion_dir= c.getString(4);
+                int    rs_minutos_gratis       = c.getInt(5);
+                int    rs_valor_minuto         = c.getInt(6);
+
+                AppHelper.setUsuario_rut(rs_usuario_rut);
+                AppHelper.setMinutos_gratis(rs_minutos_gratis);
+                AppHelper.setValor_minuto(rs_valor_minuto);
 
                 Intent intent = new Intent(this, Menu.class);
                 intent.putExtra("usuario_nombre", rs_usuario_nombre);

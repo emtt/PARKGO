@@ -16,11 +16,11 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[patente] VARCHAR(10)  NULL,\n" +
                            "[espacios] INTEGER NULL,\n" +
                            "[fecha_hora_in] TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL,\n" +
-                           "[usuario_in] VARCHAR(12)  NULL,\n" +
+                           "[rut_usuario_in] VARCHAR(12)  NULL,\n" +
                            "[maquina_in] VARCHAR(255)  NULL,\n" +
                            "[imagen_in] VARCHAR(255)  NULL,\n" +
                            "[fecha_hora_out] TIMESTAMP  NULL,\n" +
-                           "[usuario_out] VARCHAR(12)  NULL,\n" +
+                           "[rut_usuario_out] VARCHAR(12)  NULL,\n" +
                            "[maquina_out] VARCHAR(255)  NULL,\n" +
                            "[minutos] INTEGER NULL,\n" +
                            "[finalizado] INTEGER NULL,\n" +
@@ -49,16 +49,21 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[descripcion] VARCHAR(255)  NULL,\n"+
                            "[direccion] VARCHAR(255)  NULL,\n"+
                            "[latitud] FLOAT  NULL,\n"+
-                           "[longitud] FLOAT  NULL\n"+
+                           "[longitud] FLOAT  NULL,\n"+
+                           "[minutos_gratis] INTEGER  NULL,\n"+
+                           "[valor_minuto] INTEGER  NULL\n"+
                            ");\n"+
-                       "INSERT INTO tb_cliente_ubicaciones (id, id_cliente, descripcion, direccion, latitud, longitud ) VALUES ('1', '1','VIÑA DEL MAR SECTOR 1', 'Avenida Perú', '0', '0');\n"+
+                       "INSERT INTO tb_cliente_ubicaciones (id, id_cliente, descripcion, direccion, latitud, longitud, minutos_gratis, valor_minuto ) VALUES ('1', '1','VIÑA DEL MAR SECTOR 1', 'Avenida Perú', '0', '0', '5', '10');\n"+
                        "DROP TABLE IF EXISTS [tb_conductor];\n"+
                        "CREATE TABLE [tb_conductor] (\n" +
                            "[rut] VARCHAR(12)  NULL PRIMARY KEY,\n" +
                            "[nombre] VARCHAR(128)  NULL,\n" +
+                           "[clave] INTEGER  NULL, \n" +
+                           "[telefono] VARCHAR(64)  NULL,\n" +
+                           "[email] VARCHAR(128)  NULL,\n" +
                            "[saldo] INTEGER  NULL \n" +
                            ");\n"+
-                       "INSERT INTO tb_conductor (rut, nombre, saldo ) VALUES ('162323695', 'Alan Patricio Alvarez Vargas','2500');\n"+
+                       "INSERT INTO tb_conductor (rut, nombre, clave, telefono, email,  saldo ) VALUES ('162323695', 'Alan Patricio Alvarez Vargas' , '1234', '92293338', 'alvarez.vargas@gmail.com', '2500');\n"+
                        "DROP TABLE IF EXISTS [tb_conductor_patentes];\n"+
                        "CREATE TABLE [tb_conductor_patentes] (\n" +
                            "[id] INTEGER  PRIMARY KEY NOT NULL,\n" +

@@ -16,11 +16,11 @@ import java.lang.reflect.Method;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 1;
+    private static int db_version    = 2;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
-    private static String serial_no  = "";
 
+    private static String serial_no  = "";
     private static String usuario_rut= "";
 
     public static int minutos_gratis = 5;
@@ -41,6 +41,22 @@ public class AppHelper {
 
     public static void setUsuario_rut(String usuario_rut) {
         AppHelper.usuario_rut = usuario_rut;
+    }
+
+    public static int getMinutos_gratis() {
+        return minutos_gratis;
+    }
+
+    public static void setMinutos_gratis(int minutos_gratis) {
+        AppHelper.minutos_gratis = minutos_gratis;
+    }
+
+    public static int getValor_minuto() {
+        return valor_minuto;
+    }
+
+    public static void setValor_minuto(int valor_minuto) {
+        AppHelper.valor_minuto = valor_minuto;
     }
 
     public static void initSerialNum(Context context){

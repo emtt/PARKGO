@@ -27,7 +27,7 @@ import com.obm.mylibrary.ScanConnect;
 public class RetiroPatente extends AppCompatActivity {
 
     private EditText EDT_Patente;
-    private Button   BTN_RetiroPatente;
+    private Button   BTN_Efectivo;
     private TextView TV_RS_Patente;
     private TextView TV_RS_Espacios;
     private TextView TV_RS_Fecha_IN;
@@ -49,6 +49,10 @@ public class RetiroPatente extends AppCompatActivity {
     private String g_fecha_hora_in;
     private String g_fecha_hora_out;
     private int g_minutos;
+    private int g_precio;
+
+    private String g_prepago_rut;
+    private int g_prepago_saldo;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -65,7 +69,7 @@ public class RetiroPatente extends AppCompatActivity {
                     }
                     data=str;
                     EDT_Patente.setText(str);
-                    consultaRetiroPatente();
+                    retiroPatente();
                     break;
             }
         }
@@ -119,7 +123,7 @@ public class RetiroPatente extends AppCompatActivity {
 
                 switch (event.getKeyCode()) {
                     case 66: //enter
-                        consultaRetiroPatente();
+                        retiroPatente();
                         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
                         break;
@@ -138,13 +142,13 @@ public class RetiroPatente extends AppCompatActivity {
         TV_RS_Minutos   = (TextView) findViewById(R.id.TV_RS_Minutos);
         TV_RS_Precio    = (TextView) findViewById(R.id.TV_RS_Precio);
 
-        BTN_RetiroPatente = (Button) findViewById(R.id.BTN_RetiroPatente);
-        BTN_RetiroPatente.setOnClickListener(new View.OnClickListener()
+        BTN_Efectivo = (Button) findViewById(R.id.BTN_Efectivo);
+        BTN_Efectivo.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick (View v){
                 if (g_id_registro_patente > 0 ) {
-                    confirmDialog(RetiroPatente.this, "Confirme para retirar la patente " + g_patente);
+                    confirmDialogEfectivo(RetiroPatente.this, "Confirme para retirar la patente " + g_patente);
                 }else{
                     Toast.makeText(getApplicationContext(),"No ha ingresado patente a retirar, verifique ",Toast.LENGTH_LONG).show();
                 }
@@ -153,7 +157,7 @@ public class RetiroPatente extends AppCompatActivity {
 
     }
 
-    private void consultaRetiroPatente(){
+    private void retiroPatente(){
 
         esperaDialog = ProgressDialog.show(this, "", "Consultando por favor espere...", true);
         esperaDialog.show();
@@ -184,15 +188,15 @@ public class RetiroPatente extends AppCompatActivity {
 
                 String[] args = new String[]{patente, "0"};
                 Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT\n" +
-                        "id, patente, fecha_hora_in,\n" +
-                        "datetime('now','localtime') as fecha_hora_out,\n" +
-                        "espacios,\n" +
-                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) As Integer) as dias,\n" +
-                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 As Integer) as horas,\n" +
-                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
-                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos\n" +
-                        "FROM tb_registro_patente\n" +
-                        "WHERE patente =? AND finalizado =?", args);
+                                                                "id, patente, fecha_hora_in,\n" +
+                                                                "datetime('now','localtime') as fecha_hora_out,\n" +
+                                                                "espacios,\n" +
+                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) As Integer) as dias,\n" +
+                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 As Integer) as horas,\n" +
+                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
+                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos\n" +
+                                                                "FROM tb_registro_patente\n" +
+                                                                "WHERE patente =? AND finalizado =?", args);
                 if (c.moveToFirst()) {
                     int rs_id                = c.getInt(0);
                     String rs_patente        = c.getString(1);
@@ -203,10 +207,11 @@ public class RetiroPatente extends AppCompatActivity {
                     int rs_horas    = c.getInt(6);
                     int rs_minutos  = c.getInt(7);
                     int rs_segundos = c.getInt(8);
+
                     int precio      = 0;
-                    int total_minutos =  (rs_minutos - AppHelper.minutos_gratis);
+                    int total_minutos =  (rs_minutos - AppHelper.getMinutos_gratis());
                     if (total_minutos > 0){
-                        precio = total_minutos * AppHelper.valor_minuto;
+                        precio = total_minutos * AppHelper.getValor_minuto();
                     }
 
                     TV_RS_Patente.setText("Patente:    " + rs_patente);
@@ -224,6 +229,9 @@ public class RetiroPatente extends AppCompatActivity {
                     g_fecha_hora_in  = rs_fecha_hora_in;
                     g_fecha_hora_out = rs_fecha_hora_out;
                     g_minutos        = rs_minutos;
+                    g_precio         = precio;
+
+                    consultaPatentePrepago(patente);
 
                 } else {
                     Toast.makeText(getApplicationContext(), "Patente: " + patente + " no registra ingreso, verifique", Toast.LENGTH_LONG).show();
@@ -237,7 +245,21 @@ public class RetiroPatente extends AppCompatActivity {
         }
     }
 
-    public void confirmDialog(Context context, String mensaje) {
+    private void consultaPatentePrepago(String patente){
+        String[] args = new String[]{patente};
+        Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT tc.rut AS rut, tc.saldo AS saldo FROM tb_conductor tc\n" +
+                                                        "INNER JOIN tb_conductor_patentes tcp ON tc.rut = tcp.rut_conductor\n" +
+                                                        "WHERE tcp.patente =?", args);
+        if (c.moveToFirst()) {
+            String rs_prepago_rut = c.getString(0);
+            int rs_prepago_saldo  = c.getInt(1);
+
+            g_prepago_rut   = rs_prepago_rut;
+            g_prepago_saldo = rs_prepago_saldo;
+        }
+    }
+
+    private void confirmDialogEfectivo(Context context, String mensaje) {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
         builder
                 .setMessage(mensaje)
@@ -246,7 +268,7 @@ public class RetiroPatente extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         String Resultado = actualizaPatenteRetiro(g_id_registro_patente, g_fecha_hora_out);
                         if (Resultado.equals("1")){
-                            imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos);
+                            imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_precio);
                             Toast.makeText(getApplicationContext(),"Patente: "+g_patente+" retirada correctamente",Toast.LENGTH_LONG).show();
                         }else{
                             Toast.makeText(getApplicationContext(),Resultado,Toast.LENGTH_LONG).show();
@@ -263,22 +285,50 @@ public class RetiroPatente extends AppCompatActivity {
                 .show();
     }
 
+    private void confirmDialogPrepago(Context context, String mensaje) {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
+        builder
+                .setMessage(mensaje)
+                .setPositiveButton("Si",  new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        if(g_precio >= g_prepago_saldo) {
+                            String Resultado = actualizaPatenteRetiro(g_id_registro_patente, g_fecha_hora_out);
+                            if (Resultado.equals("1")) {
+                                imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_precio);
+                                Toast.makeText(getApplicationContext(), "Patente: " + g_patente + " retirada correctamente", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), Resultado, Toast.LENGTH_LONG).show();
+                            }
+                        }else{
+
+                        }
+                        reiniciaRetiro();
+
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog,int id) {
+                        dialog.cancel();
+                    }
+                })
+                .show();
+    }
+
+
     private String actualizaPatenteRetiro(int id_registro_patente, String fecha_hora_out){
         try{
-            AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente SET fecha_hora_out = '"+fecha_hora_out+"', minutos ="+g_minutos+", finalizado = '1' WHERE id = "+id_registro_patente);
+            AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente SET fecha_hora_out = '"+fecha_hora_out+"', rut_usuario_out = '"+AppHelper.getUsuario_rut()+"' , maquina_out = '"+AppHelper.getSerialNum()+"', minutos = "+g_minutos+", finalizado = '1' WHERE id = "+id_registro_patente);
         }catch(SQLException e){  return e.getMessage(); }
 
         return "1";
     }
 
     private void imprimeVoucherRetiro(String patente, int espacios, String fecha_hora_in,
-                                      String fecha_hora_out, int minutos){
+                                      String fecha_hora_out, int minutos, int precio){
 
-        int precio      = 0;
-        int total_minutos =  (minutos - AppHelper.minutos_gratis);
-        if (total_minutos > 0){
-            precio = total_minutos * AppHelper.valor_minuto;
-        }
 
         PrintUnits.setSpeed(mPrintConnect.os, 0);
         PrintUnits.setConcentration(mPrintConnect.os, 2);
@@ -336,6 +386,9 @@ public class RetiroPatente extends AppCompatActivity {
         g_fecha_hora_out      = "";
         g_fecha_hora_in       = "";
         g_minutos             = 0;
+        g_precio              = 0;
+        g_prepago_rut         = "";
+        g_prepago_saldo       = 0;
 
     }
 
