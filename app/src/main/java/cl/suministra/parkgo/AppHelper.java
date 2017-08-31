@@ -16,15 +16,17 @@ import java.lang.reflect.Method;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 2;
+    private static int db_version    = 4;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
     private static String serial_no  = "";
     private static String usuario_rut= "";
 
-    public static int minutos_gratis = 5;
-    public static int valor_minuto   = 10;
+    public static int cliente_id     = 0;
+    public static int ubicacion_id   = 0;
+    public static int minutos_gratis = 0;
+    public static int valor_minuto   = 0;
 
     public static void initParkgoDB(Context context){
         parkgoDB = new BDParkgo(context, db_nombre, null, db_version);
@@ -41,6 +43,22 @@ public class AppHelper {
 
     public static void setUsuario_rut(String usuario_rut) {
         AppHelper.usuario_rut = usuario_rut;
+    }
+
+    public static int getCliente_id() {
+        return cliente_id;
+    }
+
+    public static void setCliente_id(int cliente_id) {
+        AppHelper.cliente_id = cliente_id;
+    }
+
+    public static int getUbicacion_id() {
+        return ubicacion_id;
+    }
+
+    public static void setUbicacion_id(int ubicacion_id) {
+        AppHelper.ubicacion_id = ubicacion_id;
     }
 
     public static int getMinutos_gratis() {

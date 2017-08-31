@@ -9,32 +9,24 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.obm.mylibrary.PrintConnect;
 import com.obm.mylibrary.PrintUnits;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -57,6 +49,7 @@ public class IngresoPatente extends AppCompatActivity {
     //Variables utilizadas para finalizar la salida de la patente.
     private String g_fecha_hora_in;
     DateFormat fechaHoraFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    DateFormat fechaHoraFormatID = new SimpleDateFormat("yyyyMMddHHmmss");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,14 +140,14 @@ public class IngresoPatente extends AppCompatActivity {
                             if(Resultado.equals("1")){
                                 //imprimeVoucherIngreso(patente, espacios);
                                 reiniciaIngreso();
-                                Toast.makeText(getApplicationContext(),"Patente: "+patente+" registrada correctamente",Toast.LENGTH_LONG).show();
-                            }else{ //error SQL inserta patente
+                                Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
+                              }else{ //error SQL inserta patente
                                 reiniciaIngreso();
-                                Toast.makeText(getApplicationContext(),Resultado,Toast.LENGTH_LONG).show();
+                                Util.alertDialog(IngresoPatente.this,"Ingreso Patente",Resultado);
                             }
                         }else{ //error SQL consulta patente
                             reiniciaIngreso();
-                            Toast.makeText(getApplicationContext(),Resultado,Toast.LENGTH_LONG).show();
+                            Util.alertDialog(IngresoPatente.this,"Ingreso Patente",Resultado);
                         }
                     }
                 })
@@ -176,9 +169,8 @@ public class IngresoPatente extends AppCompatActivity {
             if (c.moveToFirst()){
                 String  rs_patente = c.getString(1);
                 String  rs_fecha_hora_in = c.getString(2);
-                Toast.makeText(getApplicationContext(),"Patente: "+rs_patente+" ya se encuentra ingresada"+"\n"+
-                                                       "Fecha hora ingreso: "+rs_fecha_hora_in
-                                                        ,Toast.LENGTH_LONG).show();
+                Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+rs_patente+" ya se encuentra ingresada"+"\n"+
+                                                                       "Fecha hora ingreso: "+rs_fecha_hora_in);
                 resultado = "1";
             }else{
                 resultado = "0";
@@ -194,11 +186,13 @@ public class IngresoPatente extends AppCompatActivity {
 
         Date fechahora_in = new Date();
         g_fecha_hora_in   = fechaHoraFormat.format(fechahora_in);
+        String id_registro_patente = fechaHoraFormatID.format(fechahora_in)+"_"+AppHelper.getSerialNum()+"_"+patente;
+
         try{
             AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patente "+
-                                                "(patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, fecha_hora_out, rut_usuario_out, maquina_out, minutos, finalizado, enviado)"+
+                                                "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, fecha_hora_out, rut_usuario_out, maquina_out, minutos, finalizado, enviado)"+
                                                 "VALUES " +
-                                                "('"+patente+"','"+espacios+"','"+g_fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"','"+AppHelper.getSerialNum()+"' ,'"+ArchivoImagenNombre+"', '', '', '','0','0','0');");
+                                                "('"+id_registro_patente+"','"+AppHelper.getUbicacion_id()+"','"+patente+"','"+espacios+"','"+g_fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"','"+AppHelper.getSerialNum()+"' ,'"+ArchivoImagenNombre+"', '', '', '','0','0','0');");
             // datetime('now','localtime')
         }catch(SQLException e){  return e.getMessage(); }
 
@@ -287,7 +281,7 @@ public class IngresoPatente extends AppCompatActivity {
             try {
                 photoFile = creaArchivoImagen(patente);
             } catch (IOException ex) {
-                Toast.makeText(getApplicationContext(),"Error al crear archivo imagen "+ex.getMessage(),Toast.LENGTH_LONG).show();
+                Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Error al crear archivo imagen "+ex.getMessage());
             }
 
             if (photoFile != null) {

@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -38,9 +37,6 @@ public class Menu extends AppCompatActivity {
         Date fecha_actual = new Date();
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         this.setTitle("PARKGO "+dateFormat.format(fecha_actual));
-
-        Toast.makeText(getApplicationContext(), AppHelper.getUsuario_rut(), Toast.LENGTH_LONG).show();
-
 
         TV_Num_Serie_Equipo       = (TextView) findViewById(R.id.TV_Num_Serie_Equipo);
         TV_Num_Serie_Equipo.setText("N° Serie:    "+AppHelper.getSerialNum());

@@ -148,8 +148,8 @@ public class Login extends AppCompatActivity {
         try {
             String[] args = new String[]{UsuarioCodigo, UsuarioClave};
 
-            String qry = "SELECT tu.rut AS rut_usuario, tu.nombre AS nombre_usuario, tc.razon_social AS razon_social,\n" +
-                                "tcu.descripcion AS ubicacion, tcu.direccion AS ubicacion_dir, \n" +
+            String qry = "SELECT tu.rut AS rut_usuario, tu.nombre AS nombre_usuario, tc.id AS cliente_id, tc.razon_social AS razon_social,\n" +
+                                "tcu.id AS ubicacion_id, tcu.descripcion AS ubicacion_desc, tcu.direccion AS ubicacion_dir, \n" +
                                 "tcu.minutos_gratis AS minutos_gratis, tcu.valor_minuto AS valor_minuto \n"+
                           "FROM tb_usuario tu\n" +
                           "LEFT JOIN tb_cliente_ubicaciones tcu ON tcu.id = tu.id_cliente_ubicacion\n" +
@@ -160,13 +160,18 @@ public class Login extends AppCompatActivity {
             if (c.moveToFirst()) {
                 String rs_usuario_rut          = c.getString(0);
                 String rs_usuario_nombre       = c.getString(1);
-                String rs_cliente_razon_social = c.getString(2);
-                String rs_usuario_ubicacion    = c.getString(3);
-                String rs_usuario_ubicacion_dir= c.getString(4);
-                int    rs_minutos_gratis       = c.getInt(5);
-                int    rs_valor_minuto         = c.getInt(6);
+                int rs_cliente_id              = c.getInt(2);
+                String rs_cliente_razon_social = c.getString(3);
+                int rs_ubicacion_id            = c.getInt(4);
+                String rs_usuario_ubicacion    = c.getString(5);
+                String rs_usuario_ubicacion_dir= c.getString(6);
+                int    rs_minutos_gratis       = c.getInt(7);
+                int    rs_valor_minuto         = c.getInt(8);
 
                 AppHelper.setUsuario_rut(rs_usuario_rut);
+                //De acuerdo a la ubicacion del usuario.
+                AppHelper.setCliente_id(rs_cliente_id);
+                AppHelper.setUbicacion_id(rs_ubicacion_id);
                 AppHelper.setMinutos_gratis(rs_minutos_gratis);
                 AppHelper.setValor_minuto(rs_valor_minuto);
 
@@ -178,11 +183,11 @@ public class Login extends AppCompatActivity {
                 startActivity(intent);
 
             } else {
-                Toast.makeText(getApplicationContext(), "Usuario y clave ingresados no existe, sincronize y verifique", Toast.LENGTH_LONG).show();
+                Util.alertDialog(Login.this, "Login ParkGO", "Usuario y clave ingresados no existe, sincronize y verifique" );
             }
             c.close();
 
-        } catch (SQLException e) {Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show(); }
+        } catch (SQLException e) { Util.alertDialog(Login.this, "Login ParkGO", e.getMessage() ); }
     }
 
 
