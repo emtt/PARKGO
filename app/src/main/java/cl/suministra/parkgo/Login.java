@@ -22,6 +22,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.conn.ConnectTimeoutException;
 
 public class Login extends AppCompatActivity {
 
@@ -129,10 +130,22 @@ public class Login extends AppCompatActivity {
                 g_maestro_numero = 0;
                 g_maestro_nombre = "usuarios";
                 g_maestro_alias  = "Usuarios";
+
+                if (esperaDialog != null && esperaDialog.isShowing()) {
+                    esperaDialog.setMessage(g_maestro_alias);
+                }else{
+                    esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", g_maestro_alias);
+                }
+
                 syncMaestros(AppHelper.getUrl_restful() + g_maestro_nombre, new MaestrosCallback() {
                     @Override
                     public void onResponse(int esError, int statusCode, String responseBody) {
-                        SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                        if(esError == 0) {
+                            SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                        }else{
+                            esperaDialog.dismiss();
+                            Util.alertDialog(Login.this, "Error Sincronización", "Código :"+statusCode + "\n" + responseBody);
+                        }
                     }
                 });
 
@@ -150,7 +163,7 @@ public class Login extends AppCompatActivity {
                 procesoLoginUsuario();
                 esperaDialog.dismiss();
             }
-        }, 1000);
+        }, 500);
     }
 
     private void procesoLoginUsuario() {
@@ -228,6 +241,8 @@ public class Login extends AppCompatActivity {
     public void syncMaestros(String url, final MaestrosCallback maestrosCallback) {
 
         AsyncHttpClient cliente = new AsyncHttpClient () ;
+        cliente.setConnectTimeout(1000);
+        cliente.setResponseTimeout(1000);
         cliente.get(url, new AsyncHttpResponseHandler () {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -246,14 +261,11 @@ public class Login extends AppCompatActivity {
 
     public void SincronizarMaestros(final int numeroMaestro, final String nombreMaestro , final String aliasMaestro, final String jsonString) {
 
-        Toast.makeText(getApplicationContext(), numeroMaestro+" /// "+nombreMaestro+" --- "+jsonString,Toast.LENGTH_LONG).show();
-
         if (esperaDialog != null && esperaDialog.isShowing()) {
             esperaDialog.setMessage(aliasMaestro);
         }else{
             esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", aliasMaestro);
         }
-
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             public void run() {
@@ -375,7 +387,12 @@ public class Login extends AppCompatActivity {
                     syncMaestros(AppHelper.getUrl_restful() + g_maestro_nombre, new MaestrosCallback() {
                         @Override
                         public void onResponse(int esError, int statusCode, String responseBody) {
-                            SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                            if (esError == 0) {
+                                SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                            }else{
+                                esperaDialog.dismiss();
+                                Util.alertDialog(Login.this, "Error Sincronización", "Código :"+statusCode + "\n" + responseBody);
+                            }
                         }
                     });
                }else{

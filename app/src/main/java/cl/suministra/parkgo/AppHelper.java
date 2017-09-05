@@ -27,7 +27,7 @@ public class AppHelper {
     public static int minutos_gratis = 0;
     public static int valor_minuto   = 0;
 
-    public static String url_restful = "http://192.168.1.36/parkgo_restful/public/api/";
+    public static String url_restful = "http://192.168.1.33/parkgo_restful/public/api/";
 
     public static void initParkgoDB(Context context){
         parkgoDB = new BDParkgo(context, db_nombre, null, db_version);

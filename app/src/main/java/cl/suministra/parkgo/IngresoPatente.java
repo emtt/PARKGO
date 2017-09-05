@@ -22,14 +22,25 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.obm.mylibrary.PrintConnect;
 import com.obm.mylibrary.PrintUnits;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import cz.msebera.android.httpclient.entity.ContentType;
+import cz.msebera.android.httpclient.entity.StringEntity;
+import cz.msebera.android.httpclient.message.BasicHeader;
+import cz.msebera.android.httpclient.protocol.HTTP;
 
 public class IngresoPatente extends AppCompatActivity {
 
@@ -101,6 +112,8 @@ public class IngresoPatente extends AppCompatActivity {
             @Override
             public void onClick (View v){
 
+                EjemploPost1();
+                /*
                 String patente = EDT_Patente.getText().toString();
                 if (validaPatente() == 0){
                     return;
@@ -108,7 +121,7 @@ public class IngresoPatente extends AppCompatActivity {
 
                 String espacios  = SPIN_Espacios.getSelectedItem().toString();
                 confirmDialog(IngresoPatente.this,"Confirme para ingresar la patente "+patente, patente, espacios);
-
+                */
             }
 
         });
@@ -246,6 +259,50 @@ public class IngresoPatente extends AppCompatActivity {
         }
         mPrintConnect.send(sb.toString());
     }
+
+    public void EjemploPost1 () {
+        AsyncHttpClient client = new AsyncHttpClient () ;
+
+        JSONObject jsonParams = null;
+
+
+        StringEntity entity = null;
+        try {
+            jsonParams = new JSONObject();
+            jsonParams.put("id","5");
+            jsonParams.put("id_cliente_ubicacion","1");
+            jsonParams.put("patente","AACC22");
+            jsonParams.put("espacios","1");
+            jsonParams.put("fecha_hora_in","2017-09-05 13:18:13");
+            jsonParams.put("rut_usuario_in","19");
+            jsonParams.put("maquina_in","4321");
+            jsonParams.put("imagen_in","IMAGEN.JPG");
+            jsonParams.put("fecha_hora_out","2018-09-05 13:18:13");
+            jsonParams.put("rut_usuario_out","19");
+            jsonParams.put("maquina_out","4321");
+            jsonParams.put("minutos","10");
+            jsonParams.put("finalizado","1");
+            entity = new StringEntity(jsonParams.toString());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
+        client.post ( this.getApplicationContext () , AppHelper.getUrl_restful() + "registro_patentes/add" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
+
+            @Override
+            public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody) {
+                Util.alertDialog(IngresoPatente.this,"SUCC",String.valueOf(responseBody));
+            }
+
+            @Override
+            public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody, Throwable error) {
+                Util.alertDialog(IngresoPatente.this,"ERROR", error.getMessage());
+            }
+        }) ;
+    }
+
 
     private void reiniciaIngreso(){
         EDT_Patente.setText("");
