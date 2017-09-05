@@ -1,7 +1,6 @@
 package cl.suministra.parkgo;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.widget.Toast;
@@ -27,6 +26,8 @@ public class AppHelper {
     public static int ubicacion_id   = 0;
     public static int minutos_gratis = 0;
     public static int valor_minuto   = 0;
+
+    public static String url_restful = "http://192.168.1.36/parkgo_restful/public/api/";
 
     public static void initParkgoDB(Context context){
         parkgoDB = new BDParkgo(context, db_nombre, null, db_version);
@@ -87,6 +88,14 @@ public class AppHelper {
 
     public static String getSerialNum(){
         return serial_no;
+    }
+
+    public static String getUrl_restful() {
+        return url_restful;
+    }
+
+    public static void setUrl_restful(String url_restful) {
+        AppHelper.url_restful = url_restful;
     }
 
     //retorna directorio de almacenamiento para las imagenes de la camara.

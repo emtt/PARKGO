@@ -16,13 +16,25 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.loopj.android.http.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import cz.msebera.android.httpclient.Header;
+
 public class Login extends AppCompatActivity {
 
     private EditText EDT_UsuarioCodigo;
     private EditText EDT_UsuarioClave;
     private Button BTN_Login;
+    private Button BTN_Sincronizar;
     private String UsuarioCodigo;
     private String UsuarioClave;
+
+    int g_maestro_numero;
+    String g_maestro_nombre;
+    String g_maestro_alias;
 
     private ProgressDialog esperaDialog;
 
@@ -108,6 +120,25 @@ public class Login extends AppCompatActivity {
 
         });
 
+
+        BTN_Sincronizar = (Button) findViewById(R.id.BTN_Sincronizar);
+        BTN_Sincronizar.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                g_maestro_numero = 0;
+                g_maestro_nombre = "usuarios";
+                g_maestro_alias  = "Usuarios";
+                syncMaestros(AppHelper.getUrl_restful() + g_maestro_nombre, new MaestrosCallback() {
+                    @Override
+                    public void onResponse(int esError, int statusCode, String responseBody) {
+                        SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                    }
+                });
+
+            }
+        });
+
     }
 
     private void loginUsuario(){
@@ -190,5 +221,172 @@ public class Login extends AppCompatActivity {
         } catch (SQLException e) { Util.alertDialog(Login.this, "Login ParkGO", e.getMessage() ); }
     }
 
+    public interface MaestrosCallback{
+        void onResponse(int esError, int statusCode, String responseBody);
+    }
+
+    public void syncMaestros(String url, final MaestrosCallback maestrosCallback) {
+
+        AsyncHttpClient cliente = new AsyncHttpClient () ;
+        cliente.get(url, new AsyncHttpResponseHandler () {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                maestrosCallback.onResponse(0, statusCode, new String(responseBody));
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                maestrosCallback.onResponse(1, statusCode, new String(responseBody));
+            }
+
+        }) ;
+
+    }
+
+
+    public void SincronizarMaestros(final int numeroMaestro, final String nombreMaestro , final String aliasMaestro, final String jsonString) {
+
+        Toast.makeText(getApplicationContext(), numeroMaestro+" /// "+nombreMaestro+" --- "+jsonString,Toast.LENGTH_LONG).show();
+
+        if (esperaDialog != null && esperaDialog.isShowing()) {
+            esperaDialog.setMessage(aliasMaestro);
+        }else{
+            esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", aliasMaestro);
+        }
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+
+                String qry;
+                try {
+
+                    JSONObject jsonRootObject = new JSONObject(jsonString);
+                    JSONArray jsonArray = jsonRootObject.optJSONArray(nombreMaestro);
+
+                    switch (numeroMaestro) {
+                        case 0:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_usuario;");
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String rut    = jsonObject.optString("rut").toString();
+                                String nombre = jsonObject.optString("nombre").toString();
+                                String codigo = jsonObject.optString("codigo").toString();
+                                String clave  = jsonObject.optString("clave").toString();
+                                String id_cliente_ubicacion = jsonObject.optString("id_cliente_ubicacion").toString();
+                                qry = "INSERT INTO tb_usuario (rut, nombre, codigo, clave, id_cliente_ubicacion) VALUES " +
+                                        "('" + rut + "','" + nombre + "','" + codigo + "','" + clave + "','" + id_cliente_ubicacion + "');";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
+                        case 1:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente;");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String id  = jsonObject.optString("id").toString();
+                                String rut = jsonObject.optString("rut").toString();
+                                String razon_social = jsonObject.optString("razon_social").toString();
+                                qry = "INSERT INTO tb_cliente (id, rut, razon_social ) VALUES " +
+                                        "('" + id + "','" + rut + "','" + razon_social + "');";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
+                        case 2:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente_ubicaciones;");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String id          = jsonObject.optString("id").toString();
+                                String id_cliente  = jsonObject.optString("id_cliente").toString();
+                                String descripcion = jsonObject.optString("descripcion").toString();
+                                String direccion   = jsonObject.optString("direccion").toString();
+                                String latitud     = jsonObject.optString("latitud").toString();
+                                String longitud    = jsonObject.optString("longitud").toString();
+                                String minutos_gratis = jsonObject.optString("minutos_gratis").toString();
+                                String valor_minuto   = jsonObject.optString("valor_minuto").toString();
+                                qry = "INSERT INTO tb_cliente_ubicaciones (id, id_cliente, descripcion, direccion, latitud, longitud, minutos_gratis, valor_minuto ) VALUES " +
+                                        "('" + id + "','" + id_cliente + "','" + descripcion + "','" + direccion + "','" + latitud + "','" + longitud + "','" + minutos_gratis + "','" + valor_minuto + "');";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
+                        case 3:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor;");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String rut    = jsonObject.optString("rut").toString();
+                                String nombre = jsonObject.optString("nombre").toString();
+                                String id_cliente = jsonObject.optString("id_cliente").toString();
+                                String clave      = jsonObject.optString("clave").toString();
+                                String telefono   = jsonObject.optString("telefono").toString();
+                                String email = jsonObject.optString("email").toString();
+                                String saldo = jsonObject.optString("saldo").toString();
+
+                                qry = "INSERT INTO tb_conductor (rut, nombre, id_cliente, clave, telefono, email, saldo ) VALUES " +
+                                        "('" + rut + "','" + nombre + "','" + id_cliente + "','" + clave + "','" + telefono + "','" + email + "','" + saldo + "');";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
+                        case 4:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_patentes;");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String id  = jsonObject.optString("id").toString();
+                                String rut_conductor = jsonObject.optString("rut_conductor").toString();
+                                String patente       = jsonObject.optString("patente").toString();
+                                qry = "INSERT INTO tb_conductor_patentes (id, rut_conductor, patente ) VALUES " +
+                                        "('" + id + "','" + rut_conductor + "','" + patente + "');";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+                    }
+
+                } catch (SQLException e0) {
+                    Util.alertDialog(Login.this, "Login", e0.getMessage());
+                } catch (JSONException e1) {
+                    Util.alertDialog(Login.this, "Login", e1.getMessage());
+                }
+
+                g_maestro_numero++;
+                switch(g_maestro_numero){
+                    case 1:
+                        g_maestro_nombre = "clientes";
+                        g_maestro_alias  = "Clientes";
+                        break;
+                    case 2:
+                        g_maestro_nombre = "cliente_ubicaciones";
+                        g_maestro_alias  = "Ubicaciones por cliente";
+                        break;
+                    case 3:
+                        g_maestro_nombre = "conductores";
+                        g_maestro_alias  = "Conductores";
+                        break;
+
+                    case 4:
+                        g_maestro_nombre = "conductor_patentes";
+                        g_maestro_alias  = "Patentes por conductor";
+                        break;
+                }
+
+               if (g_maestro_numero <= 4) {
+                    syncMaestros(AppHelper.getUrl_restful() + g_maestro_nombre, new MaestrosCallback() {
+                        @Override
+                        public void onResponse(int esError, int statusCode, String responseBody) {
+                            SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                        }
+                    });
+               }else{
+                   esperaDialog.dismiss();
+               }
+
+            }
+
+        }, 1000);
+
+
+    }
 
 }

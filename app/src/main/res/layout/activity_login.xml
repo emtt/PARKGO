@@ -131,10 +131,22 @@
         android:layout_centerHorizontal="true"
         android:id="@+id/space5" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_button_height"
+        android:text="Sincronizar"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/activity_button_text_size"
+        android:id="@+id/BTN_Sincronizar"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/space5"
+        android:background="@drawable/button_selector" />
+
     <Space
         android:layout_width="match_parent"
         android:layout_height="15dp"
-        android:layout_below="@+id/space5"
+        android:layout_below="@+id/BTN_Sincronizar"
         android:layout_centerHorizontal="true"
         android:id="@+id/space6" />
 
