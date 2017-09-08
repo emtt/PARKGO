@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 9;
+    private static int db_version    = 12;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 

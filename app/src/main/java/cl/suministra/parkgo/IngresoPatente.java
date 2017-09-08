@@ -67,7 +67,7 @@ public class IngresoPatente extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ingreso_patente);
-        mPrintConnect = new PrintConnect(this);
+        //mPrintConnect = new PrintConnect(this);
         inicio();
     }
 

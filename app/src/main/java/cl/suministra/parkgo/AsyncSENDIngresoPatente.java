@@ -28,11 +28,7 @@ import cz.msebera.android.httpclient.protocol.HTTP;
 
 public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
 
-    Context context;
-
-    public AsyncSENDIngresoPatente(Context context){
-        this.context = context;
-    }
+    private AsyncHttpClient cliente = null;
 
     public void cancelTask(AsyncSENDIngresoPatente asyncSENDIngresoPatente) {
         if (asyncSENDIngresoPatente == null) return;
@@ -50,8 +46,13 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
         try {
             int i = 1;
             do{
-                if(Util.internetStatus(context)){
+                if(Util.internetStatus(App.context)){
                     publishProgress(i);
+                }else{
+                    if (cliente != null)
+                        i = 0;
+                        cliente.cancelAllRequests(true);
+                        Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente cancelAllRequests");
                 }
 
                 i++;
@@ -116,7 +117,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
     public void sinncronizaIngresoPatente(final String id_registro_patente, final int id_cliente_ubicacion, final String patente, final int espacios,
                                           final String fecha_hora_in, final String rut_usuario_in, final String maquina_in, final String archivo_imagen_nombre) {
 
-        AsyncHttpClient client = new AsyncHttpClient () ;
+        cliente = new AsyncHttpClient();
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
         try {
@@ -135,13 +136,17 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
             jsonParams.put("maquina_out","");
             jsonParams.put("enviado_out",0);
             jsonParams.put("minutos",0);
+            jsonParams.put("precio",0);
+            jsonParams.put("prepago",0);
             jsonParams.put("finalizado",0);
             entity = new StringEntity(jsonParams.toString());
 
             entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
-            client.post(context , AppHelper.getUrl_restful() + "registro_patentes/add_in" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
+            cliente.post(App.context , AppHelper.getUrl_restful() + "registro_patentes/add_in" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente onSuccess "+new String(responseBody));
 
                     try {
                         JSONObject jsonRootObject = new JSONObject(new String(responseBody));
@@ -168,7 +173,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente ERROR_2 SYNC "+new String(responseBody));
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente onFailure "+error.getMessage());
                 }
 
             });

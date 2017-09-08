@@ -26,6 +26,8 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[maquina_out] VARCHAR(255)  NULL,\n" +
                            "[enviado_out] INTEGER NULL,\n" +
                            "[minutos] INTEGER NULL,\n" +
+                           "[precio] INTEGER NULL,\n" +
+                           "[prepago] INTEGER NULL,\n" +
                            "[finalizado] INTEGER NULL\n" +
                            ");\n"+
                        "DROP TABLE IF EXISTS [tb_usuario];\n"+

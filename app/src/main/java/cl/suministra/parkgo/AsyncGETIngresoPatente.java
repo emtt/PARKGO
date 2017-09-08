@@ -22,14 +22,11 @@ import cz.msebera.android.httpclient.Header;
 
 public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
 
-    Context context;
-    public AsyncGETIngresoPatente(Context context){
-        this.context = context;
-    }
+    private AsyncHttpClient cliente = null;
 
-    public void cancelTask(AsyncSENDIngresoPatente asyncSENDIngresoPatente) {
-        if (asyncSENDIngresoPatente == null) return;
-        asyncSENDIngresoPatente.cancel(false);
+    public void cancelTask(AsyncGETIngresoPatente asyncGETIngresoPatente) {
+        if (asyncGETIngresoPatente == null) return;
+        asyncGETIngresoPatente.cancel(false);
     }
 
     @Override
@@ -43,10 +40,14 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
         try {
             int i = 1;
             do{
-                if(Util.internetStatus(context)){
+                if(Util.internetStatus(App.context)){
                     publishProgress(i);
+                }else{
+                    if (cliente != null)
+                        i = 0;
+                        cliente.cancelAllRequests(true);
+                        Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente cancelAllRequests");
                 }
-
                 i++;
                 TimeUnit.SECONDS.sleep(1);
                 isCancelled();
@@ -84,14 +85,13 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
 
         String maquina = AppHelper.getSerialNum();
         int id_cliente_ubicacion = AppHelper.getUbicacion_id();
-        //Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente "+maquina+" "+id_cliente_ubicacion);
         if (id_cliente_ubicacion > 0 && !maquina.equals("")) {
             ClienteAsync(AppHelper.getUrl_restful() + "registro_patentes_maquinas_in/" + maquina + "/" + id_cliente_ubicacion, new ClienteCallback() {
 
                 @Override
                 public void onResponse(int esError, int statusCode, String responseBody) {
                  if(esError == 0 && !responseBody.equals("")) {
-                     insertaPatentesExternas(responseBody);
+                     insertaIngresoPatentesExternas(responseBody);
                  }else{
                      Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente ERROR SYNC Código: " + statusCode + "\n" + responseBody);
                  }
@@ -104,24 +104,26 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
 
     public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
-        AsyncHttpClient cliente = new AsyncHttpClient () ;
-        cliente.setConnectTimeout(1000);
-        cliente.setResponseTimeout(1000);
+        cliente = new AsyncHttpClient();
         cliente.get(url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onSuccess " + new String(responseBody));
                 clienteCallback.onResponse(0, statusCode, new String(responseBody));
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure " + error.getMessage());
                 clienteCallback.onResponse(1, statusCode, new String(responseBody));
             }
+
+
 
         }) ;
     }
 
-    private void insertaPatentesExternas(String jsonString){
+    private void insertaIngresoPatentesExternas(String jsonString){
 
         String qry;
         try {
@@ -142,9 +144,9 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                  String imagen_in      = jsonObject.optString("imagen_in");
 
                  qry =   "INSERT INTO tb_registro_patente "+
-                         "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, enviado_in, fecha_hora_out, rut_usuario_out, maquina_out, enviado_out, minutos, finalizado)"+
+                         "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, enviado_in, fecha_hora_out, rut_usuario_out, maquina_out, enviado_out, minutos, precio, prepago, finalizado)"+
                          "VALUES " +
-                         "('"+id_registro_patente+"','"+id_cliente_ubicacion+"','"+patente+"','"+espacios+"','"+fecha_hora_in+"' ,'"+rut_usuario_in+"','"+maquina_in+"' ,'"+imagen_in+"', '1', '', '', '','0','0','0');";
+                         "('"+id_registro_patente+"','"+id_cliente_ubicacion+"','"+patente+"','"+espacios+"','"+fecha_hora_in+"' ,'"+rut_usuario_in+"','"+maquina_in+"' ,'"+imagen_in+"', '1', '', '', '','0','0','0','0','0');";
                  AppHelper.getParkgoSQLite().execSQL(qry);
                  Log.d(AppHelper.LOG_TAG, qry);
              }

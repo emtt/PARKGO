@@ -40,6 +40,7 @@ public class Login extends AppCompatActivity {
     AsyncSENDIngresoPatente asyncSENDIngresoPatente;
     AsyncGETIngresoPatente asyncGETIngresoPatente;
     AsyncSENDRetiroPatente asyncSENDRetiroPatente;
+    AsyncGETRetiroPatente asyncGETRetiroPatente;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,16 +50,20 @@ public class Login extends AppCompatActivity {
         AppHelper.initSerialNum(this);
 
         //inicia la tarea de envio patenes ingresadas.
-        asyncSENDIngresoPatente = new AsyncSENDIngresoPatente(Login.this);
-        asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
+        //asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         //inicia la tarea de envio patenes retiradas.
-        asyncSENDRetiroPatente = new AsyncSENDRetiroPatente(Login.this);
-        asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        asyncSENDRetiroPatente = new AsyncSENDRetiroPatente();
+        //asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        //inicia la tarea que recibe patentes externas.
-        asyncGETIngresoPatente = new AsyncGETIngresoPatente(Login.this);
-        asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        //inicia la tarea que recibe patentes ingresadas externas.
+        asyncGETIngresoPatente = new AsyncGETIngresoPatente();
+        //asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        //inicia la tarea que recibe patentes retiradas externas.
+        asyncGETRetiroPatente = new AsyncGETRetiroPatente();
+        asyncGETRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         init();
     }

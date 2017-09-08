@@ -86,8 +86,8 @@ public class RetiroPatente extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_retiro_patente);
-        mPrintConnect = new PrintConnect(this);
-        mScanConnect  = new ScanConnect(this, mHandler);
+        //mPrintConnect = new PrintConnect(this);
+        //mScanConnect  = new ScanConnect(this, mHandler);
         inicio();
     }
 
@@ -304,7 +304,7 @@ public class RetiroPatente extends AppCompatActivity {
                 .setPositiveButton("Si",  new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        String Resultado = actualizaPatenteRetiro(g_id_registro_patente, g_fecha_hora_out);
+                        String Resultado = actualizaPatenteRetiro(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, 0);
                         if (Resultado.equals("1")){
                             //imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_precio);
                             Util.alertDialog(RetiroPatente.this,"Retiro Patente","Patente: "+g_patente+" retirada correctamente");
@@ -361,7 +361,7 @@ public class RetiroPatente extends AppCompatActivity {
 
                 g_prepago_saldo_final = g_prepago_saldo - g_precio;
 
-                String Resultado = actualizaPatenteRetiro(g_id_registro_patente, g_fecha_hora_out);
+                String Resultado = actualizaPatenteRetiro(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, 1);
                 if (Resultado.equals("1")) {
                     Resultado = actualizaPatenteSaldoPrepago();
                     if (Resultado.equals("1")) {
@@ -384,9 +384,18 @@ public class RetiroPatente extends AppCompatActivity {
 
     }
 
-    private String actualizaPatenteRetiro(String id_registro_patente, String fecha_hora_out){
+    private String actualizaPatenteRetiro(String id_registro_patente, String fecha_hora_out, int minutos, int precio, int prepago ){
         try{
-            AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente SET fecha_hora_out = '"+fecha_hora_out+"', rut_usuario_out = '"+AppHelper.getUsuario_rut()+"' , maquina_out = '"+AppHelper.getSerialNum()+"', minutos = "+g_minutos+", finalizado = '1' WHERE id = '"+id_registro_patente+"'");
+            AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente " +
+                                                "SET " +
+                                                       "fecha_hora_out = '"+fecha_hora_out+"', " +
+                                                       "rut_usuario_out = '"+AppHelper.getUsuario_rut()+"' , " +
+                                                       "maquina_out = '"+AppHelper.getSerialNum()+"', " +
+                                                       "minutos = "+minutos+", " +
+                                                       "precio = "+precio+", " +
+                                                       "prepago = "+prepago+", " +
+                                                       "finalizado = '1' " +
+                                                "WHERE id = '"+id_registro_patente+"'");
         }catch(SQLException e){  return e.getMessage(); }
 
         return "1";

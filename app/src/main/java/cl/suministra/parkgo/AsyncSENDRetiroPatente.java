@@ -28,16 +28,7 @@ import cz.msebera.android.httpclient.protocol.HTTP;
 
 public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
-    Context context;
-
-    public AsyncSENDRetiroPatente(Context context){
-        this.context = context;
-    }
-
-    public void cancelTask(AsyncSENDRetiroPatente asyncSENDRetiroPatente) {
-        if (asyncSENDRetiroPatente == null) return;
-        asyncSENDRetiroPatente.cancel(false);
-    }
+    private AsyncHttpClient cliente = null;
 
     @Override
     protected void onPreExecute() {
@@ -50,8 +41,13 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
         try {
             int i = 1;
             do{
-                if(Util.internetStatus(context)){
+                if(Util.internetStatus(App.context)){
                     publishProgress(i);
+                }else{
+                    if (cliente != null)
+                        i = 0;
+                        cliente.cancelAllRequests(true);
+                        Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente cancelAllRequests");
                 }
 
                 i++;
@@ -91,7 +87,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
         try{
             String[] args = new String[] {"0","1"};
-            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, fecha_hora_out, rut_usuario_out, maquina_out, minutos " +
+            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, fecha_hora_out, rut_usuario_out, maquina_out, minutos, precio, prepago " +
                                                             "FROM tb_registro_patente WHERE enviado_out =? AND finalizado =?", args);
             if (c.moveToFirst()){
                 String rs_id = c.getString(0);
@@ -99,7 +95,9 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                 String rs_rut_usuario_out= c.getString(2);
                 String rs_maquina_out    = c.getString(3);
                 int    rs_minutos        = c.getInt(4);
-                sinncronizaRetiroPatente(rs_id, rs_fecha_hora_out, rs_rut_usuario_out, rs_maquina_out, rs_minutos);
+                int    rs_precio         = c.getInt(5);
+                int    rs_prepago        = c.getInt(6);
+                sinncronizaRetiroPatente(rs_id, rs_fecha_hora_out, rs_rut_usuario_out, rs_maquina_out, rs_minutos, rs_precio, rs_prepago);
             }
             c.close();
 
@@ -109,9 +107,10 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
 
     public void sinncronizaRetiroPatente(final String id_registro_patente, final String fecha_hora_out,
-                                         final String rut_usuario_out, final String maquina_out, final int minutos) {
+                                         final String rut_usuario_out, final String maquina_out, final int minutos,
+                                         final int precio, final int prepago) {
 
-        AsyncHttpClient client = new AsyncHttpClient () ;
+        cliente = new AsyncHttpClient();
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
         try {
@@ -122,14 +121,16 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
             jsonParams.put("maquina_out",maquina_out);
             jsonParams.put("enviado_out",1);
             jsonParams.put("minutos",minutos);
+            jsonParams.put("precio",precio);
+            jsonParams.put("prepago",prepago);
             jsonParams.put("finalizado",1);
             entity = new StringEntity(jsonParams.toString());
 
             entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
-            client.post(context , AppHelper.getUrl_restful() + "registro_patentes/upt_out" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
+            cliente.post(App.context , AppHelper.getUrl_restful() + "registro_patentes/upt_out" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onSuccess "+new String(responseBody));
                     try {
 
                         JSONObject jsonRootObject = new JSONObject(new String(responseBody));
@@ -156,7 +157,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente ERROR_2 SYNC "+new String(responseBody));
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onFailure "+error.getMessage());
                 }
 
             });
