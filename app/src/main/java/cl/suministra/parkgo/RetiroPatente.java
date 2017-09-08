@@ -306,7 +306,7 @@ public class RetiroPatente extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         String Resultado = actualizaPatenteRetiro(g_id_registro_patente, g_fecha_hora_out);
                         if (Resultado.equals("1")){
-                            imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_precio);
+                            //imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_precio);
                             Util.alertDialog(RetiroPatente.this,"Retiro Patente","Patente: "+g_patente+" retirada correctamente");
                         }else{
                             Util.alertDialog(RetiroPatente.this,"Retiro Patente",Resultado);
@@ -488,8 +488,12 @@ public class RetiroPatente extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mScanConnect.stop();
-        mPrintConnect.stop();
+        if (mScanConnect != null) {
+            mScanConnect.stop();
+        }
+        if (mPrintConnect != null) {
+            mPrintConnect.stop();
+        }
     }
 
 

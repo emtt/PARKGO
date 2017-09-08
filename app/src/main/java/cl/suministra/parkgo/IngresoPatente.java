@@ -21,12 +21,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.obm.mylibrary.PrintConnect;
 import com.obm.mylibrary.PrintUnits;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,6 +43,7 @@ import cz.msebera.android.httpclient.entity.ContentType;
 import cz.msebera.android.httpclient.entity.StringEntity;
 import cz.msebera.android.httpclient.message.BasicHeader;
 import cz.msebera.android.httpclient.protocol.HTTP;
+import cz.msebera.android.httpclient.Header;
 
 public class IngresoPatente extends AppCompatActivity {
 
@@ -57,9 +60,7 @@ public class IngresoPatente extends AppCompatActivity {
     private String ArchivoImagenPath;
     private String ArchivoImagenNombre;
 
-    //Variables utilizadas para finalizar la salida de la patente.
-    private String g_fecha_hora_in;
-    DateFormat fechaHoraFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    DateFormat fechaHoraFormat   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     DateFormat fechaHoraFormatID = new SimpleDateFormat("yyyyMMddHHmmss");
 
     @Override
@@ -112,16 +113,18 @@ public class IngresoPatente extends AppCompatActivity {
             @Override
             public void onClick (View v){
 
-                EjemploPost1();
-                /*
                 String patente = EDT_Patente.getText().toString();
                 if (validaPatente() == 0){
                     return;
                 }
-
                 String espacios  = SPIN_Espacios.getSelectedItem().toString();
-                confirmDialog(IngresoPatente.this,"Confirme para ingresar la patente "+patente, patente, espacios);
-                */
+
+                Date fechahora_in = new Date();
+                String fecha_hora_in   = fechaHoraFormat.format(fechahora_in);
+                String id_registro_patente  = fechaHoraFormatID.format(fechahora_in)+"_"+AppHelper.getSerialNum()+"_"+patente;
+
+                confirmDialog(IngresoPatente.this,"Confirme para ingresar la patente "+patente, id_registro_patente ,patente, espacios, fecha_hora_in);
+
             }
 
         });
@@ -138,7 +141,7 @@ public class IngresoPatente extends AppCompatActivity {
 
     }
 
-    public void confirmDialog(Context context, String mensaje, final String patente, final String espacios) {
+    public void confirmDialog(Context context, String mensaje, final String id_registro_patente, final String patente, final String espacios, final String fecha_hora_in) {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
         builder
                 .setMessage(mensaje)
@@ -149,18 +152,19 @@ public class IngresoPatente extends AppCompatActivity {
                         if (Resultado.equals("1")){ //patente existe
                             reiniciaIngreso();
                         }else if (Resultado.equals("0")){ //patente no existe (inserta)
-                            Resultado = insertaPatenteIngreso(patente, espacios);
+                            Resultado = insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in);
                             if(Resultado.equals("1")){
-                                //imprimeVoucherIngreso(patente, espacios);
+                                //imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
+                                //verifica conexión a internet para sincronizar.
                                 reiniciaIngreso();
                                 Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
-                              }else{ //error SQL inserta patente
+                            }else{ //error SQL inserta patente
                                 reiniciaIngreso();
-                                Util.alertDialog(IngresoPatente.this,"Ingreso Patente",Resultado);
+                                Util.alertDialog(IngresoPatente.this,"ERROR Ingreso Patente",Resultado);
                             }
                         }else{ //error SQL consulta patente
                             reiniciaIngreso();
-                            Util.alertDialog(IngresoPatente.this,"Ingreso Patente",Resultado);
+                            Util.alertDialog(IngresoPatente.this,"ERROR Ingreso Patente",Resultado);
                         }
                     }
                 })
@@ -195,24 +199,20 @@ public class IngresoPatente extends AppCompatActivity {
 
     }
 
-    private String insertaPatenteIngreso(String patente, String espacios){
-
-        Date fechahora_in = new Date();
-        g_fecha_hora_in   = fechaHoraFormat.format(fechahora_in);
-        String id_registro_patente = fechaHoraFormatID.format(fechahora_in)+"_"+AppHelper.getSerialNum()+"_"+patente;
+    private String insertaPatenteIngreso(String id_registro_patente, String patente, String espacios, String fecha_hora_in){
 
         try{
             AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patente "+
-                                                "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, fecha_hora_out, rut_usuario_out, maquina_out, minutos, finalizado, enviado)"+
+                                                "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, enviado_in, fecha_hora_out, rut_usuario_out, maquina_out, enviado_out, minutos, finalizado)"+
                                                 "VALUES " +
-                                                "('"+id_registro_patente+"','"+AppHelper.getUbicacion_id()+"','"+patente+"','"+espacios+"','"+g_fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"','"+AppHelper.getSerialNum()+"' ,'"+ArchivoImagenNombre+"', '', '', '','0','0','0');");
+                                                "('"+id_registro_patente+"','"+AppHelper.getUbicacion_id()+"','"+patente+"','"+espacios+"','"+fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"','"+AppHelper.getSerialNum()+"' ,'"+ArchivoImagenNombre+"', '0', '', '', '','0','0','0');");
             // datetime('now','localtime')
         }catch(SQLException e){  return e.getMessage(); }
 
         return "1";
     }
 
-    private void imprimeVoucherIngreso(String patente, String espacios){
+    private void imprimeVoucherIngreso(String patente, String espacios, String fecha_hora_in){
 
 
         PrintUnits.setSpeed(mPrintConnect.os, 0);
@@ -235,7 +235,7 @@ public class IngresoPatente extends AppCompatActivity {
                           "      contacto@stochile.cl      "+"\n"+
                           "--------------------------------"+"\n"+
                           "Patente: "+patente+"\n"+
-                          "Ingreso: "+g_fecha_hora_in+"\n"+
+                          "Ingreso: "+fecha_hora_in+"\n"+
                           "Espacios: "+espacios+"\n";
         for (int i = 0; i < Texto.length(); i++) {
             sb.append(Texto.charAt(i));
@@ -260,55 +260,78 @@ public class IngresoPatente extends AppCompatActivity {
         mPrintConnect.send(sb.toString());
     }
 
-    public void EjemploPost1 () {
+    public void sinncronizaIngresoPatente(final String id_registro_patente, final String patente, final String espacios, final String fecha_hora_in) {
+
         AsyncHttpClient client = new AsyncHttpClient () ;
-
-        JSONObject jsonParams = null;
-
-
-        StringEntity entity = null;
+        JSONObject jsonParams  = null;
+        StringEntity entity    = null;
         try {
             jsonParams = new JSONObject();
-            jsonParams.put("id","5");
-            jsonParams.put("id_cliente_ubicacion","1");
-            jsonParams.put("patente","AACC22");
-            jsonParams.put("espacios","1");
-            jsonParams.put("fecha_hora_in","2017-09-05 13:18:13");
-            jsonParams.put("rut_usuario_in","19");
-            jsonParams.put("maquina_in","4321");
-            jsonParams.put("imagen_in","IMAGEN.JPG");
-            jsonParams.put("fecha_hora_out","2018-09-05 13:18:13");
-            jsonParams.put("rut_usuario_out","19");
-            jsonParams.put("maquina_out","4321");
-            jsonParams.put("minutos","10");
-            jsonParams.put("finalizado","1");
+            jsonParams.put("id",id_registro_patente);
+            jsonParams.put("id_cliente_ubicacion",AppHelper.getUbicacion_id());
+            jsonParams.put("patente",patente);
+            jsonParams.put("espacios",espacios);
+            jsonParams.put("fecha_hora_in",fecha_hora_in);
+            jsonParams.put("rut_usuario_in",AppHelper.getUsuario_rut());
+            jsonParams.put("maquina_in",AppHelper.getSerialNum());
+            jsonParams.put("imagen_in",ArchivoImagenNombre);
+            jsonParams.put("enviado_in","1");
+            jsonParams.put("fecha_hora_out",fecha_hora_in);
+            jsonParams.put("rut_usuario_out","0");
+            jsonParams.put("maquina_out","0");
+            jsonParams.put("enviado_out","0");
+            jsonParams.put("minutos","0");
+            jsonParams.put("finalizado","0");
             entity = new StringEntity(jsonParams.toString());
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
+
+
+            entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
+            client.post ( this.getApplicationContext () , AppHelper.getUrl_restful() + "registro_patentes/add" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
+
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+
+                    try {
+                        JSONObject jsonRootObject = new JSONObject(new String(responseBody));
+                        JSONArray jsonArray       = jsonRootObject.optJSONArray("success");
+                        if(jsonArray != null){
+                                try{
+                                    //Marca el registro como enviado.
+                                    AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente SET enviado_in = '1' WHERE id = '"+id_registro_patente+"'");
+                                }catch(SQLException e){  Util.alertDialog(IngresoPatente.this,"EXCEP SYNC Ingreso Patente",e.getMessage()); }
+                        }else{
+                            jsonArray = jsonRootObject.optJSONArray("error");
+                            if(jsonArray != null){
+                                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                Util.alertDialog(IngresoPatente.this,"ERROR SYNC Ingreso Patente",jsonObject.optString("text"));
+                            }
+                        }
+                    } catch (JSONException e) {
+                        Util.alertDialog(IngresoPatente.this,"EXCEP SYNC Ingreso Patente",e.getMessage());
+                    }
+
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                    Util.alertDialog(IngresoPatente.this,"ERROR SYNC Ingreso Patente",String.valueOf(responseBody));
+                }
+
+            });
+
+        } catch (UnsupportedEncodingException e0) {
+            Util.alertDialog(IngresoPatente.this,"EXCEP SYNC Ingreso Patente", e0.getMessage());
+        } catch (JSONException e1) {
+            Util.alertDialog(IngresoPatente.this,"EXCEP SYNC Ingreso Patente", e1.getMessage());
         }
-        entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
-        client.post ( this.getApplicationContext () , AppHelper.getUrl_restful() + "registro_patentes/add" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
 
-            @Override
-            public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody) {
-                Util.alertDialog(IngresoPatente.this,"SUCC",String.valueOf(responseBody));
-            }
-
-            @Override
-            public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody, Throwable error) {
-                Util.alertDialog(IngresoPatente.this,"ERROR", error.getMessage());
-            }
-        }) ;
     }
-
 
     private void reiniciaIngreso(){
         EDT_Patente.setText("");
         IMG_IngresoPatente.setScaleType(ImageView.ScaleType.CENTER);
         IMG_IngresoPatente.setImageResource(R.drawable.ic_photo);
-        g_fecha_hora_in = "";
+        ArchivoImagenNombre = "";
     }
 
     private int validaPatente(){
@@ -338,7 +361,7 @@ public class IngresoPatente extends AppCompatActivity {
             try {
                 photoFile = creaArchivoImagen(patente);
             } catch (IOException ex) {
-                Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Error al crear archivo imagen "+ex.getMessage());
+                Util.alertDialog(IngresoPatente.this,"EXCEP IMG Ingreso Patente","Error al crear archivo imagen "+ex.getMessage());
             }
 
             if (photoFile != null) {
@@ -380,7 +403,9 @@ public class IngresoPatente extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mPrintConnect.stop();
+        if (mPrintConnect != null) {
+            mPrintConnect.stop();
+        }
     }
 
 }

@@ -1,0 +1,162 @@
+package cl.suministra.parkgo;
+
+import android.content.Context;
+import android.database.SQLException;
+import android.os.AsyncTask;
+import android.util.Log;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.concurrent.TimeUnit;
+
+import cz.msebera.android.httpclient.Header;
+
+/**
+ * Created by LENOVO on 07-09-2017.
+ */
+
+public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
+
+    Context context;
+    public AsyncGETIngresoPatente(Context context){
+        this.context = context;
+    }
+
+    public void cancelTask(AsyncSENDIngresoPatente asyncSENDIngresoPatente) {
+        if (asyncSENDIngresoPatente == null) return;
+        asyncSENDIngresoPatente.cancel(false);
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onPreExecute");
+    }
+
+    @Override
+    protected Boolean doInBackground(Void... params) {
+        try {
+            int i = 1;
+            do{
+                if(Util.internetStatus(context)){
+                    publishProgress(i);
+                }
+
+                i++;
+                TimeUnit.SECONDS.sleep(1);
+                isCancelled();
+            }while(!isCancelled());
+        } catch (InterruptedException e) {
+            Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente InterruptedException "+e.getMessage());
+        }
+        return true;
+    }
+
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        super.onProgressUpdate(values);
+        int progreso = values[0].intValue();
+        getPatentesIngresoExterno();
+        Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onProgressUpdate "+progreso);
+    }
+
+
+    @Override
+    protected void onPostExecute(Boolean result) {
+        super.onPostExecute(result);
+        if(result)
+            Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onPostExecute Finalizada");
+    }
+
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
+        Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onCancelled Cancelada");;
+    }
+
+    private void getPatentesIngresoExterno(){
+
+        String maquina = AppHelper.getSerialNum();
+        int id_cliente_ubicacion = AppHelper.getUbicacion_id();
+        //Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente "+maquina+" "+id_cliente_ubicacion);
+        if (id_cliente_ubicacion > 0 && !maquina.equals("")) {
+            ClienteAsync(AppHelper.getUrl_restful() + "registro_patentes_maquinas_in/" + maquina + "/" + id_cliente_ubicacion, new ClienteCallback() {
+
+                @Override
+                public void onResponse(int esError, int statusCode, String responseBody) {
+                 if(esError == 0 && !responseBody.equals("")) {
+                     insertaPatentesExternas(responseBody);
+                 }else{
+                     Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente ERROR SYNC Código: " + statusCode + "\n" + responseBody);
+                 }
+                }
+
+            });
+        }
+
+    }
+
+    public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
+
+        AsyncHttpClient cliente = new AsyncHttpClient () ;
+        cliente.setConnectTimeout(1000);
+        cliente.setResponseTimeout(1000);
+        cliente.get(url, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                clienteCallback.onResponse(0, statusCode, new String(responseBody));
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                clienteCallback.onResponse(1, statusCode, new String(responseBody));
+            }
+
+        }) ;
+    }
+
+    private void insertaPatentesExternas(String jsonString){
+
+        String qry;
+        try {
+
+            JSONObject jsonRootObject = new JSONObject(jsonString);
+            JSONArray jsonArray = jsonRootObject.optJSONArray("registro_patentes_maquinas_in");
+
+             for (int i = 0; i < jsonArray.length(); i++) {
+
+                 JSONObject jsonObject = jsonArray.getJSONObject(i);
+                 String id_registro_patente = jsonObject.optString("id");
+                 int id_cliente_ubicacion   = jsonObject.optInt("id_cliente_ubicacion");
+                 String patente        = jsonObject.optString("patente");
+                 int espacios          = jsonObject.optInt("espacios");
+                 String fecha_hora_in  = jsonObject.optString("fecha_hora_in");
+                 String rut_usuario_in = jsonObject.optString("rut_usuario_in");
+                 String maquina_in     = jsonObject.optString("maquina_in");
+                 String imagen_in      = jsonObject.optString("imagen_in");
+
+                 qry =   "INSERT INTO tb_registro_patente "+
+                         "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, enviado_in, fecha_hora_out, rut_usuario_out, maquina_out, enviado_out, minutos, finalizado)"+
+                         "VALUES " +
+                         "('"+id_registro_patente+"','"+id_cliente_ubicacion+"','"+patente+"','"+espacios+"','"+fecha_hora_in+"' ,'"+rut_usuario_in+"','"+maquina_in+"' ,'"+imagen_in+"', '1', '', '', '','0','0','0');";
+                 AppHelper.getParkgoSQLite().execSQL(qry);
+                 Log.d(AppHelper.LOG_TAG, qry);
+             }
+
+
+        } catch (SQLException e0) {
+            Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente AppHelper "+e0.getMessage());
+        } catch (JSONException e1) {
+            Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente JSONException "+e1.getMessage());
+        }
+
+
+    }
+
+}
