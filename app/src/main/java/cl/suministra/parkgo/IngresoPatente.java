@@ -329,6 +329,7 @@ public class IngresoPatente extends AppCompatActivity {
 
     private void reiniciaIngreso(){
         EDT_Patente.setText("");
+        SPIN_Espacios.setSelection(0);
         IMG_IngresoPatente.setScaleType(ImageView.ScaleType.CENTER);
         IMG_IngresoPatente.setImageResource(R.drawable.ic_photo);
         ArchivoImagenNombre = "";

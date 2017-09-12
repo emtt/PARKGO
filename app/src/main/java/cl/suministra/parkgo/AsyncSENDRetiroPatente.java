@@ -44,10 +44,11 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                 if(Util.internetStatus(App.context)){
                     publishProgress(i);
                 }else{
-                    if (cliente != null)
+                    if (cliente != null) {
                         i = 0;
-                        cliente.cancelAllRequests(true);
-                        Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente cancelAllRequests");
+                        cliente.cancelRequests(App.context, true);
+                        Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente cancelRequests");
+                    }
                 }
 
                 i++;
@@ -59,7 +60,6 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
         }
         return true;
     }
-
 
     @Override
     protected void onProgressUpdate(Integer... values) {
@@ -105,7 +105,6 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
     }
 
-
     public void sinncronizaRetiroPatente(final String id_registro_patente, final String fecha_hora_out,
                                          final String rut_usuario_out, final String maquina_out, final int minutos,
                                          final int precio, final int prepago) {
@@ -127,7 +126,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
             entity = new StringEntity(jsonParams.toString());
 
             entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
-            cliente.post(App.context , AppHelper.getUrl_restful() + "registro_patentes/upt_out" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
+            cliente.post(App.context, AppHelper.getUrl_restful() + "registro_patentes/upt_out" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onSuccess "+new String(responseBody));
@@ -146,7 +145,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                             jsonArray = jsonRootObject.optJSONArray("error");
                             if(jsonArray != null){
                                 JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente ERROR_1 SYNC "+jsonObject.optString("text"));
+                                Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente ERROR RESPONSE "+jsonObject.optString("text"));
                             }
                         }
                     } catch (JSONException e) {

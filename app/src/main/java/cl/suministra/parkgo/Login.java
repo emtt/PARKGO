@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.loopj.android.http.*;
 import org.json.JSONArray;
@@ -51,15 +52,15 @@ public class Login extends AppCompatActivity {
 
         //inicia la tarea de envio patenes ingresadas.
         asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
-        //asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         //inicia la tarea de envio patenes retiradas.
         asyncSENDRetiroPatente = new AsyncSENDRetiroPatente();
-        //asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         //inicia la tarea que recibe patentes ingresadas externas.
         asyncGETIngresoPatente = new AsyncGETIngresoPatente();
-        //asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         //inicia la tarea que recibe patentes retiradas externas.
         asyncGETRetiroPatente = new AsyncGETRetiroPatente();
@@ -136,7 +137,14 @@ public class Login extends AppCompatActivity {
         {
             @Override
             public void onClick (View v){
-                loginUsuario();
+
+                if(Util.urlStatus()){
+                    Toast.makeText(Login.this, "true", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(Login.this, "false", Toast.LENGTH_SHORT).show();
+                }
+
+                //loginUsuario();
             }
 
         });

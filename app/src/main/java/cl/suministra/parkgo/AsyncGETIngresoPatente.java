@@ -43,10 +43,11 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                 if(Util.internetStatus(App.context)){
                     publishProgress(i);
                 }else{
-                    if (cliente != null)
+                    if (cliente != null) {
                         i = 0;
-                        cliente.cancelAllRequests(true);
-                        Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente cancelAllRequests");
+                        cliente.cancelRequests(App.context, true);
+                        Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente cancelRequests");
+                    }
                 }
                 i++;
                 TimeUnit.SECONDS.sleep(1);
@@ -58,7 +59,6 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
         return true;
     }
 
-
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
@@ -66,7 +66,6 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
         getPatentesIngresoExterno();
         Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onProgressUpdate "+progreso);
     }
-
 
     @Override
     protected void onPostExecute(Boolean result) {
@@ -105,7 +104,7 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
     public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
         cliente = new AsyncHttpClient();
-        cliente.get(url, new AsyncHttpResponseHandler() {
+        cliente.get(App.context, url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onSuccess " + new String(responseBody));
@@ -118,8 +117,6 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                 clienteCallback.onResponse(1, statusCode, new String(responseBody));
             }
 
-
-
         }) ;
     }
 
@@ -130,27 +127,34 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
 
             JSONObject jsonRootObject = new JSONObject(jsonString);
             JSONArray jsonArray = jsonRootObject.optJSONArray("registro_patentes_maquinas_in");
+            if(jsonArray != null){
 
-             for (int i = 0; i < jsonArray.length(); i++) {
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    String id_registro_patente = jsonObject.optString("id");
+                    int id_cliente_ubicacion   = jsonObject.optInt("id_cliente_ubicacion");
+                    String patente        = jsonObject.optString("patente");
+                    int espacios          = jsonObject.optInt("espacios");
+                    String fecha_hora_in  = jsonObject.optString("fecha_hora_in");
+                    String rut_usuario_in = jsonObject.optString("rut_usuario_in");
+                    String maquina_in     = jsonObject.optString("maquina_in");
+                    String imagen_in      = jsonObject.optString("imagen_in");
 
-                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                 String id_registro_patente = jsonObject.optString("id");
-                 int id_cliente_ubicacion   = jsonObject.optInt("id_cliente_ubicacion");
-                 String patente        = jsonObject.optString("patente");
-                 int espacios          = jsonObject.optInt("espacios");
-                 String fecha_hora_in  = jsonObject.optString("fecha_hora_in");
-                 String rut_usuario_in = jsonObject.optString("rut_usuario_in");
-                 String maquina_in     = jsonObject.optString("maquina_in");
-                 String imagen_in      = jsonObject.optString("imagen_in");
+                    qry =   "INSERT INTO tb_registro_patente "+
+                            "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, enviado_in, fecha_hora_out, rut_usuario_out, maquina_out, enviado_out, minutos, precio, prepago, finalizado)"+
+                            "VALUES " +
+                            "('"+id_registro_patente+"','"+id_cliente_ubicacion+"','"+patente+"','"+espacios+"','"+fecha_hora_in+"' ,'"+rut_usuario_in+"','"+maquina_in+"' ,'"+imagen_in+"', '1', '', '', '','0','0','0','0','0');";
+                    AppHelper.getParkgoSQLite().execSQL(qry);
+                    Log.d(AppHelper.LOG_TAG, qry);
+                }
 
-                 qry =   "INSERT INTO tb_registro_patente "+
-                         "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, enviado_in, fecha_hora_out, rut_usuario_out, maquina_out, enviado_out, minutos, precio, prepago, finalizado)"+
-                         "VALUES " +
-                         "('"+id_registro_patente+"','"+id_cliente_ubicacion+"','"+patente+"','"+espacios+"','"+fecha_hora_in+"' ,'"+rut_usuario_in+"','"+maquina_in+"' ,'"+imagen_in+"', '1', '', '', '','0','0','0','0','0');";
-                 AppHelper.getParkgoSQLite().execSQL(qry);
-                 Log.d(AppHelper.LOG_TAG, qry);
-             }
-
+            }else{
+                jsonArray = jsonRootObject.optJSONArray("error");
+                if(jsonArray != null){
+                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                    Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente ERROR RESPONSE "+jsonObject.optString("text"));
+                }
+            }
 
         } catch (SQLException e0) {
             Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente AppHelper "+e0.getMessage());

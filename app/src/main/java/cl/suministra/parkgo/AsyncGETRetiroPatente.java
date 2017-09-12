@@ -41,7 +41,7 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                       if (cliente != null) {
                         i = 0;
                         cliente.cancelRequests(App.context, true);
-                        Log.d(AppHelper.LOG_TAG, "AsyncGETRetiroPatente cancelAllRequests");
+                        Log.d(AppHelper.LOG_TAG, "AsyncGETRetiroPatente cancelRequests");
                     }
                 }
                 i++;
@@ -123,33 +123,42 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
             JSONObject jsonRootObject = new JSONObject(jsonString);
             JSONArray jsonArray = jsonRootObject.optJSONArray("registro_patentes_maquinas_out");
+            if(jsonArray != null){
 
-            for (int i = 0; i < jsonArray.length(); i++) {
+                for (int i = 0; i < jsonArray.length(); i++) {
 
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String id_registro_patente = jsonObject.optString("id");
-                int id_cliente_ubicacion   = jsonObject.optInt("id_cliente_ubicacion");
-                String fecha_hora_out      = jsonObject.optString("fecha_hora_out");
-                String rut_usuario_out     = jsonObject.optString("rut_usuario_out");
-                String maquina_out         = jsonObject.optString("maquina_out");
-                int minutos                = jsonObject.optInt("minutos");
-                int precio                 = jsonObject.optInt("precio");
-                int prepago                = jsonObject.optInt("prepago");
-                int finalizado             = jsonObject.optInt("finalizado");
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    String id_registro_patente = jsonObject.optString("id");
+                    int id_cliente_ubicacion   = jsonObject.optInt("id_cliente_ubicacion");
+                    String fecha_hora_out      = jsonObject.optString("fecha_hora_out");
+                    String rut_usuario_out     = jsonObject.optString("rut_usuario_out");
+                    String maquina_out         = jsonObject.optString("maquina_out");
+                    int minutos                = jsonObject.optInt("minutos");
+                    int precio                 = jsonObject.optInt("precio");
+                    int prepago                = jsonObject.optInt("prepago");
+                    int finalizado             = jsonObject.optInt("finalizado");
 
-                qry =   "UPDATE tb_registro_patente " +
-                        "SET " +
-                               "fecha_hora_out = '"+fecha_hora_out+"', " +
-                               "rut_usuario_out = '"+rut_usuario_out+"' , " +
-                               "maquina_out = '"+maquina_out+"', " +
-                               "minutos = "+minutos+", " +
-                               "precio = "+precio+", " +
-                               "prepago = "+prepago+", " +
-                               "finalizado = "+finalizado+" " +
-                        "WHERE id = '"+id_registro_patente+"'";
+                    qry =   "UPDATE tb_registro_patente " +
+                            "SET " +
+                            "fecha_hora_out = '"+fecha_hora_out+"', " +
+                            "rut_usuario_out = '"+rut_usuario_out+"' , " +
+                            "maquina_out = '"+maquina_out+"', " +
+                            "minutos = "+minutos+", " +
+                            "precio = "+precio+", " +
+                            "prepago = "+prepago+", " +
+                            "finalizado = "+finalizado+" " +
+                            "WHERE id = '"+id_registro_patente+"'";
 
-                AppHelper.getParkgoSQLite().execSQL(qry);
-                Log.d(AppHelper.LOG_TAG, qry);
+                    AppHelper.getParkgoSQLite().execSQL(qry);
+                    Log.d(AppHelper.LOG_TAG, qry);
+                }
+
+            }else{
+                jsonArray = jsonRootObject.optJSONArray("error");
+                if(jsonArray != null){
+                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                    Log.d(AppHelper.LOG_TAG, "AsyncGETRetiroPatente ERROR RESPONSE "+jsonObject.optString("text"));
+                }
             }
 
         } catch (SQLException e0) {

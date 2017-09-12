@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 12;
+    private static int db_version    = 20;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
@@ -27,7 +27,7 @@ public class AppHelper {
     public static int minutos_gratis = 0;
     public static int valor_minuto   = 0;
 
-    public static String url_restful = "http://192.168.1.38/parkgo_restful/public/api/";
+    public static String url_restful = "http://192.168.1.43/parkgo_restful/public/api/";
     public static String LOG_TAG     = "parkgo_log";
 
     public static void initParkgoDB(Context context){

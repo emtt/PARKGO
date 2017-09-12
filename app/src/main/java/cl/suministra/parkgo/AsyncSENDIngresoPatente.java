@@ -49,10 +49,11 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                 if(Util.internetStatus(App.context)){
                     publishProgress(i);
                 }else{
-                    if (cliente != null)
+                    if (cliente != null) {
                         i = 0;
-                        cliente.cancelAllRequests(true);
-                        Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente cancelAllRequests");
+                        cliente.cancelRequests(App.context, true);
+                        Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente cancelRequests");
+                    }
                 }
 
                 i++;
@@ -142,7 +143,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
             entity = new StringEntity(jsonParams.toString());
 
             entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
-            cliente.post(App.context , AppHelper.getUrl_restful() + "registro_patentes/add_in" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
+            cliente.post(App.context, AppHelper.getUrl_restful() + "registro_patentes/add_in" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
 
@@ -162,7 +163,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                             jsonArray = jsonRootObject.optJSONArray("error");
                             if(jsonArray != null){
                                 JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente ERROR_1 SYNC "+jsonObject.optString("text"));
+                                Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente ERROR RESPONSE "+jsonObject.optString("text"));
                             }
                         }
                     } catch (JSONException e) {
