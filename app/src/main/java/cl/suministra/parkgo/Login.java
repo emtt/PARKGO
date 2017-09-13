@@ -137,14 +137,7 @@ public class Login extends AppCompatActivity {
         {
             @Override
             public void onClick (View v){
-
-                if(Util.urlStatus()){
-                    Toast.makeText(Login.this, "true", Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(Login.this, "false", Toast.LENGTH_SHORT).show();
-                }
-
-                //loginUsuario();
+                loginUsuario();
             }
 
         });

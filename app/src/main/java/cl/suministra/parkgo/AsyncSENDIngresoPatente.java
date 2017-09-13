@@ -3,17 +3,31 @@ package cl.suministra.parkgo;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.Base64;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cz.msebera.android.httpclient.Header;
@@ -29,6 +43,7 @@ import cz.msebera.android.httpclient.protocol.HTTP;
 public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
 
     private AsyncHttpClient cliente = null;
+    private String uploadURL  =  AppHelper.getUrl_restful() + "imagenes_up";
 
     public void cancelTask(AsyncSENDIngresoPatente asyncSENDIngresoPatente) {
         if (asyncSENDIngresoPatente == null) return;
@@ -55,7 +70,6 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                         Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente cancelRequests");
                     }
                 }
-
                 i++;
                 TimeUnit.SECONDS.sleep(1);
                 isCancelled();
@@ -97,6 +111,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                     "                                               fecha_hora_in, rut_usuario_in, maquina_in, imagen_in " +
                                                                 "FROM tb_registro_patente WHERE enviado_in =?", args);
             if (c.moveToFirst()){
+
                 String rs_id = c.getString(0);
                 int rs_id_cliente_ubicacion = c.getInt(1);
                 String rs_patente = c.getString(2);
@@ -105,8 +120,12 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                 String rs_rut_usuario_in = c.getString(5);
                 String rs_maquina_in     = c.getString(6);
                 String rs_archivo_imagen_nombre = c.getString(7);
-
-                sinncronizaIngresoPatente(rs_id, rs_id_cliente_ubicacion, rs_patente, rs_espacios,  rs_fecha_hora_in, rs_rut_usuario_in, rs_maquina_in, rs_archivo_imagen_nombre);
+                c.close();
+                //sube la imagen primero, si logra subirla entonces inserta el registro
+                uploadImage(rs_id, rs_id_cliente_ubicacion, rs_patente, rs_espacios,
+                            rs_fecha_hora_in, rs_rut_usuario_in, rs_maquina_in,
+                            AppHelper.getImageDir(App.context).getAbsolutePath()+"/"+rs_archivo_imagen_nombre,
+                            rs_archivo_imagen_nombre);
             }
             c.close();
 
@@ -115,6 +134,60 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
     }
 
 
+    private void uploadImage(final String id_registro_patente, final int id_cliente_ubicacion, final String patente,
+                             final int espacios, final String fecha_hora_in, final String rut_usuario_in,
+                             final String maquina_in, final String archivo_imagen_ruta, final String archivo_imagen_nombre)
+    {
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, uploadURL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                try {
+
+                    JSONObject jsonRootObject = new JSONObject(new String(response));
+                    JSONArray jsonArray       = jsonRootObject.optJSONArray("success");
+                    if(jsonArray != null){
+                        JSONObject jsonObject = jsonArray.getJSONObject(0);
+                        Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente "+jsonObject.optString("text"));
+
+                        File file = new File(archivo_imagen_ruta);
+                        file.delete();
+
+                        sinncronizaIngresoPatente(id_registro_patente, id_cliente_ubicacion, patente, espacios,
+                                fecha_hora_in, rut_usuario_in, maquina_in, archivo_imagen_nombre);
+                    }else{
+                        jsonArray = jsonRootObject.optJSONArray("error");
+                        if(jsonArray != null){
+                            JSONObject jsonObject = jsonArray.getJSONObject(0);
+                            Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente ERROR RESPONSE IMAGEN UPLOAD "+jsonObject.optString("text"));
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente JSONException IMAGEN UPLOAD "+e.getMessage());
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(AppHelper.LOG_TAG, error.getMessage());
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("nombre", archivo_imagen_nombre);
+                params.put("imagen", imageToString(BitmapFactory.decodeFile(archivo_imagen_ruta)));
+                return params;
+            }
+        };
+
+        MySingleton.getInstance(App.context).addToRequestQueue(stringRequest);
+
+    }
+
     public void sinncronizaIngresoPatente(final String id_registro_patente, final int id_cliente_ubicacion, final String patente, final int espacios,
                                           final String fecha_hora_in, final String rut_usuario_in, final String maquina_in, final String archivo_imagen_nombre) {
 
@@ -122,6 +195,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
         try {
+
             jsonParams = new JSONObject();
             jsonParams.put("id",id_registro_patente);
             jsonParams.put("id_cliente_ubicacion",id_cliente_ubicacion);
@@ -185,6 +259,14 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
             Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente JSONException "+e1.getMessage());
         }
 
+    }
+
+
+    private String imageToString(Bitmap bitmap){
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100, byteArrayOutputStream);
+        byte[] imgBytes = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(imgBytes, Base64.DEFAULT);
     }
 
 }

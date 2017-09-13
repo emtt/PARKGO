@@ -49,19 +49,5 @@ public class Util {
 
     }
 
-    public static boolean urlStatus(){
-
-        try{
-            URL myUrl = new URL("http://192.168.1.49/");
-            URLConnection connection = myUrl.openConnection();
-            connection.setConnectTimeout(3000);
-            connection.connect();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-
-    }
-
 
 }
