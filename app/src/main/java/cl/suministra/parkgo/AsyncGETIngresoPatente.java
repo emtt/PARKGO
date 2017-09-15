@@ -139,6 +139,9 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                     String rut_usuario_in = jsonObject.optString("rut_usuario_in");
                     String maquina_in     = jsonObject.optString("maquina_in");
                     String imagen_in      = jsonObject.optString("imagen_in");
+                    String latitud        = jsonObject.optString("latitud");
+                    String longitud       = jsonObject.optString("longitud");
+                    String comentario     = jsonObject.optString("comentario");
 
                     qry =   "INSERT INTO tb_registro_patente "+
                                 "(id, id_cliente_ubicacion, patente, " +
@@ -146,14 +149,16 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                                  "maquina_in, imagen_in, enviado_in, " +
                                  "fecha_hora_out, rut_usuario_out, maquina_out, " +
                                  "enviado_out, minutos, precio, " +
-                                 "prepago, efectivo, finalizado)"+
+                                 "prepago, efectivo, latitud, " +
+                                 "longitud, comentario, finalizado)"+
                             "VALUES " +
                                 "('"+id_registro_patente+"','"+id_cliente_ubicacion+"','"+patente+"'," +
                                  "'"+espacios+"','"+fecha_hora_in+"' ,'"+rut_usuario_in+"'," +
                                  "'"+maquina_in+"' ,'"+imagen_in+"', '1'," +
                                  "'', '', ''," +
                                  "'0','0','0'," +
-                                 "'0','0','0');";
+                                 "'0','0','"+latitud+"'," +
+                                 "'"+longitud+"','"+comentario+"','0');";
 
                     AppHelper.getParkgoSQLite().execSQL(qry);
                     Log.d(AppHelper.LOG_TAG, qry);

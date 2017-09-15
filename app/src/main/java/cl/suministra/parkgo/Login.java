@@ -19,6 +19,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderApi;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.loopj.android.http.*;
 
 import org.json.JSONArray;
@@ -32,22 +37,21 @@ import cz.msebera.android.httpclient.Header;
 
 public class Login extends AppCompatActivity {
 
+    /* Activity */
     private EditText EDT_UsuarioCodigo;
     private EditText EDT_UsuarioClave;
     private Button BTN_Login;
     private Button BTN_Sincronizar;
     private String UsuarioCodigo;
     private String UsuarioClave;
-
-    int g_maestro_numero;
+    private ProgressDialog esperaDialog;
+    /* Global */
+    int    g_maestro_numero;
     String g_maestro_nombre;
     String g_maestro_alias;
-
-    private String g_latitud;
-    private String g_longitud;
-
-    private ProgressDialog esperaDialog;
-
+    /* GPS */
+    AppGPS appGPS;
+    /* Tareas Async */
     AsyncSENDIngresoPatente asyncSENDIngresoPatente;
     AsyncGETIngresoPatente asyncGETIngresoPatente;
     AsyncSENDRetiroPatente asyncSENDRetiroPatente;
@@ -55,11 +59,12 @@ public class Login extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         AppHelper.initParkgoDB(this);
         AppHelper.initSerialNum(this);
-        AppGPS.startLocationUpdates();
+        appGPS = new AppGPS();
 
         //inicia la tarea de envio patenes ingresadas.
         asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
@@ -450,16 +455,14 @@ public class Login extends AppCompatActivity {
             @Override
             public void onResponseSuccess(Location location) {
                 if(location != null){
-
                     String id_usuario_ubicacion  = AppHelper.fechaHoraFormatID.format(new Date())+"_"+AppHelper.getSerialNum()+"_"+rut_usuario;
-
                     try{
 
                         AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_usuario_ubicaciones " +
-                                                            "(id, rut_usuario, id_cliente_ubicacion, latitud, longitud) " +
+                                                            "(id, rut_usuario, id_cliente_ubicacion, latitud, longitud, enviado) " +
                                                             "VALUES " +
                                                             "('"+id_usuario_ubicacion+"','"+rut_usuario+"', "+id_ubicacion_usuario+" ," +
-                                                            "'"+ Double.toString(location.getLatitude())+"'," + "'"+Double.toString(location.getLongitude())+"');");
+                                                            "'"+ Double.toString(location.getLatitude())+"'," + "'"+Double.toString(location.getLongitude())+"','0');");
 
                     }catch(SQLException e){  Util.alertDialog(Login.this, "SQLException Login",e.getMessage());   }
 
@@ -473,14 +476,27 @@ public class Login extends AppCompatActivity {
 
     }
 
-
-    /*
-    protected void onStop(){
-       super.onStop();
-       asyncIngresoPatente.cancelTask(asyncIngresoPatente);
-       asyncRetiroPatente.cancelTask(asyncRetiroPatente);
+    @Override
+    protected void onStart() {
+        super.onStart();
+        appGPS.conectaGPS();
     }
-    */
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        appGPS.pausarGPS();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        appGPS.desconectaGPS();
+    }
 
 }

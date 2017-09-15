@@ -47,8 +47,9 @@ public class BDParkgo extends SQLiteOpenHelper {
                         "[id] VARCHAR(36)  NULL PRIMARY KEY,\n" +
                         "[rut_usuario] VARCHAR(12)  NULL,\n" +
                         "[id_cliente_ubicacion] INTEGER NULL, \n"+
-                        "[latitud] VARCHAR(32)  NULL,\n" +
-                        "[longitud] VARCHAR(32)  NULL\n" +
+                        "[latitud] VARCHAR(32)  NULL, \n" +
+                        "[longitud] VARCHAR(32)  NULL, \n" +
+                        "[enviado] INTEGER NULL "+
                         "); \n"+
                        "DROP TABLE IF EXISTS [tb_cliente];\n"+
                        "CREATE TABLE [tb_cliente] (\n"+

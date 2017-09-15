@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 29;
+    private static int db_version    = 33;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
@@ -32,7 +32,7 @@ public class AppHelper {
     public static int minutos_gratis = 0;
     public static int valor_minuto   = 0;
 
-    public static String url_restful = "http://192.168.1.33/parkgo_restful/public/api/";
+    public static String url_restful = "http://192.168.1.45/parkgo_restful/public/api/";
     public static String LOG_TAG     = "parkgo_log";
 
     public static void initParkgoDB(Context context){

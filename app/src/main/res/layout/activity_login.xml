@@ -60,6 +60,8 @@
         android:layout_centerHorizontal="true"
         android:background="@drawable/text_border_selector"
         android:hint="Usuario"
+        android:drawableLeft="@drawable/ic_person_12dp"
+        android:drawablePadding="5dp"
         android:inputType="textPersonName"/>
 
     <TextView
@@ -93,6 +95,8 @@
         android:layout_centerHorizontal="true"
         android:background="@drawable/text_border_selector"
         android:hint="Clave"
+        android:drawableLeft="@drawable/ic_password_12dp"
+        android:drawablePadding="5dp"
         android:inputType="textPassword" />
 
     <TextView
@@ -112,17 +116,58 @@
         android:layout_centerHorizontal="true"
         android:id="@+id/space4" />
 
-    <Button
+    <LinearLayout
+        android:id="@+id/CNT_Botones"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_button_height"
-        android:text="Ingresar"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="@dimen/activity_button_text_size"
-        android:id="@+id/BTN_Login"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/space4"
-        android:background="@drawable/button_selector" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/space4">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1" >
+
+            <Button
+                android:layout_height="@dimen/activity_button_height"
+                android:layout_width="match_parent"
+                android:id="@+id/BTN_Sincronizar"
+                android:textColor="@color/white"
+                android:text="Sincronizar"
+                android:layout_centerHorizontal="true"
+                android:textSize="@dimen/activity_button_text_size"
+                android:textAllCaps="false"
+                android:background="@drawable/button_selector"
+                android:layout_marginRight="10dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1" >
+
+            <Button
+                android:id="@+id/BTN_Login"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/activity_button_height"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/button_selector"
+                android:text="Ingresar"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/activity_button_text_size" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <!--
 
     <Space
         android:layout_width="match_parent"
@@ -131,17 +176,7 @@
         android:layout_centerHorizontal="true"
         android:id="@+id/space5" />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_button_height"
-        android:text="Sincronizar"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="@dimen/activity_button_text_size"
-        android:id="@+id/BTN_Sincronizar"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/space5"
-        android:background="@drawable/button_selector" />
+
 
     <Space
         android:layout_width="match_parent"
@@ -149,5 +184,5 @@
         android:layout_below="@+id/BTN_Sincronizar"
         android:layout_centerHorizontal="true"
         android:id="@+id/space6" />
-
+-->
     </RelativeLayout>

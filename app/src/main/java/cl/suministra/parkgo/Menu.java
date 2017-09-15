@@ -19,7 +19,6 @@ public class Menu extends AppCompatActivity {
     private Button BTN_RetiroPatente;
     private Button BTN_ListaPatente;
 
-
     private TextView TV_Num_Serie_Equipo;
     private TextView TV_Usuario_Nombre;
     private TextView TV_Cliente_Razon_Social;
@@ -110,5 +109,9 @@ public class Menu extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
 
 }

@@ -53,9 +53,10 @@ public class IngresoPatente extends AppCompatActivity {
 
     private FloatingActionButton BTN_Camara;
     private ImageView IMG_IngresoPatente;
-    private String g_imagen_path;
-    private String g_imagen_nombre;
+    private String g_imagen_path   = "";
+    private String g_imagen_nombre = "";
 
+    private AppGPS appGPS;
     private String g_latitud;
     private String g_longitud;
 
@@ -63,6 +64,7 @@ public class IngresoPatente extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ingreso_patente);
+        appGPS = new AppGPS();
         //mPrintConnect = new PrintConnect(this);
         inicio();
     }
@@ -157,16 +159,32 @@ public class IngresoPatente extends AppCompatActivity {
                         if (Resultado.equals("1")){ //patente existe
                             reiniciaIngreso();
                         }else if (Resultado.equals("0")){ //patente no existe (inserta)
-                            Resultado = insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in);
-                            if(Resultado.equals("1")){
-                                //imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
-                                //verifica conexión a internet para sincronizar.
-                                reiniciaIngreso();
-                                Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
-                            }else{ //error SQL inserta patente
-                                reiniciaIngreso();
-                                Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente",Resultado);
-                            }
+                            //Intenta obtener la ubicación GPS
+                            AppGPS.getLastLocation(new GPSCallback() {
+                                @Override
+                                public void onResponseSuccess(Location location) {
+                                    if(location != null){
+                                        g_latitud  = Double.toString(location.getLatitude());
+                                        g_longitud = Double.toString(location.getLongitude());
+                                      }else{
+                                        g_latitud = "";
+                                        g_longitud= "";
+                                    }
+                                    Toast.makeText(IngresoPatente.this, "Succ Latitud "+g_latitud, Toast.LENGTH_SHORT).show();
+
+                                    insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
+                                }
+                                @Override
+                                public void onResponseFailure(Exception e) {
+                                    g_latitud = "";
+                                    g_longitud= "";
+                                    Toast.makeText(IngresoPatente.this, "Fail Latitud "+g_latitud, Toast.LENGTH_SHORT).show();
+
+                                    insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
+                                    Log.d(AppHelper.LOG_TAG, "Ingreso Patente onResponseFailure "+e.getMessage());
+                                }
+                            });
+
                         }else{ //error SQL consulta patente
                             reiniciaIngreso();
                             Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente",Resultado);
@@ -206,28 +224,11 @@ public class IngresoPatente extends AppCompatActivity {
 
     }
 
-    private String insertaPatenteIngreso(String id_registro_patente, String patente, String espacios, String fecha_hora_in){
-
-        AppGPS.getLastLocation(new GPSCallback() {
-            @Override
-            public void onResponseSuccess(Location location) {
-                if(location != null){
-                    g_latitud  = Double.toString(location.getLatitude());
-                    g_longitud = Double.toString(location.getLongitude());
-                    Toast.makeText(IngresoPatente.this, "Get "+g_latitud,Toast.LENGTH_SHORT).show();
-                }else{
-                    g_latitud = "";
-                    g_longitud= "";
-                }
-            }
-            @Override
-            public void onResponseFailure(Exception e) {
-                Log.d(AppHelper.LOG_TAG, "Ingreso Patente onResponseFailure "+e.getMessage());
-            }
-        });
+    private void insertaPatenteIngreso(String id_registro_patente, String patente, String espacios,
+                                       String fecha_hora_in, String imagen_nombre, String latitud, String longitud, String comentario){
 
         try{
-            Toast.makeText(IngresoPatente.this, "Insert "+g_latitud,Toast.LENGTH_SHORT).show();
+
             AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patente "+
                                                 "(id, id_cliente_ubicacion, patente," +
                                                 "espacios, fecha_hora_in, rut_usuario_in, " +
@@ -239,14 +240,22 @@ public class IngresoPatente extends AppCompatActivity {
                                                 "VALUES " +
                                                 "('"+id_registro_patente+"','"+AppHelper.getUbicacion_id()+"','"+patente+"'," +
                                                 "'"+espacios+"','"+fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"'," +
-                                                "'"+AppHelper.getSerialNum()+"' ,'"+g_imagen_nombre+"', '0', " +
+                                                "'"+AppHelper.getSerialNum()+"' ,'"+imagen_nombre+"', '0', " +
                                                 "'', '', ''," +
                                                 "'0','0','0'," +
-                                                "'0','0','"+g_latitud+"'," +
-                                                "'"+g_longitud+"','"+g_comentario+"','0');");
-        }catch(SQLException e){  return e.getMessage(); }
+                                                "'0','0','"+latitud+"'," +
+                                                "'"+longitud+"','"+comentario+"','0');");
 
-        return "1";
+            //imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
+            reiniciaIngreso();
+            Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
+
+        }catch(SQLException e){
+            reiniciaIngreso();
+            Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente", e.getMessage());
+            return;
+        }
+
     }
 
     private void imprimeVoucherIngreso(String patente, String espacios, String fecha_hora_in){
@@ -369,6 +378,8 @@ public class IngresoPatente extends AppCompatActivity {
             IMG_IngresoPatente.setScaleType(ImageView.ScaleType.FIT_XY);
             IMG_IngresoPatente.setImageBitmap(imagenBitmap);
         }else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_CANCELED) {
+            g_imagen_nombre = "";
+            g_imagen_path   = "";
             File file = new File(g_imagen_path);
             file.delete();
         }
@@ -407,11 +418,38 @@ public class IngresoPatente extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        appGPS.conectaGPS();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        appGPS.pausarGPS();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mPrintConnect != null) {
+            mPrintConnect.stop();
+        }
+        appGPS.desconectaGPS();
+    }
+
+    /*
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mPrintConnect != null) {
             mPrintConnect.stop();
         }
     }
-
+    */
 }

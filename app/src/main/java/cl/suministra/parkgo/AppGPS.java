@@ -1,21 +1,26 @@
 package cl.suministra.parkgo;
 
+
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderApi;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
@@ -25,32 +30,41 @@ import static com.google.android.gms.location.LocationServices.getFusedLocationP
  * Created by LENOVO on 14-09-2017.
  */
 
-public class AppGPS {
+public class AppGPS implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    private static LocationRequest locationRequest;
-    private static long UPDATE_INTERVAL = 1000;  /* 1 secs */
-    private static long FASTEST_INTERVAL = 2000; /* 2 sec */
+    private FusedLocationProviderApi locationProvider = LocationServices.FusedLocationApi;
+    private GoogleApiClient googleApiClient = new GoogleApiClient.Builder(App.context)
+                                                                 .addApi(LocationServices.API)
+                                                                 .addConnectionCallbacks(this)
+                                                                 .addOnConnectionFailedListener(this)
+                                                                 .build();
+    private LocationRequest locationRequest = new LocationRequest()
+                                                        .setInterval( 1 * 1000) // 1 seg
+                                                        .setFastestInterval(5 * 1000) // 5 seg
+                                                        .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
-    /* Entrega la ubicación actual de acuerdo a intervalos definidos en UPDATE_INTERVAL y FASTEST_INTERVAL */
-    public static void startLocationUpdates() {
+    public void conectaGPS(){
+        if (!googleApiClient.isConnected()){
+            googleApiClient.connect();
+        }
+    }
 
-        // Create the location request to start receiving updates
-        locationRequest = new LocationRequest();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(UPDATE_INTERVAL);
-        locationRequest.setFastestInterval(FASTEST_INTERVAL);
+    public void desconectaGPS(){
+        if (googleApiClient.isConnected()){
+            googleApiClient.disconnect();
+        }
+    }
 
-        // Create LocationSettingsRequest object using location request
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-        builder.addLocationRequest(locationRequest);
-        LocationSettingsRequest locationSettingsRequest = builder.build();
+    public void pausarGPS(){
+        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+    }
 
-        // Check whether location settings are satisfied
-        // https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
-        SettingsClient settingsClient = LocationServices.getSettingsClient(App.context);
-        settingsClient.checkLocationSettings(locationSettingsRequest);
+    @Override
+    public void onConnected(Bundle bundle) {
+        requestLocationUpdates();
+    }
 
-        // new Google API SDK v11 uses getFusedLocationProviderClient(this)
+    public void requestLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(App.context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(App.context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -61,13 +75,12 @@ public class AppGPS {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        getFusedLocationProviderClient(App.context).requestLocationUpdates(locationRequest, new LocationCallback() {
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, new LocationCallback(){
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
-                        //onLocationChanged(locationResult.getLastLocation());
+                        //locationChage(locationResult.getLastLocation());
                     }
-                },
-                Looper.myLooper());
+                }, Looper.myLooper());
     }
 
     /* Entrega la ultima ubicación registrada mediante Google Play Services SDK (v11+) */
@@ -101,14 +114,20 @@ public class AppGPS {
                 });
     }
 
+    @Override
+    public void onConnectionSuspended(int i) { }
 
-    public static void onLocationChanged(Location location) {
-        // New location has now been determined
-        String msg = "Updated Location: " +
-                Double.toString(location.getLatitude()) + "," +
-                Double.toString(location.getLongitude());
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) { }
 
-        Toast.makeText(App.context, msg, Toast.LENGTH_LONG).show();
+    public void locationChage(Location location){
+        Toast.makeText(App.context, "Latitud "+Double.toString(location.getLatitude())+
+                                    " Longitud "+Double.toString(location.getLongitude()), Toast.LENGTH_SHORT).show();
     }
+
+    @Override
+    public void onLocationChanged(Location location) {
+    }
+
 
 }
