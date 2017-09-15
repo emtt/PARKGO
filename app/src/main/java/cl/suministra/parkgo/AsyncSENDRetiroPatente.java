@@ -87,7 +87,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
         try{
             String[] args = new String[] {"0","1"};
-            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, fecha_hora_out, rut_usuario_out, maquina_out, minutos, precio, prepago " +
+            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, fecha_hora_out, rut_usuario_out, maquina_out, minutos, precio, prepago, efectivo " +
                                                             "FROM tb_registro_patente WHERE enviado_out =? AND finalizado =?", args);
             if (c.moveToFirst()){
                 String rs_id = c.getString(0);
@@ -97,7 +97,8 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                 int    rs_minutos        = c.getInt(4);
                 int    rs_precio         = c.getInt(5);
                 int    rs_prepago        = c.getInt(6);
-                sinncronizaRetiroPatente(rs_id, rs_fecha_hora_out, rs_rut_usuario_out, rs_maquina_out, rs_minutos, rs_precio, rs_prepago);
+                int    rs_efectivo       = c.getInt(7);
+                sinncronizaRetiroPatente(rs_id, rs_fecha_hora_out, rs_rut_usuario_out, rs_maquina_out, rs_minutos, rs_precio, rs_prepago, rs_efectivo);
             }
             c.close();
 
@@ -107,7 +108,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
     public void sinncronizaRetiroPatente(final String id_registro_patente, final String fecha_hora_out,
                                          final String rut_usuario_out, final String maquina_out, final int minutos,
-                                         final int precio, final int prepago) {
+                                         final int precio, final int prepago, final int efectivo) {
 
         cliente = new AsyncHttpClient();
         JSONObject jsonParams  = null;
@@ -122,6 +123,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
             jsonParams.put("minutos",minutos);
             jsonParams.put("precio",precio);
             jsonParams.put("prepago",prepago);
+            jsonParams.put("efectivo",efectivo);
             jsonParams.put("finalizado",1);
             entity = new StringEntity(jsonParams.toString());
 

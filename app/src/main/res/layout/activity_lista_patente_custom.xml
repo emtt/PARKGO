@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-
+<!--
     <ImageView
         android:id="@+id/IMG_Vehiculo"
         android:layout_width="wrap_content"
@@ -11,46 +11,140 @@
         app:srcCompat="@drawable/auto_icono"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
-
+-->
     <TextView
         android:id="@+id/TV_Patente"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text=""
+        android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/black"
-        android:layout_alignTop="@+id/IMG_Vehiculo"
-        android:layout_toEndOf="@+id/IMG_Vehiculo" />
+        android:textStyle="bold"
+        android:textSize="30sp"
+        android:drawableLeft="@drawable/ic_car_24dp"
+        android:drawablePadding="5dp"/>
 
     <TextView
         android:id="@+id/TV_Fecha_IN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text=""
         android:textColor="@color/black"
         android:layout_below="@+id/TV_Patente"
-        android:layout_toEndOf="@+id/IMG_Vehiculo"/>
+        android:drawableLeft="@drawable/ic_calendar_12dp"
+        android:drawablePadding="5dp"/>
 
     <TextView
-        android:id="@+id/TV_Espacios"
+        android:id="@+id/TV_Usuario_IN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text=""
         android:textColor="@color/black"
         android:layout_below="@+id/TV_Fecha_IN"
-        android:layout_toEndOf="@+id/IMG_Vehiculo"/>
+        android:drawableLeft="@drawable/ic_person_12dp"
+        android:drawablePadding="5dp"/>
 
     <TextView
-        android:id="@+id/TV_Minutos"
+        android:id="@+id/TV_Maquina_IN"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text=""
         android:textColor="@color/black"
-        android:layout_below="@+id/TV_Espacios"
-        android:layout_toEndOf="@+id/IMG_Vehiculo"/>
+        android:layout_below="@+id/TV_Usuario_IN"
+        android:drawableLeft="@drawable/ic_phone_12dp"
+        android:drawablePadding="5dp"/>
+
+
+    <LinearLayout
+        android:id="@+id/Contenedor_LB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/TV_Maquina_IN">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1" >
+
+            <TextView
+                android:id="@+id/LB_Espacios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="ESPACIOS"
+                android:layout_gravity="start"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:id="@+id/TV_Espacios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text=""
+                android:layout_gravity="start"
+                android:textColor="@color/black" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1" >
+
+            <TextView
+                android:id="@+id/LB_Minutos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="MINUTOS"
+                android:layout_gravity="start"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:id="@+id/TV_Minutos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text=""
+                android:layout_gravity="start"
+                android:textColor="@color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1" >
+
+            <TextView
+                android:id="@+id/LB_Precio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="PRECIO"
+                android:layout_gravity="start"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:id="@+id/TV_Precio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text=""
+                android:layout_gravity="start"
+                android:textColor="@color/black"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
 
 
 </RelativeLayout>

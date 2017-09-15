@@ -23,8 +23,11 @@ public class ListaPatente extends AppCompatActivity {
     private ImageView IMG_Vehiculo;
     private TextView TV_Patente;
     private TextView TV_Fecha_IN;
+    private TextView TV_Usuario_IN;
+    private TextView TV_Maquina_IN;
     private TextView TV_Espacios;
     private TextView TV_Minutos;
+    private TextView TV_Precio;
 
    List<PatentesPendiente> patentesList = new ArrayList<PatentesPendiente>();
 
@@ -50,9 +53,8 @@ public class ListaPatente extends AppCompatActivity {
 
         String[] args = new String[]{"0"};
         Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT\n" +
-                                                        "id, patente, fecha_hora_in,\n" +
+                                                        "id, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, \n" +
                                                         "datetime('now','localtime') as fecha_hora_out,\n" +
-                                                        "espacios,\n" +
                                                         "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) As Integer) as dias,\n" +
                                                         "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 As Integer) as horas,\n" +
                                                         "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
@@ -62,10 +64,21 @@ public class ListaPatente extends AppCompatActivity {
         if (c.moveToFirst()) {
             do {
                 String rs_patente = c.getString(1);
-                String rs_fecha_hora_in = c.getString(2);
-                int rs_espacios   = c.getInt(4);
-                int rs_minutos    = c.getInt(7);
-                PatentesPendiente patentePendiente = new PatentesPendiente(rs_patente,rs_fecha_hora_in, rs_espacios, rs_minutos);
+                int rs_espacios   = c.getInt(2);
+                String rs_fecha_hora_in = c.getString(3);
+                String rs_rut_usuario_in = c.getString(4);
+                String rs_maquina_in = c.getString(5);
+                int rs_minutos    = c.getInt(9);
+
+                int precio      = 0;
+                int total_minutos =  (rs_minutos - AppHelper.getMinutos_gratis());
+                if (total_minutos > 0){
+                    precio = total_minutos * AppHelper.getValor_minuto() * rs_espacios;
+                }
+
+
+                PatentesPendiente patentePendiente = new PatentesPendiente(rs_patente,rs_fecha_hora_in, rs_rut_usuario_in , rs_maquina_in,
+                                                                           rs_espacios, rs_minutos, precio);
                 patentesList.add(patentePendiente);
             } while(c.moveToNext());
         }
@@ -91,16 +104,22 @@ public class ListaPatente extends AppCompatActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             convertView = getLayoutInflater().inflate(R.layout.activity_lista_patente_custom, null);
-            IMG_Vehiculo = (ImageView) convertView.findViewById(R.id.IMG_Vehiculo);
-            TV_Patente   = (TextView)  convertView.findViewById(R.id.TV_Patente);
-            TV_Fecha_IN  = (TextView)  convertView.findViewById(R.id.TV_Fecha_IN);
-            TV_Espacios  = (TextView)  convertView.findViewById(R.id.TV_Espacios);
-            TV_Minutos   = (TextView)  convertView.findViewById(R.id.TV_Minutos);
+            //IMG_Vehiculo = (ImageView) convertView.findViewById(R.id.IMG_Vehiculo);
+            TV_Patente    = (TextView)  convertView.findViewById(R.id.TV_Patente);
+            TV_Fecha_IN   = (TextView)  convertView.findViewById(R.id.TV_Fecha_IN);
+            TV_Usuario_IN = (TextView)  convertView.findViewById(R.id.TV_Usuario_IN);
+            TV_Maquina_IN = (TextView)  convertView.findViewById(R.id.TV_Maquina_IN);
+            TV_Espacios   = (TextView)  convertView.findViewById(R.id.TV_Espacios);
+            TV_Minutos    = (TextView)  convertView.findViewById(R.id.TV_Minutos);
+            TV_Precio     = (TextView)  convertView.findViewById(R.id.TV_Precio);
 
-            TV_Patente.setText(String.valueOf(patentesList.get(position).Patente));
-            TV_Fecha_IN.setText("Ingreso: "+String.valueOf(patentesList.get(position).Fecha_IN));
-            TV_Espacios.setText("Espacios: "+String.valueOf(patentesList.get(position).Espacios));
-            TV_Minutos.setText("Minutos: "+String.valueOf(patentesList.get(position).Minutos));
+            TV_Patente.setText(String.valueOf(patentesList.get(position).patente));
+            TV_Fecha_IN.setText(String.valueOf(patentesList.get(position).fecha_in));
+            TV_Usuario_IN.setText(String.valueOf(patentesList.get(position).usuario_in));
+            TV_Maquina_IN.setText(String.valueOf(patentesList.get(position).maquina_in));
+            TV_Espacios.setText(String.valueOf(patentesList.get(position).espacios));
+            TV_Minutos.setText(String.format("%,d", patentesList.get(position).minutos).replace(",","."));
+            TV_Precio.setText("$"+String.format("%,d", patentesList.get(position).precio).replace(",","."));
 
             return convertView;
 
@@ -110,16 +129,23 @@ public class ListaPatente extends AppCompatActivity {
 
     public class PatentesPendiente{
 
-        String Patente;
-        String Fecha_IN;
-        int Espacios;
-        int Minutos;
+        String patente;
+        String fecha_in;
+        String usuario_in;
+        String maquina_in;
+        int espacios;
+        int minutos;
+        int precio;
 
-        public PatentesPendiente(String patente, String fecha_in, int espacios, int minutos){
-            this.Patente  = patente;
-            this.Fecha_IN = fecha_in;
-            this.Espacios = espacios;
-            this.Minutos  = minutos;
+        public PatentesPendiente(String patente, String fecha_in, String usuario_in, String maquina_in,
+                                 int espacios, int minutos, int precio){
+            this.patente  = patente;
+            this.fecha_in = fecha_in;
+            this.usuario_in = usuario_in;
+            this.maquina_in = maquina_in;
+            this.espacios = espacios;
+            this.minutos  = minutos;
+            this.precio   = precio;
         }
 
     }

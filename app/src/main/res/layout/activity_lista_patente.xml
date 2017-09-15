@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Vehículos Pendiente"
+        android:text="Vehículos Retiro Pendiente"
         android:id="@+id/TV_Titulo"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
@@ -29,6 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/LST_Patente"
+        android:divider="@drawable/list_divider"
         android:layout_below="@+id/space"></ListView>
 
 </RelativeLayout>

@@ -136,6 +136,7 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                     int minutos                = jsonObject.optInt("minutos");
                     int precio                 = jsonObject.optInt("precio");
                     int prepago                = jsonObject.optInt("prepago");
+                    int efectivo               = jsonObject.optInt("efectivo");
                     int finalizado             = jsonObject.optInt("finalizado");
 
                     qry =   "UPDATE tb_registro_patente " +
@@ -146,6 +147,7 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                             "minutos = "+minutos+", " +
                             "precio = "+precio+", " +
                             "prepago = "+prepago+", " +
+                            "efectivo = "+efectivo+", " +
                             "finalizado = "+finalizado+" " +
                             "WHERE id = '"+id_registro_patente+"'";
 

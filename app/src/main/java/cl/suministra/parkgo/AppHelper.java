@@ -7,6 +7,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * Created by LENOVO on 02-08-2017.
@@ -15,12 +17,15 @@ import java.lang.reflect.Method;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 23;
+    private static int db_version    = 29;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
     private static String serial_no  = "";
     private static String usuario_rut= "";
+
+    public static DateFormat fechaHoraFormat   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static DateFormat fechaHoraFormatID = new SimpleDateFormat("yyyyMMddHHmmss");
 
     public static int cliente_id     = 0;
     public static int ubicacion_id   = 0;

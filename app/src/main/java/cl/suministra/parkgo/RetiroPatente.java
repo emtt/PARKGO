@@ -234,7 +234,7 @@ public class RetiroPatente extends AppCompatActivity {
 
             try {
 
-                String[] args = new String[]{patente, "0"};
+                String[] args = new String[]{patente, String.valueOf(AppHelper.getUbicacion_id()), "0"};
                 Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT\n" +
                                                                 "id, patente, fecha_hora_in,\n" +
                                                                 "datetime('now','localtime') as fecha_hora_out,\n" +
@@ -242,9 +242,10 @@ public class RetiroPatente extends AppCompatActivity {
                                                                 "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) As Integer) as dias,\n" +
                                                                 "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 As Integer) as horas,\n" +
                                                                 "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
-                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos\n" +
+                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos, \n" +
+                                                                "prepago, efectivo \n"+
                                                                 "FROM tb_registro_patente\n" +
-                                                                "WHERE patente =? AND finalizado =?", args);
+                                                                "WHERE patente =? AND id_cliente_ubicacion=? AND finalizado =?", args);
                 if (c.moveToFirst()) {
                     String rs_id             = c.getString(0);
                     String rs_patente        = c.getString(1);
@@ -255,11 +256,14 @@ public class RetiroPatente extends AppCompatActivity {
                     int rs_horas    = c.getInt(6);
                     int rs_minutos  = c.getInt(7);
                     int rs_segundos = c.getInt(8);
+                    int rs_prepago  = c.getInt(9);
+                    int rs_efectivo = c.getInt(10);
+
 
                     int precio      = 0;
                     int total_minutos =  (rs_minutos - AppHelper.getMinutos_gratis());
                     if (total_minutos > 0){
-                        precio = total_minutos * AppHelper.getValor_minuto() * rs_espacios;
+                        precio = (total_minutos * AppHelper.getValor_minuto() * rs_espacios) - (rs_prepago + rs_efectivo);
                     }
 
                     TV_RS_Patente.setText("Patente:    " + rs_patente);
@@ -268,6 +272,8 @@ public class RetiroPatente extends AppCompatActivity {
                     TV_RS_Fecha_OUT.setText("Fecha retiro:     " + rs_fecha_hora_out);
                     TV_RS_Minutos.setText("Tiempo:            " + String.format("%,d", rs_minutos).replace(",",".") + " min");
                     TV_RS_Precio.setText("Precio:              $" + String.format("%,d", precio).replace(",","."));
+
+
 
                     EDT_Patente.setText("");
                     //Setea las variables para finalizar el retiro.
@@ -286,7 +292,7 @@ public class RetiroPatente extends AppCompatActivity {
                 c.close();
 
             } catch (SQLException e) {
-                Util.alertDialog(RetiroPatente.this,"Retiro Patente", e.getMessage() );
+                Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente", e.getMessage() );
             }
         }
     }
@@ -308,36 +314,34 @@ public class RetiroPatente extends AppCompatActivity {
                         if(jsonArray != null){
 
                             for (int i = 0; i < jsonArray.length(); i++) {
-
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 g_prepago_rut_conductor = jsonObject.optString("rut");
                                 g_prepago_clave  = jsonObject.optString("clave");
                                 g_prepago_saldo  = jsonObject.optInt("saldo");
-
                             }
 
                             if (g_prepago_saldo == 0) {
                                 Util.alertDialog(RetiroPatente.this, "Retiro Patente", "No tiene saldo prepago, verifique");
                             } else if (g_precio <= g_prepago_saldo) {
-                                confirmDialogPrepago(RetiroPatente.this, "Ingrese clave de 4 dígitos y confirme retiro prepago patente " + g_patente);
-                            } else {
-                                Util.alertDialog(RetiroPatente.this, "Retiro Patente", "Su saldo prepago es insuficiente para completar la operación");
-                                return;
+                                confirmDialogPrepago(RetiroPatente.this, g_precio, 0, "Ingrese clave de 4 dígitos y confirme retiro prepago patente " + g_patente);
+                            } else if (g_precio > g_prepago_saldo){
+                                int efectivo = g_precio - g_prepago_saldo;
+                                confirmDialogPrepagoSaldo(RetiroPatente.this, g_prepago_saldo, efectivo, "El saldo prepago del conductor insuficiente y deberá cancelar $"+String.format("%,d", efectivo).replace(",",".")+ " en efectivo, confirme para continuar");
                             }
 
                         }else{
                             jsonArray = jsonRootObject.optJSONArray("error");
                             if(jsonArray != null){
                                 JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                Util.alertDialog(RetiroPatente.this, "Retiro Patente Prepago", "ERROR RESPONSE "+jsonObject.optString("text"));
+                                Util.alertDialog(RetiroPatente.this, "ErrorSync Retiro Patente Prepago", jsonObject.optString("text"));
                             }
                         }
                     } catch (JSONException e) {
-                        Util.alertDialog(RetiroPatente.this, "Retiro Patente Prepago", "JSONException "+e.getMessage());
+                        Util.alertDialog(RetiroPatente.this, "JSONException Retiro Patente Prepago", e.getMessage());
                     }
 
                 }else{
-                    Util.alertDialog(RetiroPatente.this, "Retiro Patente Prepago",  "ERROR SYNC Código: " + statusCode + "\n" + responseBody );
+                    Util.alertDialog(RetiroPatente.this, "ErrorSync Retiro Patente Prepago",  "Código: " + statusCode + "\n" + responseBody );
                 }
             }
 
@@ -345,19 +349,19 @@ public class RetiroPatente extends AppCompatActivity {
     }
 
     private void confirmDialogEfectivo(Context context, String mensaje) {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder
                 .setTitle("Retiro Patente")
                 .setMessage(mensaje)
                 .setPositiveButton("Si",  new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, 0);
+                        String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, 0, g_precio);
                         if (Resultado.equals("1")){
                             //imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_precio);
                             Util.alertDialog(RetiroPatente.this,"Retiro Patente","Patente: "+g_patente+" retirada correctamente");
                         }else{
-                            Util.alertDialog(RetiroPatente.this,"Retiro Patente",Resultado);
+                            Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente",Resultado);
                         }
                         reiniciaRetiro();
                     }
@@ -371,14 +375,14 @@ public class RetiroPatente extends AppCompatActivity {
                 .show();
     }
 
-    private void confirmDialogPrepago(Context context, String mensaje) {
+    private void confirmDialogPrepago(Context context, final int prepago, final int efectivo, String mensaje) {
 
         final EditText EDT_Clave_Prepago = new EditText(context);
         EDT_Clave_Prepago.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD);
         EDT_Clave_Prepago.setTransformationMethod(PasswordTransformationMethod.getInstance());
         EDT_Clave_Prepago.setFilters(new InputFilter[]{new InputFilter.LengthFilter(4)});
 
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Retiro Patente");
         builder.setMessage(mensaje);
         builder.setView(EDT_Clave_Prepago);
@@ -395,7 +399,7 @@ public class RetiroPatente extends AppCompatActivity {
                     }
                 });
 
-        final android.app.AlertDialog dialog = builder.create();
+        final AlertDialog dialog = builder.create();
         dialog.show();
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
         {
@@ -406,7 +410,7 @@ public class RetiroPatente extends AppCompatActivity {
                     Util.alertDialog(RetiroPatente.this,"Retiro Patente","Clave ingresada no corresponde, verifique");
                 }else {
                     actualizaSaldoPrepago(g_id_registro_patente, g_prepago_rut_conductor, g_patente,
-                                          g_fecha_hora_in, g_fecha_hora_out, g_espacios, g_minutos, g_precio);
+                                          g_fecha_hora_out, g_minutos, g_precio, prepago, efectivo);
                     dialog.dismiss();
                     reiniciaRetiro();
                 }
@@ -416,11 +420,31 @@ public class RetiroPatente extends AppCompatActivity {
 
     }
 
-    private void actualizaSaldoPrepago(final String id_registro_patente, final String rut_conductor, final String patente,
-                                       final String fecha_hora_in, final String fecha_hora_out, final int espacios,
-                                       final int minutos, final int precio){
+    private void confirmDialogPrepagoSaldo(Context context, final int prepago, final int efectivo, String mensaje) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder
+                .setTitle("Retiro Patente")
+                .setMessage(mensaje)
+                .setPositiveButton("Si",  new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        confirmDialogPrepago(RetiroPatente.this, prepago, efectivo, "Ingrese clave de 4 dígitos y confirme retiro prepago patente " + g_patente);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog,int id) {
+                        dialog.cancel();
+                    }
+                })
+                .show();
+    }
 
-        ClienteAsync(AppHelper.getUrl_restful() + "conductor_saldo_prepago_upt/" + rut_conductor + "/" + precio, new ClienteCallback() {
+    private void actualizaSaldoPrepago(final String id_registro_patente, final String rut_conductor, final String patente,
+                                       final String fecha_hora_out, final int minutos, final int precio,
+                                       final int prepago, final int efectivo){
+
+        ClienteAsync(AppHelper.getUrl_restful() + "conductor_saldo_prepago_upt/" + rut_conductor + "/" + prepago, new ClienteCallback() {
 
             @Override
             public void onResponse(int esError, int statusCode, String responseBody) {
@@ -432,27 +456,27 @@ public class RetiroPatente extends AppCompatActivity {
                         JSONObject jsonRootObject = new JSONObject(new String(responseBody));
                         JSONArray jsonArray       = jsonRootObject.optJSONArray("success");
                         if(jsonArray != null){
-                            String Resultado = actualizaRetiroPatente(id_registro_patente, fecha_hora_out, minutos, precio, 1);
+                            String Resultado = actualizaRetiroPatente(id_registro_patente, fecha_hora_out, minutos, precio, prepago, efectivo);
                             if (Resultado.equals("1")) {
                                 //imprimeVoucherRetiro(patente, espacios, fecha_hora_in, fecha_hora_out, minutos, precio);
                                 Util.alertDialog(RetiroPatente.this, "Retiro Patente", "Patente " + patente + " retirada correctamente");
                             }else{
-                                Util.alertDialog(RetiroPatente.this,"Retiro Patente", Resultado);
+                                Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente", Resultado);
                             }
                         }else{
                             jsonArray = jsonRootObject.optJSONArray("error");
                             if(jsonArray != null){
                                 JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                Util.alertDialog(RetiroPatente.this, "Retiro Patente Prepago", "ERROR RESPONSE "+jsonObject.optString("text"));
+                                Util.alertDialog(RetiroPatente.this, "ErrorSync Retiro Patente Prepago", jsonObject.optString("text"));
                             }
                         }
 
                     } catch (JSONException e) {
-                        Util.alertDialog(RetiroPatente.this, "Retiro Patente Prepago", "JSONException "+e.getMessage());
+                        Util.alertDialog(RetiroPatente.this, "JSONException Retiro Patente Prepago", e.getMessage());
                     }
 
                 }else{
-                    Util.alertDialog(RetiroPatente.this, "Retiro Patente Prepago",  "ERROR SYNC Código: " + statusCode + "\n" + responseBody );
+                    Util.alertDialog(RetiroPatente.this, "ErrorSync Retiro Patente Prepago",  "Código: " + statusCode + "\n" + responseBody );
                 }
             }
 
@@ -460,7 +484,7 @@ public class RetiroPatente extends AppCompatActivity {
 
     }
 
-    private String actualizaRetiroPatente(String id_registro_patente, String fecha_hora_out, int minutos, int precio, int prepago ){
+    private String actualizaRetiroPatente(String id_registro_patente, String fecha_hora_out, int minutos, int precio, int prepago, int efectivo ){
         try{
             AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente " +
                     "SET " +
@@ -470,6 +494,7 @@ public class RetiroPatente extends AppCompatActivity {
                     "minutos = "+minutos+", " +
                     "precio = "+precio+", " +
                     "prepago = "+prepago+", " +
+                    "efectivo = "+efectivo+", " +
                     "finalizado = '1' " +
                     "WHERE id = '"+id_registro_patente+"'");
         }catch(SQLException e){  return e.getMessage(); }
@@ -555,7 +580,7 @@ public class RetiroPatente extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Util.alertDialog(RetiroPatente.this, "Retiro Patente Prepago","RetiroPatente onFailure " + error.getMessage());
+                Util.alertDialog(RetiroPatente.this, "onFailure Retiro Patente Prepago", error.getMessage());
             }
         });
     }

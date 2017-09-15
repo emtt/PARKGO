@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,10 +20,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.loopj.android.http.*;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Date;
+
 import cz.msebera.android.httpclient.Header;
+
 
 public class Login extends AppCompatActivity {
 
@@ -36,6 +43,9 @@ public class Login extends AppCompatActivity {
     String g_maestro_nombre;
     String g_maestro_alias;
 
+    private String g_latitud;
+    private String g_longitud;
+
     private ProgressDialog esperaDialog;
 
     AsyncSENDIngresoPatente asyncSENDIngresoPatente;
@@ -49,6 +59,7 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         AppHelper.initParkgoDB(this);
         AppHelper.initSerialNum(this);
+        AppGPS.startLocationUpdates();
 
         //inicia la tarea de envio patenes ingresadas.
         asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
@@ -69,13 +80,13 @@ public class Login extends AppCompatActivity {
         init();
     }
 
-    public void init(){
+    private void init() {
 
         EDT_UsuarioCodigo = (EditText) findViewById(R.id.EDT_UsuarioCodigo);
         EDT_UsuarioCodigo.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                if(s.length() == 0) {
+                if (s.length() == 0) {
                     TextView label = (TextView) findViewById(R.id.LB_UsuarioCodigo);
                     label.setText(EDT_UsuarioCodigo.getHint());
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -92,7 +103,7 @@ public class Login extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(s.length() == 0) {
+                if (s.length() == 0) {
                     TextView label = (TextView) findViewById(R.id.LB_UsuarioCodigo);
                     label.setText("");
                 }
@@ -104,7 +115,7 @@ public class Login extends AppCompatActivity {
         EDT_UsuarioClave.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                if(s.length() == 0) {
+                if (s.length() == 0) {
                     TextView label = (TextView) findViewById(R.id.LB_UsuarioClave);
                     label.setText(EDT_UsuarioClave.getHint());
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -121,7 +132,7 @@ public class Login extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(s.length() == 0) {
+                if (s.length() == 0) {
                     TextView label = (TextView) findViewById(R.id.LB_UsuarioClave);
                     label.setText("");
                 }
@@ -136,7 +147,7 @@ public class Login extends AppCompatActivity {
 
         {
             @Override
-            public void onClick (View v){
+            public void onClick(View v) {
                 loginUsuario();
             }
 
@@ -144,16 +155,16 @@ public class Login extends AppCompatActivity {
 
 
         BTN_Sincronizar = (Button) findViewById(R.id.BTN_Sincronizar);
-        BTN_Sincronizar.setOnClickListener(new View.OnClickListener(){
+        BTN_Sincronizar.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
 
-                if(Util.internetStatus(Login.this)) {
+                if (Util.internetStatus(Login.this)) {
 
                     g_maestro_numero = 0;
                     g_maestro_nombre = "usuarios";
-                    g_maestro_alias = "Usuarios";
+                    g_maestro_alias = "1/5 Usuarios";
 
                     if (esperaDialog != null && esperaDialog.isShowing()) {
                         esperaDialog.setMessage(g_maestro_alias);
@@ -168,12 +179,12 @@ public class Login extends AppCompatActivity {
                                 SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
                             } else {
                                 esperaDialog.dismiss();
-                                Util.alertDialog(Login.this, "ERROR Sincronización", "Código: " + statusCode + "\n" + responseBody);
+                                Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
                             }
                         }
                     });
-                }else{
-                    Util.alertDialog(Login.this, "ERROR Sincronización", "Verifique conexión a Internet");
+                } else {
+                    Util.alertDialog(Login.this, "ErrorSync Login", "Verifique conexión a Internet");
                 }
 
             }
@@ -181,7 +192,7 @@ public class Login extends AppCompatActivity {
 
     }
 
-    private void loginUsuario(){
+    private void loginUsuario() {
         esperaDialog = ProgressDialog.show(this, "", "Autenticando...", true);
         esperaDialog.show();
         Handler handler = new Handler();
@@ -221,23 +232,23 @@ public class Login extends AppCompatActivity {
 
             String qry = "SELECT tu.rut AS rut_usuario, tu.nombre AS nombre_usuario, tc.id AS cliente_id, tc.razon_social AS razon_social,\n" +
                                 "tcu.id AS ubicacion_id, tcu.descripcion AS ubicacion_desc, tcu.direccion AS ubicacion_dir, \n" +
-                                "tcu.minutos_gratis AS minutos_gratis, tcu.valor_minuto AS valor_minuto \n"+
-                          "FROM tb_usuario tu\n" +
-                          "LEFT JOIN tb_cliente_ubicaciones tcu ON tcu.id = tu.id_cliente_ubicacion\n" +
-                          "LEFT JOIN tb_cliente tc ON tc.id = tcu.id_cliente\n" +
-                          "WHERE tu.codigo =? AND tu.clave =? ";
+                                "tcu.minutos_gratis AS minutos_gratis, tcu.valor_minuto AS valor_minuto \n" +
+                                "FROM tb_usuario tu\n" +
+                                "LEFT JOIN tb_cliente_ubicaciones tcu ON tcu.id = tu.id_cliente_ubicacion\n" +
+                                "LEFT JOIN tb_cliente tc ON tc.id = tcu.id_cliente\n" +
+                                "WHERE tu.codigo =? AND tu.clave =? ";
 
             c = AppHelper.getParkgoSQLite().rawQuery(qry, args);
             if (c.moveToFirst()) {
-                String rs_usuario_rut          = c.getString(0);
-                String rs_usuario_nombre       = c.getString(1);
-                int rs_cliente_id              = c.getInt(2);
+                String rs_usuario_rut = c.getString(0);
+                String rs_usuario_nombre = c.getString(1);
+                int rs_cliente_id = c.getInt(2);
                 String rs_cliente_razon_social = c.getString(3);
-                int rs_ubicacion_id            = c.getInt(4);
-                String rs_usuario_ubicacion    = c.getString(5);
-                String rs_usuario_ubicacion_dir= c.getString(6);
-                int    rs_minutos_gratis       = c.getInt(7);
-                int    rs_valor_minuto         = c.getInt(8);
+                int rs_ubicacion_id = c.getInt(4);
+                String rs_usuario_ubicacion = c.getString(5);
+                String rs_usuario_ubicacion_dir = c.getString(6);
+                int rs_minutos_gratis = c.getInt(7);
+                int rs_valor_minuto = c.getInt(8);
 
                 AppHelper.setUsuario_rut(rs_usuario_rut);
                 //De acuerdo a la ubicacion del usuario.
@@ -245,6 +256,9 @@ public class Login extends AppCompatActivity {
                 AppHelper.setUbicacion_id(rs_ubicacion_id);
                 AppHelper.setMinutos_gratis(rs_minutos_gratis);
                 AppHelper.setValor_minuto(rs_valor_minuto);
+
+                //graba latitud y longitud del ingreso.
+                registraUsuarioUbicacion(rs_usuario_rut, rs_ubicacion_id);
 
                 Intent intent = new Intent(this, Menu.class);
                 intent.putExtra("usuario_nombre", rs_usuario_nombre);
@@ -254,19 +268,21 @@ public class Login extends AppCompatActivity {
                 startActivity(intent);
 
             } else {
-                Util.alertDialog(Login.this, "Login", "Usuario y clave ingresados no existe, sincronize y verifique" );
+                Util.alertDialog(Login.this, "Login", "Usuario y clave ingresados no existe, sincronize y verifique");
             }
             c.close();
 
-        } catch (SQLException e) { Util.alertDialog(Login.this, "EXCEP Login", e.getMessage() ); }
+        } catch (SQLException e) {
+            Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
+        }
     }
 
-    public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
+    private void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
-        AsyncHttpClient cliente = new AsyncHttpClient () ;
+        AsyncHttpClient cliente = new AsyncHttpClient();
         cliente.setConnectTimeout(1000);
         cliente.setResponseTimeout(1000);
-        cliente.get(url, new AsyncHttpResponseHandler () {
+        cliente.get(url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 clienteCallback.onResponse(0, statusCode, new String(responseBody));
@@ -277,15 +293,15 @@ public class Login extends AppCompatActivity {
                 clienteCallback.onResponse(1, statusCode, new String(responseBody));
             }
 
-        }) ;
+        });
 
     }
 
-    public void SincronizarMaestros(final int numeroMaestro, final String nombreMaestro , final String aliasMaestro, final String jsonString) {
+    private void SincronizarMaestros(final int numeroMaestro, final String nombreMaestro, final String aliasMaestro, final String jsonString) {
 
         if (esperaDialog != null && esperaDialog.isShowing()) {
             esperaDialog.setMessage(aliasMaestro);
-        }else{
+        } else {
             esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", aliasMaestro);
         }
         Handler handler = new Handler();
@@ -304,10 +320,10 @@ public class Login extends AppCompatActivity {
 
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String rut    = jsonObject.optString("rut");
+                                String rut = jsonObject.optString("rut");
                                 String nombre = jsonObject.optString("nombre");
                                 String codigo = jsonObject.optString("codigo");
-                                String clave  = jsonObject.optString("clave");
+                                String clave = jsonObject.optString("clave");
                                 String id_cliente_ubicacion = jsonObject.optString("id_cliente_ubicacion");
                                 qry = "INSERT INTO tb_usuario (rut, nombre, codigo, clave, id_cliente_ubicacion) VALUES " +
                                         "('" + rut + "','" + nombre + "','" + codigo + "','" + clave + "','" + id_cliente_ubicacion + "');";
@@ -319,7 +335,7 @@ public class Login extends AppCompatActivity {
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String id  = jsonObject.optString("id");
+                                String id = jsonObject.optString("id");
                                 String rut = jsonObject.optString("rut");
                                 String razon_social = jsonObject.optString("razon_social");
                                 qry = "INSERT INTO tb_cliente (id, rut, razon_social ) VALUES " +
@@ -332,14 +348,14 @@ public class Login extends AppCompatActivity {
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente_ubicaciones;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String id          = jsonObject.optString("id");
-                                String id_cliente  = jsonObject.optString("id_cliente");
+                                String id = jsonObject.optString("id");
+                                String id_cliente = jsonObject.optString("id_cliente");
                                 String descripcion = jsonObject.optString("descripcion");
-                                String direccion   = jsonObject.optString("direccion");
-                                String latitud     = jsonObject.optString("latitud");
-                                String longitud    = jsonObject.optString("longitud");
+                                String direccion = jsonObject.optString("direccion");
+                                String latitud = jsonObject.optString("latitud");
+                                String longitud = jsonObject.optString("longitud");
                                 String minutos_gratis = jsonObject.optString("minutos_gratis");
-                                String valor_minuto   = jsonObject.optString("valor_minuto");
+                                String valor_minuto = jsonObject.optString("valor_minuto");
                                 qry = "INSERT INTO tb_cliente_ubicaciones (id, id_cliente, descripcion, direccion, latitud, longitud, minutos_gratis, valor_minuto ) VALUES " +
                                         "('" + id + "','" + id_cliente + "','" + descripcion + "','" + direccion + "','" + latitud + "','" + longitud + "','" + minutos_gratis + "','" + valor_minuto + "');";
                                 AppHelper.getParkgoSQLite().execSQL(qry);
@@ -350,11 +366,11 @@ public class Login extends AppCompatActivity {
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String rut    = jsonObject.optString("rut");
+                                String rut = jsonObject.optString("rut");
                                 String nombre = jsonObject.optString("nombre");
                                 String id_cliente = jsonObject.optString("id_cliente");
-                                String clave      = jsonObject.optString("clave");
-                                String telefono   = jsonObject.optString("telefono");
+                                String clave = jsonObject.optString("clave");
+                                String telefono = jsonObject.optString("telefono");
                                 String email = jsonObject.optString("email");
                                 String saldo = jsonObject.optString("saldo");
 
@@ -368,9 +384,9 @@ public class Login extends AppCompatActivity {
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_patentes;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String id  = jsonObject.optString("id");
+                                String id = jsonObject.optString("id");
                                 String rut_conductor = jsonObject.optString("rut_conductor");
-                                String patente       = jsonObject.optString("patente");
+                                String patente = jsonObject.optString("patente");
                                 qry = "INSERT INTO tb_conductor_patentes (id, rut_conductor, patente ) VALUES " +
                                         "('" + id + "','" + rut_conductor + "','" + patente + "');";
                                 AppHelper.getParkgoSQLite().execSQL(qry);
@@ -379,47 +395,47 @@ public class Login extends AppCompatActivity {
                     }
 
                 } catch (SQLException e0) {
-                    Util.alertDialog(Login.this, "EXCEP Login", e0.getMessage());
+                    Util.alertDialog(Login.this, "SQLException Login", e0.getMessage());
                 } catch (JSONException e1) {
-                    Util.alertDialog(Login.this, "EXCEP Login", e1.getMessage());
+                    Util.alertDialog(Login.this, "JSONException Login", e1.getMessage());
                 }
 
                 g_maestro_numero++;
-                switch(g_maestro_numero){
+                switch (g_maestro_numero) {
                     case 1:
                         g_maestro_nombre = "clientes";
-                        g_maestro_alias  = "Clientes";
+                        g_maestro_alias = "2/5 Clientes";
                         break;
                     case 2:
                         g_maestro_nombre = "cliente_ubicaciones";
-                        g_maestro_alias  = "Ubicaciones por cliente";
+                        g_maestro_alias = "3/5 Ubicaciones por cliente";
                         break;
                     case 3:
                         g_maestro_nombre = "conductores";
-                        g_maestro_alias  = "Conductores";
+                        g_maestro_alias = "4/5 Conductores";
                         break;
 
                     case 4:
                         g_maestro_nombre = "conductor_patentes";
-                        g_maestro_alias  = "Patentes por conductor";
+                        g_maestro_alias = "5/5 Patentes por conductor";
                         break;
                 }
 
-               if (g_maestro_numero <= 4) {
-                   ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
+                if (g_maestro_numero <= 4) {
+                    ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
                         @Override
                         public void onResponse(int esError, int statusCode, String responseBody) {
                             if (esError == 0) {
                                 SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
-                            }else{
+                            } else {
                                 esperaDialog.dismiss();
-                                Util.alertDialog(Login.this, "ERROR Sincronización", "Código: "+statusCode + "\n" + responseBody);
+                                Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
                             }
                         }
                     });
-               }else{
-                   esperaDialog.dismiss();
-               }
+                } else {
+                    esperaDialog.dismiss();
+                }
 
             }
 
@@ -427,6 +443,36 @@ public class Login extends AppCompatActivity {
 
 
     }
+
+    private void registraUsuarioUbicacion(final String rut_usuario, final int id_ubicacion_usuario){
+
+        AppGPS.getLastLocation(new GPSCallback() {
+            @Override
+            public void onResponseSuccess(Location location) {
+                if(location != null){
+
+                    String id_usuario_ubicacion  = AppHelper.fechaHoraFormatID.format(new Date())+"_"+AppHelper.getSerialNum()+"_"+rut_usuario;
+
+                    try{
+
+                        AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_usuario_ubicaciones " +
+                                                            "(id, rut_usuario, id_cliente_ubicacion, latitud, longitud) " +
+                                                            "VALUES " +
+                                                            "('"+id_usuario_ubicacion+"','"+rut_usuario+"', "+id_ubicacion_usuario+" ," +
+                                                            "'"+ Double.toString(location.getLatitude())+"'," + "'"+Double.toString(location.getLongitude())+"');");
+
+                    }catch(SQLException e){  Util.alertDialog(Login.this, "SQLException Login",e.getMessage());   }
+
+                }
+            }
+            @Override
+            public void onResponseFailure(Exception e) {
+                Util.alertDialog(Login.this, "onResponseFailure Login",e.getMessage());
+            }
+        });
+
+    }
+
 
     /*
     protected void onStop(){

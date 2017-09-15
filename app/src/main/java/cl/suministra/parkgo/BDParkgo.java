@@ -28,6 +28,10 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[minutos] INTEGER NULL,\n" +
                            "[precio] INTEGER NULL,\n" +
                            "[prepago] INTEGER NULL,\n" +
+                           "[efectivo] INTEGER NULL,\n" +
+                           "[latitud] VARCHAR(32)  NULL,\n" +
+                           "[longitud] VARCHAR(32)  NULL,\n" +
+                           "[comentario] VARCHAR(255)  NULL,\n" +
                            "[finalizado] INTEGER NULL\n" +
                            ");\n"+
                        "DROP TABLE IF EXISTS [tb_usuario];\n"+
@@ -38,6 +42,14 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[clave] VARCHAR(10)  NULL,\n" +
                            "[id_cliente_ubicacion] INTEGER  NULL\n"+
                            ");\n" +
+                       "DROP TABLE IF EXISTS [tb_usuario_ubicaciones]; \n"+
+                        "CREATE TABLE [tb_usuario_ubicaciones] (\n" +
+                        "[id] VARCHAR(36)  NULL PRIMARY KEY,\n" +
+                        "[rut_usuario] VARCHAR(12)  NULL,\n" +
+                        "[id_cliente_ubicacion] INTEGER NULL, \n"+
+                        "[latitud] VARCHAR(32)  NULL,\n" +
+                        "[longitud] VARCHAR(32)  NULL\n" +
+                        "); \n"+
                        "DROP TABLE IF EXISTS [tb_cliente];\n"+
                        "CREATE TABLE [tb_cliente] (\n"+
                            "[id] INTEGER  NOT NULL PRIMARY KEY,\n"+

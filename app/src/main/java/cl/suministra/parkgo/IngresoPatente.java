@@ -7,15 +7,21 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -23,27 +29,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.obm.mylibrary.PrintConnect;
 import com.obm.mylibrary.PrintUnits;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import cz.msebera.android.httpclient.entity.ContentType;
-import cz.msebera.android.httpclient.entity.StringEntity;
-import cz.msebera.android.httpclient.message.BasicHeader;
-import cz.msebera.android.httpclient.protocol.HTTP;
-import cz.msebera.android.httpclient.Header;
 
 public class IngresoPatente extends AppCompatActivity {
 
@@ -55,13 +48,16 @@ public class IngresoPatente extends AppCompatActivity {
     private Spinner  SPIN_Espacios;
     private FloatingActionButton BTN_IngresoPatente;
 
+    private FloatingActionButton BTN_Comentario;
+    private String g_comentario = "";
+
     private FloatingActionButton BTN_Camara;
     private ImageView IMG_IngresoPatente;
-    private String ArchivoImagenPath;
-    private String ArchivoImagenNombre;
+    private String g_imagen_path;
+    private String g_imagen_nombre;
 
-    DateFormat fechaHoraFormat   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    DateFormat fechaHoraFormatID = new SimpleDateFormat("yyyyMMddHHmmss");
+    private String g_latitud;
+    private String g_longitud;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +108,6 @@ public class IngresoPatente extends AppCompatActivity {
         {
             @Override
             public void onClick (View v){
-
                 String patente = EDT_Patente.getText().toString();
                 if (validaPatente() == 0){
                     return;
@@ -120,8 +115,8 @@ public class IngresoPatente extends AppCompatActivity {
                 String espacios  = SPIN_Espacios.getSelectedItem().toString();
 
                 Date fechahora_in = new Date();
-                String fecha_hora_in   = fechaHoraFormat.format(fechahora_in);
-                String id_registro_patente  = fechaHoraFormatID.format(fechahora_in)+"_"+AppHelper.getSerialNum()+"_"+patente;
+                String fecha_hora_in   = AppHelper.fechaHoraFormat.format(fechahora_in);
+                String id_registro_patente  = AppHelper.fechaHoraFormatID.format(fechahora_in)+"_"+AppHelper.getSerialNum()+"_"+patente;
 
                 confirmDialog(IngresoPatente.this,"Confirme para ingresar la patente "+patente, id_registro_patente ,patente, espacios, fecha_hora_in);
 
@@ -139,10 +134,20 @@ public class IngresoPatente extends AppCompatActivity {
             }
         });
 
+
+        BTN_Comentario = (FloatingActionButton) findViewById(R.id.BTN_Comentario);
+        BTN_Comentario.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                comentarioDialog(IngresoPatente.this);
+            }
+
+        });
+
     }
 
     public void confirmDialog(Context context, String mensaje, final String id_registro_patente, final String patente, final String espacios, final String fecha_hora_in) {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder
                 .setMessage(mensaje)
                 .setPositiveButton("Si",  new DialogInterface.OnClickListener() {
@@ -160,11 +165,11 @@ public class IngresoPatente extends AppCompatActivity {
                                 Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
                             }else{ //error SQL inserta patente
                                 reiniciaIngreso();
-                                Util.alertDialog(IngresoPatente.this,"ERROR Ingreso Patente",Resultado);
+                                Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente",Resultado);
                             }
                         }else{ //error SQL consulta patente
                             reiniciaIngreso();
-                            Util.alertDialog(IngresoPatente.this,"ERROR Ingreso Patente",Resultado);
+                            Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente",Resultado);
                         }
                     }
                 })
@@ -181,8 +186,10 @@ public class IngresoPatente extends AppCompatActivity {
 
         try{
             String resultado;
-            String[] args = new String[] {patente,"0"};
-            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, patente, fecha_hora_in FROM tb_registro_patente WHERE patente =? AND finalizado =?", args);
+            String[] args = new String[] {patente, String.valueOf(AppHelper.getUbicacion_id()),"0"};
+            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, patente, fecha_hora_in " +
+                                                            "FROM tb_registro_patente " +
+                                                            "WHERE patente =? AND id_cliente_ubicacion =? AND finalizado =?", args);
             if (c.moveToFirst()){
                 String  rs_patente = c.getString(1);
                 String  rs_fecha_hora_in = c.getString(2);
@@ -201,12 +208,42 @@ public class IngresoPatente extends AppCompatActivity {
 
     private String insertaPatenteIngreso(String id_registro_patente, String patente, String espacios, String fecha_hora_in){
 
+        AppGPS.getLastLocation(new GPSCallback() {
+            @Override
+            public void onResponseSuccess(Location location) {
+                if(location != null){
+                    g_latitud  = Double.toString(location.getLatitude());
+                    g_longitud = Double.toString(location.getLongitude());
+                    Toast.makeText(IngresoPatente.this, "Get "+g_latitud,Toast.LENGTH_SHORT).show();
+                }else{
+                    g_latitud = "";
+                    g_longitud= "";
+                }
+            }
+            @Override
+            public void onResponseFailure(Exception e) {
+                Log.d(AppHelper.LOG_TAG, "Ingreso Patente onResponseFailure "+e.getMessage());
+            }
+        });
+
         try{
+            Toast.makeText(IngresoPatente.this, "Insert "+g_latitud,Toast.LENGTH_SHORT).show();
             AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patente "+
-                                                "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, enviado_in, fecha_hora_out, rut_usuario_out, maquina_out, enviado_out, minutos, finalizado)"+
+                                                "(id, id_cliente_ubicacion, patente," +
+                                                "espacios, fecha_hora_in, rut_usuario_in, " +
+                                                "maquina_in, imagen_in, enviado_in, " +
+                                                "fecha_hora_out, rut_usuario_out, maquina_out, " +
+                                                "enviado_out, minutos, precio, " +
+                                                "prepago, efectivo, latitud, " +
+                                                "longitud, comentario ,finalizado)"+
                                                 "VALUES " +
-                                                "('"+id_registro_patente+"','"+AppHelper.getUbicacion_id()+"','"+patente+"','"+espacios+"','"+fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"','"+AppHelper.getSerialNum()+"' ,'"+ArchivoImagenNombre+"', '0', '', '', '','0','0','0');");
-            // datetime('now','localtime')
+                                                "('"+id_registro_patente+"','"+AppHelper.getUbicacion_id()+"','"+patente+"'," +
+                                                "'"+espacios+"','"+fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"'," +
+                                                "'"+AppHelper.getSerialNum()+"' ,'"+g_imagen_nombre+"', '0', " +
+                                                "'', '', ''," +
+                                                "'0','0','0'," +
+                                                "'0','0','"+g_latitud+"'," +
+                                                "'"+g_longitud+"','"+g_comentario+"','0');");
         }catch(SQLException e){  return e.getMessage(); }
 
         return "1";
@@ -260,79 +297,15 @@ public class IngresoPatente extends AppCompatActivity {
         mPrintConnect.send(sb.toString());
     }
 
-    public void sinncronizaIngresoPatente(final String id_registro_patente, final String patente, final String espacios, final String fecha_hora_in) {
-
-        AsyncHttpClient client = new AsyncHttpClient () ;
-        JSONObject jsonParams  = null;
-        StringEntity entity    = null;
-        try {
-            jsonParams = new JSONObject();
-            jsonParams.put("id",id_registro_patente);
-            jsonParams.put("id_cliente_ubicacion",AppHelper.getUbicacion_id());
-            jsonParams.put("patente",patente);
-            jsonParams.put("espacios",espacios);
-            jsonParams.put("fecha_hora_in",fecha_hora_in);
-            jsonParams.put("rut_usuario_in",AppHelper.getUsuario_rut());
-            jsonParams.put("maquina_in",AppHelper.getSerialNum());
-            jsonParams.put("imagen_in",ArchivoImagenNombre);
-            jsonParams.put("enviado_in","1");
-            jsonParams.put("fecha_hora_out",fecha_hora_in);
-            jsonParams.put("rut_usuario_out","0");
-            jsonParams.put("maquina_out","0");
-            jsonParams.put("enviado_out","0");
-            jsonParams.put("minutos","0");
-            jsonParams.put("finalizado","0");
-            entity = new StringEntity(jsonParams.toString());
-
-
-            entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
-            client.post ( this.getApplicationContext () , AppHelper.getUrl_restful() + "registro_patentes/add" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
-
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-
-                    try {
-                        JSONObject jsonRootObject = new JSONObject(new String(responseBody));
-                        JSONArray jsonArray       = jsonRootObject.optJSONArray("success");
-                        if(jsonArray != null){
-                                try{
-                                    //Marca el registro como enviado.
-                                    AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente SET enviado_in = '1' WHERE id = '"+id_registro_patente+"'");
-                                }catch(SQLException e){  Util.alertDialog(IngresoPatente.this,"EXCEP SYNC Ingreso Patente",e.getMessage()); }
-                        }else{
-                            jsonArray = jsonRootObject.optJSONArray("error");
-                            if(jsonArray != null){
-                                JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                Util.alertDialog(IngresoPatente.this,"ERROR SYNC Ingreso Patente",jsonObject.optString("text"));
-                            }
-                        }
-                    } catch (JSONException e) {
-                        Util.alertDialog(IngresoPatente.this,"EXCEP SYNC Ingreso Patente",e.getMessage());
-                    }
-
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    Util.alertDialog(IngresoPatente.this,"ERROR SYNC Ingreso Patente",String.valueOf(responseBody));
-                }
-
-            });
-
-        } catch (UnsupportedEncodingException e0) {
-            Util.alertDialog(IngresoPatente.this,"EXCEP SYNC Ingreso Patente", e0.getMessage());
-        } catch (JSONException e1) {
-            Util.alertDialog(IngresoPatente.this,"EXCEP SYNC Ingreso Patente", e1.getMessage());
-        }
-
-    }
-
     private void reiniciaIngreso(){
         EDT_Patente.setText("");
         SPIN_Espacios.setSelection(0);
         IMG_IngresoPatente.setScaleType(ImageView.ScaleType.CENTER);
         IMG_IngresoPatente.setImageResource(R.drawable.ic_photo);
-        ArchivoImagenNombre = "";
+        g_imagen_nombre = "";
+        g_comentario = "";
+        g_latitud    = "";
+        g_longitud   = "";
     }
 
     private int validaPatente(){
@@ -362,7 +335,7 @@ public class IngresoPatente extends AppCompatActivity {
             try {
                 photoFile = creaArchivoImagen(patente);
             } catch (IOException ex) {
-                Util.alertDialog(IngresoPatente.this,"EXCEP IMG Ingreso Patente","Error al crear archivo imagen "+ex.getMessage());
+                Util.alertDialog(IngresoPatente.this,"IOException Ingreso Patente","Error al crear archivo imagen "+ex.getMessage());
             }
 
             if (photoFile != null) {
@@ -383,8 +356,8 @@ public class IngresoPatente extends AppCompatActivity {
                 storageDir      /* directory */
         );
         // Save a file: path for use with ACTION_VIEW intents
-        ArchivoImagenPath   = image.getAbsolutePath();
-        ArchivoImagenNombre = image.getName();
+        g_imagen_path   = image.getAbsolutePath();
+        g_imagen_nombre = image.getName();
         return image;
     }
 
@@ -392,13 +365,45 @@ public class IngresoPatente extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             //recupera muestra la imagen de la camara.
-            Bitmap imagenBitmap = BitmapFactory.decodeFile(ArchivoImagenPath);
+            Bitmap imagenBitmap = BitmapFactory.decodeFile(g_imagen_path);
             IMG_IngresoPatente.setScaleType(ImageView.ScaleType.FIT_XY);
             IMG_IngresoPatente.setImageBitmap(imagenBitmap);
         }else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_CANCELED) {
-            File file = new File(ArchivoImagenPath);
+            File file = new File(g_imagen_path);
             file.delete();
         }
+    }
+
+    private void comentarioDialog(Context context) {
+
+        final EditText EDT_Comentario = new EditText(context);
+        EDT_Comentario.setSingleLine(false);
+        EDT_Comentario.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
+        EDT_Comentario.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        EDT_Comentario.setLines(1);
+        EDT_Comentario.setMaxLines(10);
+        EDT_Comentario.setVerticalScrollBarEnabled(true);
+        EDT_Comentario.setMovementMethod(ScrollingMovementMethod.getInstance());
+        EDT_Comentario.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
+        EDT_Comentario.setText(g_comentario);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Agregar comentario");
+        builder.setView(EDT_Comentario);
+        builder.setPositiveButton("Agregar",  new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                g_comentario = EDT_Comentario.getText().toString();
+            }
+        });
+        builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog,int id) {
+                g_comentario = "";
+                dialog.cancel();
+            }
+        });
+        builder.show();
     }
 
     @Override

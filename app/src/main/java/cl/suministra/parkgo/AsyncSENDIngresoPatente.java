@@ -120,12 +120,27 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                 String rs_rut_usuario_in = c.getString(5);
                 String rs_maquina_in     = c.getString(6);
                 String rs_archivo_imagen_nombre = c.getString(7);
+                //ruta completa del archivo imagen
+                String archivo_imagen_ruta = AppHelper.getImageDir(App.context).getAbsolutePath()+"/"+rs_archivo_imagen_nombre;
                 c.close();
-                //sube la imagen primero, si logra subirla entonces inserta el registro
-                uploadImage(rs_id, rs_id_cliente_ubicacion, rs_patente, rs_espacios,
-                            rs_fecha_hora_in, rs_rut_usuario_in, rs_maquina_in,
-                            AppHelper.getImageDir(App.context).getAbsolutePath()+"/"+rs_archivo_imagen_nombre,
-                            rs_archivo_imagen_nombre);
+
+                //si existe imagen, entonces la sube primero y luego inserta el registro
+                if (!rs_archivo_imagen_nombre.trim().isEmpty()) {
+                    Log.d(AppHelper.LOG_TAG,"con imagen "+rs_archivo_imagen_nombre);
+
+                    File imagen = new File(archivo_imagen_ruta);
+                    if (imagen.exists()) {
+                        uploadImage(rs_id, rs_id_cliente_ubicacion, rs_patente, rs_espacios,
+                                rs_fecha_hora_in, rs_rut_usuario_in, rs_maquina_in,
+                                archivo_imagen_ruta, rs_archivo_imagen_nombre, imagen);
+                    }
+
+                }else{ //sino envia los registros
+                    Log.d(AppHelper.LOG_TAG,"sin imagen "+rs_archivo_imagen_nombre);
+                    sincronizaIngresoPatente(rs_id, rs_id_cliente_ubicacion, rs_patente, rs_espacios,
+                            rs_fecha_hora_in, rs_rut_usuario_in, rs_maquina_in, rs_archivo_imagen_nombre);
+                }
+
             }
             c.close();
 
@@ -136,7 +151,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
 
     private void uploadImage(final String id_registro_patente, final int id_cliente_ubicacion, final String patente,
                              final int espacios, final String fecha_hora_in, final String rut_usuario_in,
-                             final String maquina_in, final String archivo_imagen_ruta, final String archivo_imagen_nombre)
+                             final String maquina_in, final String archivo_imagen_ruta, final String archivo_imagen_nombre, final File imagen)
     {
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, uploadURL, new Response.Listener<String>() {
@@ -144,17 +159,14 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
             public void onResponse(String response) {
 
                 try {
-
                     JSONObject jsonRootObject = new JSONObject(new String(response));
                     JSONArray jsonArray       = jsonRootObject.optJSONArray("success");
                     if(jsonArray != null){
                         JSONObject jsonObject = jsonArray.getJSONObject(0);
                         Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente "+jsonObject.optString("text"));
+                        imagen.delete();
 
-                        File file = new File(archivo_imagen_ruta);
-                        file.delete();
-
-                        sinncronizaIngresoPatente(id_registro_patente, id_cliente_ubicacion, patente, espacios,
+                        sincronizaIngresoPatente(id_registro_patente, id_cliente_ubicacion, patente, espacios,
                                 fecha_hora_in, rut_usuario_in, maquina_in, archivo_imagen_nombre);
                     }else{
                         jsonArray = jsonRootObject.optJSONArray("error");
@@ -188,7 +200,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
 
     }
 
-    public void sinncronizaIngresoPatente(final String id_registro_patente, final int id_cliente_ubicacion, final String patente, final int espacios,
+    public void sincronizaIngresoPatente(final String id_registro_patente, final int id_cliente_ubicacion, final String patente, final int espacios,
                                           final String fecha_hora_in, final String rut_usuario_in, final String maquina_in, final String archivo_imagen_nombre) {
 
         cliente = new AsyncHttpClient();
@@ -213,6 +225,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
             jsonParams.put("minutos",0);
             jsonParams.put("precio",0);
             jsonParams.put("prepago",0);
+            jsonParams.put("efectivo",0);
             jsonParams.put("finalizado",0);
             entity = new StringEntity(jsonParams.toString());
 

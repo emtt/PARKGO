@@ -141,9 +141,20 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                     String imagen_in      = jsonObject.optString("imagen_in");
 
                     qry =   "INSERT INTO tb_registro_patente "+
-                            "(id, id_cliente_ubicacion, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, imagen_in, enviado_in, fecha_hora_out, rut_usuario_out, maquina_out, enviado_out, minutos, precio, prepago, finalizado)"+
+                                "(id, id_cliente_ubicacion, patente, " +
+                                 "espacios, fecha_hora_in, rut_usuario_in, " +
+                                 "maquina_in, imagen_in, enviado_in, " +
+                                 "fecha_hora_out, rut_usuario_out, maquina_out, " +
+                                 "enviado_out, minutos, precio, " +
+                                 "prepago, efectivo, finalizado)"+
                             "VALUES " +
-                            "('"+id_registro_patente+"','"+id_cliente_ubicacion+"','"+patente+"','"+espacios+"','"+fecha_hora_in+"' ,'"+rut_usuario_in+"','"+maquina_in+"' ,'"+imagen_in+"', '1', '', '', '','0','0','0','0','0');";
+                                "('"+id_registro_patente+"','"+id_cliente_ubicacion+"','"+patente+"'," +
+                                 "'"+espacios+"','"+fecha_hora_in+"' ,'"+rut_usuario_in+"'," +
+                                 "'"+maquina_in+"' ,'"+imagen_in+"', '1'," +
+                                 "'', '', ''," +
+                                 "'0','0','0'," +
+                                 "'0','0','0');";
+
                     AppHelper.getParkgoSQLite().execSQL(qry);
                     Log.d(AppHelper.LOG_TAG, qry);
                 }
