@@ -64,6 +64,7 @@ public class IngresoPatente extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ingreso_patente);
+        this.setTitle("Ingresar Vehículo");
         appGPS = new AppGPS();
         //mPrintConnect = new PrintConnect(this);
         inicio();

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/content_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/content_padding_left"
+    android:paddingRight="@dimen/content_padding_right">
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/space"
+        android:layout_height="15dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/activity_text_size_small"
+        android:text=" "
+        android:id="@+id/LB_Servidor"
+        android:layout_below="@+id/space"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_text_height"
+        android:paddingLeft="@dimen/activity_text_padding"
+        android:paddingRight="@dimen/activity_text_padding"
+        android:id="@+id/EDT_Servidor"
+        android:layout_below="@+id/LB_Servidor"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/text_border_selector"
+        android:hint="URL Servidor"
+        android:drawableLeft="@drawable/ic_computer_18dp"
+        android:drawablePadding="5dp"
+        android:inputType="textPersonName"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/activity_text_padding"
+        android:text=" "
+        android:textColor="@color/alert"
+        android:id="@+id/MSJ_Servidor"
+        android:layout_below="@+id/EDT_Servidor"
+        android:layout_centerHorizontal="true" />
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/activity_text_size_small"
+        android:text=" "
+        android:id="@+id/LB_PaginaTest"
+        android:layout_below="@+id/MSJ_Servidor"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_text_height"
+        android:paddingLeft="@dimen/activity_text_padding"
+        android:paddingRight="@dimen/activity_text_padding"
+        android:id="@+id/EDT_PaginaTest"
+        android:layout_below="@+id/LB_PaginaTest"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/text_border_selector"
+        android:hint="Página de Test"
+        android:drawableLeft="@drawable/ic_find_in_page_18dp"
+        android:drawablePadding="5dp"
+        android:inputType="textPersonName"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/activity_text_padding"
+        android:text=" "
+        android:textColor="@color/alert"
+        android:id="@+id/MSJ_PaginaTest"
+        android:layout_below="@+id/EDT_PaginaTest"
+        android:layout_centerHorizontal="true" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/space2"
+        android:layout_height="15dp"
+        android:layout_below="@+id/MSJ_PaginaTest"/>
+
+    <Button
+        android:layout_height="@dimen/activity_button_height"
+        android:layout_width="match_parent"
+        android:id="@+id/BTN_Guardar"
+        android:textColor="@color/white"
+        android:text="Guardar"
+        android:layout_centerHorizontal="true"
+        android:textSize="@dimen/activity_button_text_size"
+        android:textAllCaps="false"
+        android:background="@drawable/button_selector"
+        android:layout_below="@+id/space2"/>
+
+</RelativeLayout>

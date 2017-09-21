@@ -2,22 +2,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="cl.suministra.parkgo">
 
-    <uses-feature android:name="android.hardware.camera"  android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:name="cl.suministra.parkgo.App">
+        android:theme="@style/AppTheme">
         <activity
             android:name=".Login"
             android:label="@string/app_name">
@@ -30,7 +32,8 @@
         <activity android:name=".Menu" />
         <activity android:name=".IngresoPatente" />
         <activity android:name=".RetiroPatente" />
-        <activity android:name=".ListaPatente"></activity>
+        <activity android:name=".ListaPatente" />
+        <activity android:name=".Configuracion"/>
     </application>
 
 </manifest>

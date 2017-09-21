@@ -97,6 +97,7 @@ public class RetiroPatente extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_retiro_patente);
+        this.setTitle("Retirar Vehículo");
         //mPrintConnect = new PrintConnect(this);
         //mScanConnect  = new ScanConnect(this, mHandler);
         inicio();

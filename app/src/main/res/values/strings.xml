@@ -6,4 +6,6 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+    <string name="abrir">Abrir</string>
+    <string name="cerrar">Cerrar</string>
 </resources>

@@ -43,7 +43,6 @@ import cz.msebera.android.httpclient.protocol.HTTP;
 public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
 
     private AsyncHttpClient cliente = null;
-    private String uploadURL  =  AppHelper.getUrl_restful() + "imagenes_up";
 
     public void cancelTask(AsyncSENDIngresoPatente asyncSENDIngresoPatente) {
         if (asyncSENDIngresoPatente == null) return;
@@ -161,7 +160,9 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                              final String latitud, final String longitud, final String comentario)
     {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, uploadURL, new Response.Listener<String>() {
+
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST,  AppHelper.getUrl_restful() + "imagenes_up", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
@@ -240,6 +241,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
             jsonParams.put("comentario",comentario);
             jsonParams.put("finalizado",0);
             entity = new StringEntity(jsonParams.toString());
+
 
             entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
             cliente.post(App.context, AppHelper.getUrl_restful() + "registro_patentes/add_in" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {

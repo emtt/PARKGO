@@ -1,6 +1,8 @@
 package cl.suministra.parkgo;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -9,21 +11,23 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderApi;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.loopj.android.http.*;
 
 import org.json.JSONArray;
@@ -38,6 +42,8 @@ import cz.msebera.android.httpclient.Header;
 public class Login extends AppCompatActivity {
 
     /* Activity */
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
     private EditText EDT_UsuarioCodigo;
     private EditText EDT_UsuarioClave;
     private Button BTN_Login;
@@ -57,32 +63,27 @@ public class Login extends AppCompatActivity {
     AsyncSENDRetiroPatente asyncSENDRetiroPatente;
     AsyncGETRetiroPatente asyncGETRetiroPatente;
 
+    AsyncSENDUbicacionUsuario asyncSENDUbicacionUsuario;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        this.setTitle("PARKGO");
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.abrir, R.string.cerrar);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         AppHelper.initParkgoDB(this);
         AppHelper.initSerialNum(this);
         appGPS = new AppGPS();
-
-        //inicia la tarea de envio patenes ingresadas.
-        asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
-        asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-        //inicia la tarea de envio patenes retiradas.
-        asyncSENDRetiroPatente = new AsyncSENDRetiroPatente();
-        asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-        //inicia la tarea que recibe patentes ingresadas externas.
-        asyncGETIngresoPatente = new AsyncGETIngresoPatente();
-        asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-        //inicia la tarea que recibe patentes retiradas externas.
-        asyncGETRetiroPatente = new AsyncGETRetiroPatente();
-        asyncGETRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
         init();
+
+        verficaServidorConfigurado();
+
     }
 
     private void init() {
@@ -153,7 +154,10 @@ public class Login extends AppCompatActivity {
         {
             @Override
             public void onClick(View v) {
-                loginUsuario();
+                if (!verficaServidorConfigurado()){
+                }else {
+                    loginUsuario();
+                }
             }
 
         });
@@ -165,31 +169,34 @@ public class Login extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (Util.internetStatus(Login.this)) {
+                if (!verficaServidorConfigurado()){
+                }else {
+                    if (Util.internetStatus(Login.this)) {
 
-                    g_maestro_numero = 0;
-                    g_maestro_nombre = "usuarios";
-                    g_maestro_alias = "1/5 Usuarios";
+                        g_maestro_numero = 0;
+                        g_maestro_nombre = "configuracion";
+                        g_maestro_alias = "1/6 Configuración";
 
-                    if (esperaDialog != null && esperaDialog.isShowing()) {
-                        esperaDialog.setMessage(g_maestro_alias);
-                    } else {
-                        esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", g_maestro_alias);
-                    }
-
-                    ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
-                        @Override
-                        public void onResponse(int esError, int statusCode, String responseBody) {
-                            if (esError == 0) {
-                                SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
-                            } else {
-                                esperaDialog.dismiss();
-                                Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
-                            }
+                        if (esperaDialog != null && esperaDialog.isShowing()) {
+                            esperaDialog.setMessage(g_maestro_alias);
+                        } else {
+                            esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", g_maestro_alias);
                         }
-                    });
-                } else {
-                    Util.alertDialog(Login.this, "ErrorSync Login", "Verifique conexión a Internet");
+
+                        ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
+                            @Override
+                            public void onResponse(int esError, int statusCode, String responseBody) {
+                                if (esError == 0) {
+                                    SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                                } else {
+                                    esperaDialog.dismiss();
+                                    Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
+                                }
+                            }
+                        });
+                    } else {
+                        Util.alertDialog(Login.this, "ErrorSync Login", "Verifique conexión a Internet");
+                    }
                 }
 
             }
@@ -320,7 +327,23 @@ public class Login extends AppCompatActivity {
                     JSONArray jsonArray = jsonRootObject.optJSONArray(nombreMaestro);
 
                     switch (numeroMaestro) {
+
                         case 0:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_configuracion;");
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                int codigo     = jsonObject.optInt("codigo");
+                                String seccion = jsonObject.optString("seccion");
+                                String clave   = jsonObject.optString("clave");
+                                String valor   = jsonObject.optString("valor");
+                                qry = "INSERT INTO tb_configuracion (codigo, seccion, clave, valor) VALUES " +
+                                        "('" + codigo + "','" + seccion + "','" + clave + "','" + valor + "');";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
+                        case 1:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_usuario;");
 
                             for (int i = 0; i < jsonArray.length(); i++) {
@@ -336,7 +359,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 1:
+                        case 2:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -349,7 +372,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 2:
+                        case 3:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente_ubicaciones;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -367,7 +390,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 3:
+                        case 4:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -385,7 +408,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 4:
+                        case 5:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_patentes;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -408,25 +431,28 @@ public class Login extends AppCompatActivity {
                 g_maestro_numero++;
                 switch (g_maestro_numero) {
                     case 1:
-                        g_maestro_nombre = "clientes";
-                        g_maestro_alias = "2/5 Clientes";
+                        g_maestro_nombre = "usuarios";
+                        g_maestro_alias = "2/6 Usuarios";
                         break;
                     case 2:
-                        g_maestro_nombre = "cliente_ubicaciones";
-                        g_maestro_alias = "3/5 Ubicaciones por cliente";
+                        g_maestro_nombre = "clientes";
+                        g_maestro_alias = "3/6 Clientes";
                         break;
                     case 3:
-                        g_maestro_nombre = "conductores";
-                        g_maestro_alias = "4/5 Conductores";
+                        g_maestro_nombre = "cliente_ubicaciones";
+                        g_maestro_alias = "4/6 Ubicaciones por cliente";
                         break;
-
                     case 4:
+                        g_maestro_nombre = "conductores";
+                        g_maestro_alias = "5/6 Conductores";
+                        break;
+                    case 5:
                         g_maestro_nombre = "conductor_patentes";
-                        g_maestro_alias = "5/5 Patentes por conductor";
+                        g_maestro_alias = "6/6 Patentes por conductor";
                         break;
                 }
 
-                if (g_maestro_numero <= 4) {
+                if (g_maestro_numero <= 5) {
                     ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
                         @Override
                         public void onResponse(int esError, int statusCode, String responseBody) {
@@ -455,14 +481,17 @@ public class Login extends AppCompatActivity {
             @Override
             public void onResponseSuccess(Location location) {
                 if(location != null){
+
+
+                    String fecha_hora   = AppHelper.fechaHoraFormat.format(new Date());
                     String id_usuario_ubicacion  = AppHelper.fechaHoraFormatID.format(new Date())+"_"+AppHelper.getSerialNum()+"_"+rut_usuario;
                     try{
 
                         AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_usuario_ubicaciones " +
-                                                            "(id, rut_usuario, id_cliente_ubicacion, latitud, longitud, enviado) " +
+                                                            "(id, rut_usuario, id_cliente_ubicacion, latitud, longitud, fecha_hora, enviado) " +
                                                             "VALUES " +
                                                             "('"+id_usuario_ubicacion+"','"+rut_usuario+"', "+id_ubicacion_usuario+" ," +
-                                                            "'"+ Double.toString(location.getLatitude())+"'," + "'"+Double.toString(location.getLongitude())+"','0');");
+                                                            "'"+ Double.toString(location.getLatitude())+"'," + "'"+Double.toString(location.getLongitude())+"', '"+fecha_hora+"', '0');");
 
                     }catch(SQLException e){  Util.alertDialog(Login.this, "SQLException Login",e.getMessage());   }
 
@@ -473,6 +502,79 @@ public class Login extends AppCompatActivity {
                 Util.alertDialog(Login.this, "onResponseFailure Login",e.getMessage());
             }
         });
+
+    }
+
+    private boolean verficaServidorConfigurado(){
+
+        String[] args = new String[] {"SERVER", "IP"};
+        Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT valor FROM tb_configuracion "+
+                                                        "WHERE seccion =? AND clave =? ", args);
+        if (c.moveToFirst()){
+            AppHelper.setUrl_restful(c.getString(0));
+            c.close();
+
+            //inicia la tarea de envio patenes ingresadas.
+            asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
+            asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            //inicia la tarea de envio patenes retiradas.
+            asyncSENDRetiroPatente = new AsyncSENDRetiroPatente();
+            asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            //inicia la tarea que recibe patentes ingresadas externas.
+            asyncGETIngresoPatente = new AsyncGETIngresoPatente();
+            asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            //inicia la tarea que recibe patentes retiradas externas.
+            asyncGETRetiroPatente = new AsyncGETRetiroPatente();
+            asyncGETRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            //inicia la tarea de envío ubicación usuario.
+            asyncSENDUbicacionUsuario = new AsyncSENDUbicacionUsuario();
+            asyncSENDUbicacionUsuario.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            return true;
+        }else{
+            c.close();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Información importante!");
+            builder.setMessage("No se encuentra configurado el servidor de aplicaciones, verifique");
+            builder.setPositiveButton("Configurar",  new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    Intent intent = new Intent(Login.this, Configuracion.class);
+                    startActivity(intent);
+                }
+            });
+            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog,int id) {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
+
+            return false;
+        }
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (actionBarDrawerToggle.onOptionsItemSelected(item)){
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+
+    }
+
+    public void abrirConfiguracion(MenuItem item){
+
+        Intent intent = new Intent(this, Configuracion.class);
+        startActivity(intent);
 
     }
 

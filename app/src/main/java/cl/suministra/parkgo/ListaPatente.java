@@ -35,6 +35,7 @@ public class ListaPatente extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_patente);
+        this.setTitle("Listado de Vehículos Pendientes");
         inicio();
     }
 

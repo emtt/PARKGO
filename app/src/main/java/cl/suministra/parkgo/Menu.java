@@ -37,7 +37,7 @@ public class Menu extends AppCompatActivity {
 
         Date fecha_actual = new Date();
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        this.setTitle("PARKGO "+dateFormat.format(fecha_actual));
+        this.setTitle("Menú");
 
         TV_Num_Serie_Equipo       = (TextView) findViewById(R.id.TV_Num_Serie_Equipo);
         TV_Num_Serie_Equipo.setText("N° Serie:    "+AppHelper.getSerialNum());
