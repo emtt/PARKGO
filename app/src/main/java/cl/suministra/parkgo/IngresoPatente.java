@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,7 +28,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.obm.mylibrary.PrintConnect;
 import com.obm.mylibrary.PrintUnits;
@@ -137,7 +137,6 @@ public class IngresoPatente extends AppCompatActivity {
             }
         });
 
-
         BTN_Comentario = (FloatingActionButton) findViewById(R.id.BTN_Comentario);
         BTN_Comentario.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -171,16 +170,12 @@ public class IngresoPatente extends AppCompatActivity {
                                         g_latitud = "";
                                         g_longitud= "";
                                     }
-                                    Toast.makeText(IngresoPatente.this, "Succ Latitud "+g_latitud, Toast.LENGTH_SHORT).show();
-
                                     insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
                                 }
                                 @Override
                                 public void onResponseFailure(Exception e) {
                                     g_latitud = "";
                                     g_longitud= "";
-                                    Toast.makeText(IngresoPatente.this, "Fail Latitud "+g_latitud, Toast.LENGTH_SHORT).show();
-
                                     insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
                                     Log.d(AppHelper.LOG_TAG, "Ingreso Patente onResponseFailure "+e.getMessage());
                                 }
@@ -316,6 +311,8 @@ public class IngresoPatente extends AppCompatActivity {
         g_comentario = "";
         g_latitud    = "";
         g_longitud   = "";
+        BTN_Comentario.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue));
+        BTN_Camara.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue));
     }
 
     private int validaPatente(){
@@ -365,6 +362,15 @@ public class IngresoPatente extends AppCompatActivity {
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
+        //elimina la imagen anterior para reemplazarla por la actual.
+        if(!g_imagen_path.isEmpty()) {
+            File file = new File(g_imagen_path);
+            if(file.delete()){
+                IMG_IngresoPatente.setScaleType(ImageView.ScaleType.CENTER);
+                IMG_IngresoPatente.setImageResource(R.drawable.ic_photo);
+            }
+        }
+
         // Save a file: path for use with ACTION_VIEW intents
         g_imagen_path   = image.getAbsolutePath();
         g_imagen_nombre = image.getName();
@@ -378,11 +384,13 @@ public class IngresoPatente extends AppCompatActivity {
             Bitmap imagenBitmap = BitmapFactory.decodeFile(g_imagen_path);
             IMG_IngresoPatente.setScaleType(ImageView.ScaleType.FIT_XY);
             IMG_IngresoPatente.setImageBitmap(imagenBitmap);
+            BTN_Camara.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.orange));
         }else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_CANCELED) {
-            g_imagen_nombre = "";
-            g_imagen_path   = "";
             File file = new File(g_imagen_path);
             file.delete();
+            g_imagen_nombre = "";
+            g_imagen_path   = "";
+            BTN_Camara.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue));
         }
     }
 
@@ -405,12 +413,15 @@ public class IngresoPatente extends AppCompatActivity {
         builder.setPositiveButton("Agregar",  new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
+                BTN_Comentario.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.orange));
                 g_comentario = EDT_Comentario.getText().toString();
+
             }
         });
         builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog,int id) {
+                BTN_Comentario.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue));
                 g_comentario = "";
                 dialog.cancel();
             }

@@ -1,6 +1,5 @@
 package cl.suministra.parkgo;
 
-import android.content.Context;
 import android.database.SQLException;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -12,6 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import cz.msebera.android.httpclient.Header;
@@ -40,15 +41,7 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
         try {
             int i = 1;
             do{
-                if(Util.internetStatus(App.context)){
-                    publishProgress(i);
-                }else{
-                    if (cliente != null) {
-                        i = 0;
-                        cliente.cancelRequests(App.context, true);
-                        Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente cancelRequests");
-                    }
-                }
+                publishProgress(i);
                 i++;
                 TimeUnit.SECONDS.sleep(1);
                 isCancelled();
@@ -114,10 +107,11 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                 Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure " + error.getMessage());
-                clienteCallback.onResponse(1, statusCode, new String(responseBody));
+                cliente.cancelRequests(App.context, true);
+                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure cancelRequests");
             }
 
-        }) ;
+        });
     }
 
     private void insertaIngresoPatentesExternas(String jsonString){

@@ -20,7 +20,6 @@ public class ListaPatente extends AppCompatActivity {
 
 
     private ListView LST_Patente;
-    private ImageView IMG_Vehiculo;
     private TextView TV_Patente;
     private TextView TV_Fecha_IN;
     private TextView TV_Usuario_IN;

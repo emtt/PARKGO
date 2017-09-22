@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -60,22 +62,14 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
         try {
             int i = 1;
             do{
-                if(Util.internetStatus(App.context)){
-                    publishProgress(i);
-                }else{
-                    if (cliente != null) {
-                        i = 0;
-                        cliente.cancelRequests(App.context, true);
-                        Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente cancelRequests");
-                    }
-                }
+                publishProgress(i);
                 i++;
                 TimeUnit.SECONDS.sleep(1);
                 isCancelled();
             }while(!isCancelled());
         } catch (InterruptedException e) {
             Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente InterruptedException "+e.getMessage());
-        }
+        } 
         return true;
     }
 
@@ -276,6 +270,8 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                     Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente onFailure "+error.getMessage());
+                    cliente.cancelRequests(App.context, true);
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente onFailure cancelRequests");
                 }
 
             });

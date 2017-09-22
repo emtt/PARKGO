@@ -1,6 +1,5 @@
 package cl.suministra.parkgo;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.os.AsyncTask;
@@ -14,6 +13,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import cz.msebera.android.httpclient.Header;
@@ -30,6 +31,11 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
     private AsyncHttpClient cliente = null;
 
+    public void cancelTask(AsyncSENDRetiroPatente asyncSENDRetiroPatente) {
+        if (asyncSENDRetiroPatente == null) return;
+        asyncSENDRetiroPatente.cancel(false);
+    }
+
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
@@ -41,16 +47,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
         try {
             int i = 1;
             do{
-                if(Util.internetStatus(App.context)){
-                    publishProgress(i);
-                }else{
-                    if (cliente != null) {
-                        i = 0;
-                        cliente.cancelRequests(App.context, true);
-                        Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente cancelRequests");
-                    }
-                }
-
+                publishProgress(i);
                 i++;
                 TimeUnit.SECONDS.sleep(1);
                 isCancelled();
@@ -159,6 +156,8 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                     Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onFailure "+error.getMessage());
+                    cliente.cancelRequests(App.context, true);
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onFailure cancelRequests");
                 }
 
             });

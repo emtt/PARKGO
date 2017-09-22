@@ -35,7 +35,8 @@ public class Configuracion extends AppCompatActivity {
     private Button BTN_Guardar;
     private ProgressDialog esperaDialog;
 
-    private boolean EXISTE_SERVIDOR_IP;
+    private boolean EXISTE_SERVIDOR_URL;
+    private boolean EXISTE_SERVIDOR_PAGINA_TEST;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,15 +131,20 @@ public class Configuracion extends AppCompatActivity {
 
     private void getConfiguracion(){
 
-        EXISTE_SERVIDOR_IP = false;
+        EXISTE_SERVIDOR_URL = false;
+        EXISTE_SERVIDOR_PAGINA_TEST = false;
 
         Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT seccion, clave, valor FROM tb_configuracion", null);
         if (c.moveToFirst()){
           do {
-              if (c.getString(0).equals("SERVER") && c.getString(1).equals("IP")) {
-                  EXISTE_SERVIDOR_IP = true;
+              if (c.getString(0).equals("SERVER") && c.getString(1).equals("URL")) {
+                  EXISTE_SERVIDOR_URL = true;
                   EDT_Servidor.setText(c.getString(2));
+              }else if (c.getString(0).equals("SERVER") && c.getString(1).equals("PAGINA_TEST")) {
+                  EXISTE_SERVIDOR_PAGINA_TEST = true;
+                  EDT_PaginaTest.setText(c.getString(2));
               }
+
           }while(c.moveToNext());
 
         }
@@ -170,23 +176,29 @@ public class Configuracion extends AppCompatActivity {
         }
 
         try {
+
             URL url = new URL(Servidor+Pagina_Test);
-            if(!checkUrl(url)){
+            if(!Util.verificaURL(Configuracion.this, url)){
                 return;
             }
+
         } catch (MalformedURLException e) {
             Util.alertDialog(Configuracion.this, "MalformedURLException Configuración", e.getMessage());
-            return;
-        } catch (IOException e) {
-            Util.alertDialog(Configuracion.this, "IOException Configuración", e.getMessage());
             return;
         }
 
         try{
-            if(EXISTE_SERVIDOR_IP){
-                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_configuracion SET valor = '"+EDT_Servidor.getText().toString()+"' WHERE seccion = 'SERVER' AND clave = 'IP'");
+
+            if(EXISTE_SERVIDOR_URL){
+                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_configuracion SET valor = '"+EDT_Servidor.getText().toString()+"' WHERE seccion = 'SERVER' AND clave = 'URL'");
             }else{
-                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_configuracion (seccion, clave, valor) VALUES ('SERVER', 'IP', '"+EDT_Servidor.getText()+"');");
+                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_configuracion (seccion, clave, valor) VALUES ('SERVER', 'URL', '"+EDT_Servidor.getText()+"');");
+            }
+
+            if(EXISTE_SERVIDOR_PAGINA_TEST){
+                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_configuracion SET valor = '"+EDT_PaginaTest.getText().toString()+"' WHERE seccion = 'SERVER' AND clave = 'PAGINA_TEST'");
+            }else{
+                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_configuracion (seccion, clave, valor) VALUES ('SERVER', 'PAGINA_TEST', '"+EDT_PaginaTest.getText()+"');");
             }
 
         }catch(SQLException e){
@@ -197,46 +209,5 @@ public class Configuracion extends AppCompatActivity {
         Util.alertDialog(Configuracion.this, "Configuración", "Configuración grabada correctamente");
     }
 
-
-    private boolean checkUrl(URL url) throws IOException {
-        InputStream stream = null;
-        HttpURLConnection connection = null;
-        try {
-            connection = (HttpURLConnection) url.openConnection();
-            // Timeout for reading InputStream arbitrarily set to 3000ms.
-            connection.setReadTimeout(3000);
-            // Timeout for connection.connect() arbitrarily set to 3000ms.
-            connection.setConnectTimeout(3000);
-            // For this use case, set HTTP method to GET.
-            connection.setRequestMethod("GET");
-            // Already true by default but setting just in case; needs to be true since this request
-            // is carrying an input (response) body.
-            connection.setDoInput(true);
-            // Open communications link (network traffic occurs here).
-            connection.connect();
-            int responseCode   = connection.getResponseCode();
-            String responseMsj = connection.getResponseMessage();
-            if (responseCode != HttpsURLConnection.HTTP_OK) {
-                Util.alertDialog(Configuracion.this, "HTTP Error Configuración", "Error code: "+responseCode+ "\n" + responseMsj);
-                return false;
-            } else {
-                Log.d(AppHelper.LOG_TAG, "responseCode "+responseCode + " "+ responseMsj);
-                return true;
-            }
-        } catch (IOException e) {
-                Util.alertDialog(Configuracion.this, "IOException Configuración", e.getMessage());
-                return false;
-        } finally {
-            // Close Stream and disconnect HTTP connection.
-            if (stream != null) {
-                stream.close();
-            }
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-
-
-    }
 
 }

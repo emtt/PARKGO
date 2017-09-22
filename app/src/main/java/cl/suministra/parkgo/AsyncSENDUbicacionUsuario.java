@@ -13,6 +13,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import cz.msebera.android.httpclient.Header;
@@ -29,6 +31,11 @@ public class AsyncSENDUbicacionUsuario extends AsyncTask<Void, Integer,  Boolean
 
     private AsyncHttpClient cliente = null;
 
+    public void cancelTask(AsyncSENDUbicacionUsuario asyncSENDUbicacionUsuario) {
+        if (asyncSENDUbicacionUsuario == null) return;
+        asyncSENDUbicacionUsuario.cancel(false);
+    }
+
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
@@ -39,17 +46,8 @@ public class AsyncSENDUbicacionUsuario extends AsyncTask<Void, Integer,  Boolean
     protected Boolean doInBackground(Void... params) {
         try {
             int i = 1;
-            do{
-                if(Util.internetStatus(App.context)){
-                    publishProgress(i);
-                }else{
-                    if (cliente != null) {
-                        i = 0;
-                        cliente.cancelRequests(App.context, true);
-                        Log.d(AppHelper.LOG_TAG, "AsyncSENDUbicacionUsuario cancelRequests");
-                    }
-                }
-
+             do{
+                publishProgress(i);
                 i++;
                 TimeUnit.SECONDS.sleep(1);
                 isCancelled();
@@ -153,6 +151,8 @@ public class AsyncSENDUbicacionUsuario extends AsyncTask<Void, Integer,  Boolean
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                     Log.d(AppHelper.LOG_TAG, "AsyncSENDUbicacionUsuario onFailure "+error.getMessage());
+                    cliente.cancelRequests(App.context, true);
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDUbicacionUsuario onFailure cancelRequests");
                 }
 
             });

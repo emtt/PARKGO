@@ -91,18 +91,17 @@
         app:srcCompat="@drawable/ic_photo" />
 
 
-<!--
-    <Button
-        android:id="@+id/BTN_IngresoPatente"
-        android:layout_width="match_parent"
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/BTN_Comentario"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_selector"
-        android:text="ACEPTAR"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="@dimen/activity_button_text_size"
-        android:layout_alignParentBottom="true" />
-        -->
+        android:clickable="true"
+        app:backgroundTint="?attr/colorPrimary"
+        app:elevation="10dp"
+        app:fabSize="normal"
+        app:srcCompat="@drawable/ic_message_18dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/BTN_Camara"
@@ -116,17 +115,6 @@
         app:fabSize="normal"
         app:srcCompat="@drawable/ic_camera_18dp" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/BTN_Comentario"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:clickable="true"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="10dp"
-        app:fabSize="normal"
-        app:srcCompat="@drawable/ic_message_18dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/BTN_IngresoPatente"
@@ -139,6 +127,10 @@
         app:elevation="10dp"
         app:fabSize="normal"
         app:srcCompat="@drawable/ic_save_18dp" />
+
+
+
+
 
 
 </RelativeLayout>

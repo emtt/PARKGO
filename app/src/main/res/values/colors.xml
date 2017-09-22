@@ -10,6 +10,7 @@
     <color name="success">#37a51c</color>
     <color name="warning">#e94700</color>
 
+
     <!--botones -->
     <color name="button_default">#329ad6</color>
     <color name="button_pressed">#2a5c91</color>
@@ -22,6 +23,7 @@
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
     <color name="blue">#3F51B5</color>
+    <color name="orange">#e94700</color>
 
 
 </resources>

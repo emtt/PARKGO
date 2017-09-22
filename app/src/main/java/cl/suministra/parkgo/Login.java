@@ -1,7 +1,6 @@
 package cl.suministra.parkgo;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -11,22 +10,18 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.loopj.android.http.*;
 
@@ -69,6 +64,8 @@ public class Login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         setContentView(R.layout.activity_login);
         this.setTitle("PARKGO");
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
@@ -171,33 +168,31 @@ public class Login extends AppCompatActivity {
 
                 if (!verficaServidorConfigurado()){
                 }else {
-                    if (Util.internetStatus(Login.this)) {
 
-                        g_maestro_numero = 0;
-                        g_maestro_nombre = "configuracion";
-                        g_maestro_alias = "1/6 Configuración";
+                    g_maestro_numero = 0;
+                    g_maestro_nombre = "configuracion";
+                    g_maestro_alias = "1/6 Configuración";
 
-                        if (esperaDialog != null && esperaDialog.isShowing()) {
-                            esperaDialog.setMessage(g_maestro_alias);
-                        } else {
-                            esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", g_maestro_alias);
-                        }
-
-                        ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
-                            @Override
-                            public void onResponse(int esError, int statusCode, String responseBody) {
-                                if (esError == 0) {
-                                    SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
-                                } else {
-                                    esperaDialog.dismiss();
-                                    Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
-                                }
-                            }
-                        });
+                    if (esperaDialog != null && esperaDialog.isShowing()) {
+                        esperaDialog.setMessage(g_maestro_alias);
                     } else {
-                        Util.alertDialog(Login.this, "ErrorSync Login", "Verifique conexión a Internet");
+                        esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", g_maestro_alias);
                     }
+
+                    ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
+                        @Override
+                        public void onResponse(int esError, int statusCode, String responseBody) {
+                            if (esError == 0) {
+                                SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                            } else {
+                                esperaDialog.dismiss();
+                                Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
+                            }
+                        }
+                    });
+
                 }
+
 
             }
         });
@@ -302,7 +297,8 @@ public class Login extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                clienteCallback.onResponse(1, statusCode, new String(responseBody));
+                esperaDialog.dismiss();
+                Util.alertDialog(Login.this, "onFailure Login", error.getMessage());
             }
 
         });
@@ -507,36 +503,45 @@ public class Login extends AppCompatActivity {
 
     private boolean verficaServidorConfigurado(){
 
-        String[] args = new String[] {"SERVER", "IP"};
-        Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT valor FROM tb_configuracion "+
-                                                        "WHERE seccion =? AND clave =? ", args);
+        Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT seccion, clave, valor FROM tb_configuracion", null);
         if (c.moveToFirst()){
-            AppHelper.setUrl_restful(c.getString(0));
-            c.close();
+            do {
+                if (c.getString(0).equals("SERVER") && c.getString(1).equals("URL")) {
+                    AppHelper.setUrl_restful(c.getString(2));
+                }else if (c.getString(0).equals("SERVER") && c.getString(1).equals("PAGINA_TEST")) {
+                    AppHelper.setPagina_test(c.getString(2));
+                }
+            }while(c.moveToNext());
+        }
+        c.close();
 
-            //inicia la tarea de envio patenes ingresadas.
-            asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
-            asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-            //inicia la tarea de envio patenes retiradas.
-            asyncSENDRetiroPatente = new AsyncSENDRetiroPatente();
-            asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+       if(!AppHelper.getUrl_restful().isEmpty() && !AppHelper.getPagina_test().isEmpty()) {
 
-            //inicia la tarea que recibe patentes ingresadas externas.
-            asyncGETIngresoPatente = new AsyncGETIngresoPatente();
-            asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           //inicia la tarea de envio patenes ingresadas.
+           asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
+           asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-            //inicia la tarea que recibe patentes retiradas externas.
-            asyncGETRetiroPatente = new AsyncGETRetiroPatente();
-            asyncGETRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           //inicia la tarea de envio patenes retiradas.
+           asyncSENDRetiroPatente = new AsyncSENDRetiroPatente();
+           asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-            //inicia la tarea de envío ubicación usuario.
-            asyncSENDUbicacionUsuario = new AsyncSENDUbicacionUsuario();
-            asyncSENDUbicacionUsuario.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           //inicia la tarea que recibe patentes ingresadas externas.
+           asyncGETIngresoPatente = new AsyncGETIngresoPatente();
+           asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-            return true;
-        }else{
-            c.close();
+           //inicia la tarea que recibe patentes retiradas externas.
+           asyncGETRetiroPatente = new AsyncGETRetiroPatente();
+           asyncGETRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+           //inicia la tarea de envío ubicación usuario.
+           asyncSENDUbicacionUsuario = new AsyncSENDUbicacionUsuario();
+           asyncSENDUbicacionUsuario.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+           return true;
+
+       }else{
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Información importante!");
             builder.setMessage("No se encuentra configurado el servidor de aplicaciones, verifique");
