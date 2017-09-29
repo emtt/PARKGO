@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 44;
+    private static int db_version    = 3;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 

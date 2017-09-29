@@ -17,11 +17,13 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.loopj.android.http.*;
 
@@ -29,7 +31,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -60,6 +65,7 @@ public class Login extends AppCompatActivity {
 
     AsyncSENDUbicacionUsuario asyncSENDUbicacionUsuario;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -78,6 +84,13 @@ public class Login extends AppCompatActivity {
         AppHelper.initSerialNum(this);
         appGPS = new AppGPS();
         init();
+
+        //crea los objetos para recepcion y envio de datos.
+        asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
+        asyncSENDRetiroPatente  = new AsyncSENDRetiroPatente();
+        asyncGETIngresoPatente  = new AsyncGETIngresoPatente();
+        asyncGETRetiroPatente   = new AsyncGETRetiroPatente();
+        asyncSENDUbicacionUsuario = new AsyncSENDUbicacionUsuario();
 
         verficaServidorConfigurado();
 
@@ -142,9 +155,6 @@ public class Login extends AppCompatActivity {
             }
         });
 
-        EDT_UsuarioCodigo.setText("admin");
-        EDT_UsuarioClave.setText("admin");
-
         BTN_Login = (Button) findViewById(R.id.BTN_Login);
         BTN_Login.setOnClickListener(new View.OnClickListener()
 
@@ -171,7 +181,7 @@ public class Login extends AppCompatActivity {
 
                     g_maestro_numero = 0;
                     g_maestro_nombre = "configuracion";
-                    g_maestro_alias = "1/6 Configuración";
+                    g_maestro_alias = "1/5 Configuración";
 
                     if (esperaDialog != null && esperaDialog.isShowing()) {
                         esperaDialog.setMessage(g_maestro_alias);
@@ -387,32 +397,19 @@ public class Login extends AppCompatActivity {
                             break;
 
                         case 4:
-                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor;");
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente_ubicaciones_horarios;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String rut = jsonObject.optString("rut");
-                                String nombre = jsonObject.optString("nombre");
-                                String id_cliente = jsonObject.optString("id_cliente");
-                                String clave = jsonObject.optString("clave");
-                                String telefono = jsonObject.optString("telefono");
-                                String email = jsonObject.optString("email");
-                                String saldo = jsonObject.optString("saldo");
+                                int id = jsonObject.optInt("id");
+                                int id_cliente_ubicacion = jsonObject.optInt("id_cliente_ubicacion");
+                                String dia_desde  = jsonObject.optString("dia_desde");
+                                String hora_desde = jsonObject.optString("hora_desde");
+                                int suma_dia      = jsonObject.optInt("suma_dia");
+                                String dia_hasta  = jsonObject.optString("dia_hasta");
+                                String hora_hasta = jsonObject.optString("hora_hasta");
 
-                                qry = "INSERT INTO tb_conductor (rut, nombre, id_cliente, clave, telefono, email, saldo ) VALUES " +
-                                        "('" + rut + "','" + nombre + "','" + id_cliente + "','" + clave + "','" + telefono + "','" + email + "','" + saldo + "');";
-                                AppHelper.getParkgoSQLite().execSQL(qry);
-                            }
-                            break;
-
-                        case 5:
-                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_patentes;");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String id = jsonObject.optString("id");
-                                String rut_conductor = jsonObject.optString("rut_conductor");
-                                String patente = jsonObject.optString("patente");
-                                qry = "INSERT INTO tb_conductor_patentes (id, rut_conductor, patente ) VALUES " +
-                                        "('" + id + "','" + rut_conductor + "','" + patente + "');";
+                                qry = "INSERT INTO tb_cliente_ubicaciones_horarios (id, id_cliente_ubicacion, dia_desde, hora_desde, suma_dia, dia_hasta, hora_hasta) VALUES " +
+                                        "(" + id + ", " + id_cliente_ubicacion + ",'" + dia_desde + "','" + hora_desde + "',"+suma_dia+",'" + dia_hasta + "','" + hora_hasta + "');";
                                 AppHelper.getParkgoSQLite().execSQL(qry);
                             }
                             break;
@@ -428,23 +425,19 @@ public class Login extends AppCompatActivity {
                 switch (g_maestro_numero) {
                     case 1:
                         g_maestro_nombre = "usuarios";
-                        g_maestro_alias = "2/6 Usuarios";
+                        g_maestro_alias = "2/5 Usuarios";
                         break;
                     case 2:
                         g_maestro_nombre = "clientes";
-                        g_maestro_alias = "3/6 Clientes";
+                        g_maestro_alias = "3/5 Clientes";
                         break;
                     case 3:
                         g_maestro_nombre = "cliente_ubicaciones";
-                        g_maestro_alias = "4/6 Ubicaciones por cliente";
+                        g_maestro_alias = "4/5 Ubicaciones por cliente";
                         break;
                     case 4:
-                        g_maestro_nombre = "conductores";
-                        g_maestro_alias = "5/6 Conductores";
-                        break;
-                    case 5:
-                        g_maestro_nombre = "conductor_patentes";
-                        g_maestro_alias = "6/6 Patentes por conductor";
+                        g_maestro_nombre = "cliente_ubicaciones_horarios";
+                        g_maestro_alias = "5/5 Horarios por ubicación cliente";
                         break;
                 }
 
@@ -518,25 +511,35 @@ public class Login extends AppCompatActivity {
 
        if(!AppHelper.getUrl_restful().isEmpty() && !AppHelper.getPagina_test().isEmpty()) {
 
+           //AsyncTask.Status.PENDING (Tarea no se ha iniciado)
+           //AsyncTask.Status.RUNNING (Tarea se encuentra realizando el trabajo en doInBackground())
+           //AsyncTask.Status.FINISHED (Tarea se ha ejecutado y se encuentra en onPostExecute())
+
            //inicia la tarea de envio patenes ingresadas.
-           asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
-           asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           if(asyncSENDIngresoPatente.getStatus() == AsyncTask.Status.PENDING){
+               asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           }
 
            //inicia la tarea de envio patenes retiradas.
-           asyncSENDRetiroPatente = new AsyncSENDRetiroPatente();
-           asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           if(asyncSENDRetiroPatente.getStatus() == AsyncTask.Status.PENDING){
+               asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           }
 
            //inicia la tarea que recibe patentes ingresadas externas.
-           asyncGETIngresoPatente = new AsyncGETIngresoPatente();
-           asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           if(asyncGETIngresoPatente.getStatus() == AsyncTask.Status.PENDING) {
+               asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           }
 
            //inicia la tarea que recibe patentes retiradas externas.
-           asyncGETRetiroPatente = new AsyncGETRetiroPatente();
-           asyncGETRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           if(asyncGETRetiroPatente.getStatus() == AsyncTask.Status.PENDING) {
+               asyncGETRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           }
 
            //inicia la tarea de envío ubicación usuario.
-           asyncSENDUbicacionUsuario = new AsyncSENDUbicacionUsuario();
-           asyncSENDUbicacionUsuario.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           if(asyncSENDUbicacionUsuario.getStatus() == AsyncTask.Status.PENDING) {
+               asyncSENDUbicacionUsuario.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           }
+
 
            return true;
 

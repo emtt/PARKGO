@@ -66,7 +66,7 @@ public class IngresoPatente extends AppCompatActivity {
         setContentView(R.layout.activity_ingreso_patente);
         this.setTitle("Ingresar Vehículo");
         appGPS = new AppGPS();
-        //mPrintConnect = new PrintConnect(this);
+        mPrintConnect = new PrintConnect(this);
         inicio();
     }
 
@@ -242,7 +242,7 @@ public class IngresoPatente extends AppCompatActivity {
                                                 "'0','0','"+latitud+"'," +
                                                 "'"+longitud+"','"+comentario+"','0');");
 
-            //imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
+            imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
             reiniciaIngreso();
             Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
 
@@ -449,13 +449,10 @@ public class IngresoPatente extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (mPrintConnect != null) {
-            mPrintConnect.stop();
-        }
         appGPS.desconectaGPS();
     }
 
-    /*
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -463,5 +460,5 @@ public class IngresoPatente extends AppCompatActivity {
             mPrintConnect.stop();
         }
     }
-    */
+
 }

@@ -2,15 +2,22 @@ package cl.suministra.parkgo;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.channels.FileChannel;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -83,6 +90,7 @@ public class Util {
         }
 
     }
+
 
 
 }

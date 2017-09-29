@@ -10,6 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
@@ -51,18 +52,20 @@ public class ListaPatente extends AppCompatActivity {
 
     private void ConsultaPatentesPendiente(){
 
-        String[] args = new String[]{"0"};
+        String[] args = new String[]{String.valueOf(AppHelper.getUbicacion_id()),"0"};
         Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT\n" +
                                                         "id, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, \n" +
                                                         "datetime('now','localtime') as fecha_hora_out,\n" +
                                                         "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) As Integer) as dias,\n" +
                                                         "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 As Integer) as horas,\n" +
                                                         "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
-                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos\n" +
+                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos,\n" +
+                                                        "finalizado\n" +
                                                         "FROM tb_registro_patente\n" +
-                                                        "WHERE finalizado =?", args);
+                                                        "WHERE id_cliente_ubicacion=? AND finalizado =?", args);
         if (c.moveToFirst()) {
             do {
+                String rs_id      = c.getString(0);
                 String rs_patente = c.getString(1);
                 int rs_espacios   = c.getInt(2);
                 String rs_fecha_hora_in = c.getString(3);

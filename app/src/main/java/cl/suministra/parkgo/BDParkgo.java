@@ -69,21 +69,15 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[minutos_gratis] INTEGER  NULL,\n"+
                            "[valor_minuto] INTEGER  NULL\n"+
                            ");\n"+
-                       "DROP TABLE IF EXISTS [tb_conductor];\n"+
-                       "CREATE TABLE [tb_conductor] (\n" +
-                           "[rut] VARCHAR(12)  NULL PRIMARY KEY,\n" +
-                           "[nombre] VARCHAR(128)  NULL,\n" +
-                           "[id_cliente] INTEGER  NULL,\n"+
-                           "[clave] INTEGER  NULL, \n" +
-                           "[telefono] VARCHAR(64)  NULL,\n" +
-                           "[email] VARCHAR(128)  NULL,\n" +
-                           "[saldo] INTEGER  NULL \n" +
-                           ");\n"+
-                       "DROP TABLE IF EXISTS [tb_conductor_patentes];\n"+
-                       "CREATE TABLE [tb_conductor_patentes] (\n" +
-                           "[id] INTEGER  PRIMARY KEY NOT NULL,\n" +
-                           "[rut_conductor] VARCHAR(12)  NULL,\n" +
-                           "[patente] VARCHAR(10)  NULL\n" +
+                       "DROP TABLE IF EXISTS [tb_cliente_ubicaciones_horarios];\n"+
+                       "CREATE TABLE [tb_cliente_ubicaciones_horarios] (\n" +
+                           "[id] INTEGER  NOT NULL PRIMARY KEY,\n" +
+                           "[id_cliente_ubicacion] INTEGER  NULL,\n" +
+                           "[dia_desde] VARCHAR(10)  NULL,\n" +
+                           "[hora_desde] TIME  NULL,\n" +
+                           "[suma_dia] INTEGER  NULL,\n" +
+                           "[dia_hasta] VARCHAR(10)  NULL,\n" +
+                           "[hora_hasta] TIME  NULL\n" +
                            ");\n"+
                        "DROP TABLE IF EXISTS [tb_configuracion];\n"+
                        "CREATE TABLE [tb_configuracion] (\n" +
