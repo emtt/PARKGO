@@ -90,50 +90,28 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
             String[] args0 = new String[] {String.valueOf(AppHelper.getUbicacion_id()), "0"};
             Cursor c0 = AppHelper.getParkgoSQLite().rawQuery("SELECT id, espacios, fecha_hora_in FROM tb_registro_patente" +
-                    " WHERE id_cliente_ubicacion =? AND finalizado =? ", args0);
+                                                                " WHERE id_cliente_ubicacion =? AND finalizado =? ", args0);
             if (c0.moveToFirst()){
                 do{
                     String rs_id            = c0.getString(0);
                     int    rs_espacios      = c0.getInt(1);
                     String rs_fecha_hora_in = c0.getString(2);
-                    String nombre_dia_in    = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(new SimpleDateFormat("yyyy-M-d").parse(rs_fecha_hora_in));
 
-                    switch (nombre_dia_in.toUpperCase()){
-                        case "MONDAY":
-                            nombre_dia_in = "LUNES";
-                            break;
-                        case "TUESDAY":
-                            nombre_dia_in = "MARTES";
-                            break;
-                        case "WEDNESDAY":
-                            nombre_dia_in = "MIERCOLES";
-                            break;
-                        case "THURSDAY":
-                            nombre_dia_in = "JUEVES";
-                            break;
-                        case "FRIDAY":
-                            nombre_dia_in = "VIERNES";
-                            break;
-                        case "SATURDAY":
-                            nombre_dia_in = "SABADO";
-                            break;
-                        case "SUNDAY":
-                            nombre_dia_in = "DOMINGO";
-                            break;
-                    }
+                    String nombre_dia_in    = Util.nombreDiaSemana(rs_fecha_hora_in);
 
                     String[] args1 = new String[] {String.valueOf(AppHelper.getUbicacion_id()),nombre_dia_in};
-                    Cursor c1 = AppHelper.getParkgoSQLite().rawQuery("SELECT suma_dia, dia_hasta, hora_hasta FROM tb_cliente_ubicaciones_horarios"+
-                                                                     " WHERE id_cliente_ubicacion =? AND dia_desde =? ", args1);
+                    Cursor c1 = AppHelper.getParkgoSQLite().rawQuery("SELECT suma_dia, dia_hasta, hora_hasta FROM tb_cliente_ubicaciones_horarios "+
+                                                                     "WHERE id_cliente_ubicacion =? AND dia_desde =? ", args1);
                     if (c1.moveToFirst()){
-                        int suma_dia = c1.getInt(0);
+                        int suma_dia      = c1.getInt(0);
                         String dia_hasta  = c1.getString(1);
                         String hora_hasta = c1.getString(2);
 
-                        Date fechahora_in          = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(rs_fecha_hora_in);
+                        Date fechahora_in          = AppHelper.fechaHoraFormat.parse(rs_fecha_hora_in);
                         Date fechahora_actual      = new Date();
-                        Date fechahora_auto_retiro = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(rs_fecha_hora_in.substring(0,10)+" "+hora_hasta);
-                        fechahora_auto_retiro = new Date(fechahora_auto_retiro.getTime() + TimeUnit.DAYS.toMillis(suma_dia));
+                        Date fechahora_auto_retiro = AppHelper.fechaHoraFormat.parse(rs_fecha_hora_in.substring(0,10)+" "+hora_hasta);
+                        fechahora_auto_retiro      = new Date(fechahora_auto_retiro.getTime() + TimeUnit.DAYS.toMillis(suma_dia));
+                        String fechahora_out       = AppHelper.fechaHoraFormat.format(fechahora_auto_retiro);
 
                         //si la fechahora_acual es mayor a la fecha maxima fijada para el retiro de patente por ubicación.
                         if(fechahora_actual.after(fechahora_auto_retiro)){
@@ -151,7 +129,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
                                 AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente " +
                                                                                 "SET " +
-                                                                                "fecha_hora_out = '"+fechahora_auto_retiro+"', " +
+                                                                                "fecha_hora_out = '"+fechahora_out+"', " +
                                                                                 "rut_usuario_out = '0', " +
                                                                                 "maquina_out = '"+AppHelper.getSerialNum()+"', " +
                                                                                 "minutos = "+minutos+", " +
@@ -160,7 +138,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                                                                                 "efectivo = "+0+", " +
                                                                                 "finalizado = '1' " +
                                                                                 "WHERE id = '"+rs_id+"'");
-
+                                Log.d(AppHelper.LOG_TAG,"AsyncSENDRetiroPatente Registro ID "+rs_id+" finalizado automáticamente");
                             }catch(SQLException e){   Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente SQLException "+e.getMessage()); }
 
                         }
