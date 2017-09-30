@@ -19,6 +19,7 @@
     <!--Dimen espacios -->
     <dimen name="espacio_30">30dp</dimen>
     <dimen name="espacio_15">15dp</dimen>
+    <dimen name="menu_espacio_15">15dp</dimen>
 
     <!-- texto -->
     <dimen name="activity_text_height">40dp</dimen>
