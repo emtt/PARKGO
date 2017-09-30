@@ -109,7 +109,7 @@ public class Menu extends AppCompatActivity {
                         //Si la fechahora_acual no se encuentra entre el horario fijado. Entonces no puede ingresar patentes.
                         if (fechahora_actual.before(fechahora_desde) || fechahora_actual.after(fechahora_hasta) ) {
                             Util.alertDialog(Menu.this, "Menu", "No puede ingresar vehículos. \nEl horario fijado para hoy "+horario_dia_desde+
-                                    " es a partir de las "+horario_hora_desde+" hrs hasta el "+horario_dia_hasta+" a las "+horario_hora_hasta+" hrs.");
+                                    " es a partir de las "+horario_hora_desde+" hrs. hasta el "+horario_dia_hasta+" a las "+horario_hora_hasta+" hrs.");
                         }else{
                             inicioIngresoPatente();
                         }
