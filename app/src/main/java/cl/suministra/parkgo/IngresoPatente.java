@@ -242,7 +242,7 @@ public class IngresoPatente extends AppCompatActivity {
                                                 "'0','0','"+latitud+"'," +
                                                 "'"+longitud+"','"+comentario+"','0');");
 
-            //imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
+            imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
             reiniciaIngreso();
             Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
 

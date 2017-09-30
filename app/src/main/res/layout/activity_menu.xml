@@ -26,142 +26,57 @@
         android:layout_below="@+id/TV_Titulo"
         android:layout_height="15dp" />
 
-    <LinearLayout
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/LL_Numero_Serie"
-        android:layout_below="@+id/space">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
-            android:text="N° Serie: "
-            android:id="@+id/LB_Num_Serie_Equipo"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/blue"
-            android:id="@+id/TV_Num_Serie_Equipo" />
-    </LinearLayout>
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Num_Serie_Equipo"
+        android:layout_below="@+id/space"/>
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/LL_Usuario_Nombre"
-        android:layout_below="@+id/LL_Numero_Serie">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
-            android:text="Usuario: "
-            android:id="@+id/LB_Usuario_Nombre"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text=""
-            android:textColor="@color/blue"
-            android:id="@+id/TV_Usuario_Nombre"/>
-    </LinearLayout>
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Usuario_Nombre"
+        android:layout_below="@+id/TV_Num_Serie_Equipo"/>
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/LL_Cliente_Razon_Social"
-        android:layout_below="@+id/LL_Usuario_Nombre">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
-            android:text="Empresa: "
-            android:id="@+id/LB_Cliente_Razon_Social"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text=""
-            android:textColor="@color/blue"
-            android:id="@+id/TV_Cliente_Razon_Social"/>
-    </LinearLayout>
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Cliente_Razon_Social"
+        android:layout_below="@+id/TV_Usuario_Nombre"/>
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/LL_Usuario_Ubicacion"
-        android:layout_below="@+id/LL_Cliente_Razon_Social">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
-            android:text="Ubicación: "
-            android:id="@+id/LB_Usuario_Ubicacion" />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text=""
-            android:textColor="@color/blue"
-            android:id="@+id/TV_Usuario_Ubicacion" />
-    </LinearLayout>
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Usuario_Ubicacion"
+        android:layout_below="@+id/TV_Cliente_Razon_Social"/>
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/LL_Usuario_Ubicacion_Dir"
-        android:layout_below="@+id/LL_Usuario_Ubicacion">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
-            android:text="Dirección: "
-            android:id="@+id/LB_Usuario_Ubicacion_Dir"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text=""
-            android:textColor="@color/blue"
-            android:id="@+id/TV_Usuario_Ubicacion_Dir" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/LL_Ubicacion_Horario"
-        android:layout_below="@+id/LL_Usuario_Ubicacion_Dir">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
-            android:text="Horario: "
-            android:id="@+id/LB_Usuario_Ubicacion_Horario" />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/blue"
-            android:id="@+id/TV_Usuario_Ubicacion_Horario"/>
-
-    </LinearLayout>
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_Usuario_Ubicacion_Dir"
+        android:layout_below="@+id/TV_Usuario_Ubicacion"/>
 
     <Space
         android:layout_width="match_parent"
         android:id="@+id/space1"
         android:layout_height="15dp"
-        android:layout_below="@+id/LL_Ubicacion_Horario"
+        android:layout_below="@+id/TV_Usuario_Ubicacion_Dir"
         android:layout_alignParentStart="true" />
 
     <Button

@@ -18,10 +18,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.FileChannel;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -47,6 +43,7 @@ public class Util {
 
     }
 
+
     public static boolean internetStatus(Context context) {
 
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -55,6 +52,7 @@ public class Util {
         return isConnected;
 
     }
+
 
     public static boolean verificaURL(Context context, URL url){
 
@@ -75,14 +73,14 @@ public class Util {
             int responseCode = connection.getResponseCode();
             String responseMsj = connection.getResponseMessage();
             if (responseCode != HttpsURLConnection.HTTP_OK) {
-                Util.alertDialog(context, "HTTP Error Util verificaURL", "Error code: " + responseCode + "\n" + responseMsj);
+                Util.alertDialog(context, "HTTP Error verificaURL", "Error code: " + responseCode + "\n" + responseMsj);
                 return false;
             } else {
-                Log.d(AppHelper.LOG_TAG, "Util verificaURL responseCode " + responseCode + " " + responseMsj);
+                Log.d(AppHelper.LOG_TAG, "verificaURL responseCode " + responseCode + " " + responseMsj);
                 return true;
             }
         } catch (IOException e) {
-            Util.alertDialog(context, "IOException Util verificaURL", e.getMessage());
+            Util.alertDialog(context, "IOException verificaURL", e.getMessage());
             return false;
         } finally {
             // Disconnect HTTP connection.
@@ -93,41 +91,6 @@ public class Util {
 
     }
 
-    public static String nombreDiaSemana(String fecha){
 
-        String nombre_dia = "";
-        try {
-            nombre_dia = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(new SimpleDateFormat("yyyy-M-d").parse(fecha));
-            switch (nombre_dia.toUpperCase()){
-                case "MONDAY":
-                    nombre_dia = "LUNES";
-                    break;
-                case "TUESDAY":
-                    nombre_dia = "MARTES";
-                    break;
-                case "WEDNESDAY":
-                    nombre_dia = "MIERCOLES";
-                    break;
-                case "THURSDAY":
-                    nombre_dia = "JUEVES";
-                    break;
-                case "FRIDAY":
-                    nombre_dia = "VIERNES";
-                    break;
-                case "SATURDAY":
-                    nombre_dia = "SABADO";
-                    break;
-                case "SUNDAY":
-                    nombre_dia = "DOMINGO";
-                    break;
-            }
-
-        } catch (ParseException e) {
-            Log.d(AppHelper.LOG_TAG, "ParseException Util nombreDiaSemana "+ e.getMessage());
-        }
-
-        Log.d(AppHelper.LOG_TAG, "Util nombreDiaSemana "+ nombre_dia);
-        return nombre_dia;
-    }
 
 }
