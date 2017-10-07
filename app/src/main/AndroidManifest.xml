@@ -34,6 +34,7 @@
         <activity android:name=".RetiroPatente" />
         <activity android:name=".ListaPatente" />
         <activity android:name=".Configuracion"/>
+        <activity android:name=".Alertas" />
     </application>
 
 </manifest>

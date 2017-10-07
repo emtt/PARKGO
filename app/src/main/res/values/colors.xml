@@ -8,12 +8,21 @@
     <color name="informative_message">#329AD6</color>
     <color name="alert">#AC1600</color>
     <color name="success">#37a51c</color>
-    <color name="warning">#e94700</color>
+    <color name="warning">#d14000</color>
 
 
     <!--botones -->
-    <color name="button_default">#329ad6</color>
-    <color name="button_pressed">#2a5c91</color>
+    <color name="button_blue_default">#329ad6</color>
+    <color name="button_blue_pressed">#2a5c91</color>
+
+    <color name="button_red_default">#AC1600</color>
+    <color name="button_red_pressed">#f96b55</color>
+
+    <color name="button_green_default">#00801e</color>
+    <color name="button_green_pressed">#3eff5e</color>
+
+    <color name="button_orange_default">#d14000</color>
+    <color name="button_orange_pressed">#f4763e</color>
 
     <!-- texto -->
     <color name="text_border_default">#303232</color>
@@ -23,6 +32,7 @@
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
     <color name="blue">#3F51B5</color>
+    <color name="gray">#9e9e9e</color>
     <color name="orange">#e94700</color>
 
 

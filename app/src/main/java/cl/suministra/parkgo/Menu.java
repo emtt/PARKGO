@@ -1,7 +1,9 @@
 package cl.suministra.parkgo;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -21,6 +23,7 @@ public class Menu extends AppCompatActivity {
     private Button BTN_IngresoPatente;
     private Button BTN_RetiroPatente;
     private Button BTN_ListaPatente;
+    private Button BTN_AlertaGeneral;
 
     private TextView TV_Num_Serie_Equipo;
     private TextView TV_Usuario_Nombre;
@@ -28,6 +31,7 @@ public class Menu extends AppCompatActivity {
     private TextView TV_Usuario_Ubicacion;
     private TextView TV_Usuario_Ubicacion_Dir;
     private TextView TV_Usuario_Ubicacion_Horario;
+    private ProgressDialog esperaDialog;
 
     private boolean horario_definido  = false;
     private int horario_suma_dia      = 0;
@@ -144,6 +148,36 @@ public class Menu extends AppCompatActivity {
             }
 
         });
+
+        BTN_AlertaGeneral = (Button) findViewById(R.id.BTN_AlertaGeneral);
+        BTN_AlertaGeneral.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(),"Mantenga presionado para enviar alerta...",Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        BTN_AlertaGeneral.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+
+                esperaDialog = ProgressDialog.show(Menu.this, "", "Registrando alerta...", true);
+                esperaDialog.show();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        if(AppCRUD.registrarAlerta(Menu.this, 1, "")) {
+                            startActivity(new Intent(Menu.this, Alertas.class));
+                        }
+                        esperaDialog.dismiss();
+                    }
+                }, 2000);
+
+                return false;
+            }
+        });
+
 
     }
 

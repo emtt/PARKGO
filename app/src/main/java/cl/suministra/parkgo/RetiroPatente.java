@@ -277,6 +277,7 @@ public class RetiroPatente extends AppCompatActivity {
                     if (total_minutos > 0){
                         precio = (total_minutos * AppHelper.getValor_minuto() * rs_espacios) - (rs_prepago + rs_efectivo);
                     }
+                    precio = Util.redondearPrecio(precio);
 
                     TV_RS_Patente.setText("Patente:    " + rs_patente);
                     TV_RS_Espacios.setText("Espacios: " + rs_espacios);
@@ -284,8 +285,6 @@ public class RetiroPatente extends AppCompatActivity {
                     TV_RS_Fecha_OUT.setText("Fecha retiro:     " + rs_fecha_hora_out);
                     TV_RS_Minutos.setText("Tiempo:            " + String.format("%,d", rs_minutos).replace(",",".") + " min");
                     TV_RS_Precio.setText("Precio:              $" + String.format("%,d", precio).replace(",","."));
-
-
 
                     EDT_Patente.setText("");
                     //Setea las variables para finalizar el retiro.

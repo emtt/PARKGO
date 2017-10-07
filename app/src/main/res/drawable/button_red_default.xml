@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <solid android:color="@color/button_pressed" />
+    <solid android:color="@color/button_red_default" />
     <stroke
         android:width="@dimen/activity_button_border"
-        android:color="@color/button_pressed" />
+        android:color="@color/button_red_default"/>
     <corners
         android:radius="@dimen/activity_button_radius"/>
 

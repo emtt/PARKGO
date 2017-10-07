@@ -63,7 +63,7 @@ public class Login extends AppCompatActivity {
     AsyncSENDRetiroPatente asyncSENDRetiroPatente;
     AsyncGETRetiroPatente asyncGETRetiroPatente;
 
-    AsyncSENDUbicacionUsuario asyncSENDUbicacionUsuario;
+    AsyncGenerico asyncGenerico;
 
 
     @Override
@@ -90,9 +90,9 @@ public class Login extends AppCompatActivity {
         asyncSENDRetiroPatente  = new AsyncSENDRetiroPatente();
         asyncGETIngresoPatente  = new AsyncGETIngresoPatente();
         asyncGETRetiroPatente   = new AsyncGETRetiroPatente();
-        asyncSENDUbicacionUsuario = new AsyncSENDUbicacionUsuario();
+        asyncGenerico           = new AsyncGenerico();
 
-        verficaServidorConfigurado();
+        procesoSincronizarMaestros();
 
     }
 
@@ -175,35 +175,7 @@ public class Login extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-
-                if (!verficaServidorConfigurado()){
-                }else {
-
-                    g_maestro_numero = 0;
-                    g_maestro_nombre = "configuracion";
-                    g_maestro_alias = "1/5 Configuración";
-
-                    if (esperaDialog != null && esperaDialog.isShowing()) {
-                        esperaDialog.setMessage(g_maestro_alias);
-                    } else {
-                        esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", g_maestro_alias);
-                    }
-
-                    ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
-                        @Override
-                        public void onResponse(int esError, int statusCode, String responseBody) {
-                            if (esError == 0) {
-                                SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
-                            } else {
-                                esperaDialog.dismiss();
-                                Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
-                            }
-                        }
-                    });
-
-                }
-
-
+            procesoSincronizarMaestros();
             }
         });
 
@@ -312,6 +284,37 @@ public class Login extends AppCompatActivity {
             }
 
         });
+
+    }
+
+    private void procesoSincronizarMaestros(){
+
+        if (!verficaServidorConfigurado()){
+        }else {
+
+            g_maestro_numero = 0;
+            g_maestro_nombre = "configuracion";
+            g_maestro_alias = "1/5 Configuración";
+
+            if (esperaDialog != null && esperaDialog.isShowing()) {
+                esperaDialog.setMessage(g_maestro_alias);
+            } else {
+                esperaDialog = ProgressDialog.show(Login.this, "Sincronizando...", g_maestro_alias);
+            }
+
+            ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
+                @Override
+                public void onResponse(int esError, int statusCode, String responseBody) {
+                    if (esError == 0) {
+                        SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                    } else {
+                        esperaDialog.dismiss();
+                        Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
+                    }
+                }
+            });
+
+        }
 
     }
 
@@ -535,11 +538,10 @@ public class Login extends AppCompatActivity {
                asyncGETRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
            }
 
-           //inicia la tarea de envío ubicación usuario.
-           if(asyncSENDUbicacionUsuario.getStatus() == AsyncTask.Status.PENDING) {
-               asyncSENDUbicacionUsuario.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+           //inicia la tarea de envío genérico.
+           if(asyncGenerico.getStatus() == AsyncTask.Status.PENDING) {
+               asyncGenerico.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
            }
-
 
            return true;
 

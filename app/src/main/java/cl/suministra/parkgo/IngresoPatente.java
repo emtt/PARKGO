@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.obm.mylibrary.PrintConnect;
 import com.obm.mylibrary.PrintUnits;
@@ -118,7 +119,7 @@ public class IngresoPatente extends AppCompatActivity {
                 String espacios  = SPIN_Espacios.getSelectedItem().toString();
 
                 Date fechahora_in = new Date();
-                String fecha_hora_in   = AppHelper.fechaHoraFormat.format(fechahora_in);
+                String fecha_hora_in = AppHelper.fechaHoraFormat.format(fechahora_in);
                 String id_registro_patente  = AppHelper.fechaHoraFormatID.format(fechahora_in)+"_"+AppHelper.getSerialNum()+"_"+patente;
 
                 confirmDialog(IngresoPatente.this,"Confirme para ingresar la patente "+patente, id_registro_patente ,patente, espacios, fecha_hora_in);

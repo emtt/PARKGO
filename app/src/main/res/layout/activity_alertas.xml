@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/content_padding_left"
+    android:paddingRight="@dimen/content_padding_right">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/activity_text_size_small"
+        android:text=" "
+        android:id="@+id/LB_Comentario"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:id="@+id/EDT_Comentario"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:inputType="textMultiLine"
+        android:hint="Comentario"
+        android:lines="5"
+        android:minLines="1"
+        android:gravity="top|left"
+        android:maxLines="5"
+        android:scrollbars="vertical"
+        android:layout_below="@+id/LB_Comentario"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="@dimen/activity_text_padding"
+        android:text=" "
+        android:textColor="@color/alert"
+        android:id="@+id/MSJ_Comentario"
+        android:layout_below="@+id/EDT_Comentario"
+        android:layout_centerHorizontal="true" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:layout_below="@+id/MSJ_Comentario"
+        android:id="@+id/space1" />
+
+    <LinearLayout
+        android:id="@+id/CNT_Grupo_Botones_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/space1">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_weight="1" >
+
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:id="@+id/BTN_AlertaSeguridad"
+                android:textColor="@color/white"
+                android:text="SEGURIDAD"
+                android:textSize="@dimen/activity_button_text_size"
+                android:background="@drawable/button_blue_selector"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_weight="1" >
+
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:id="@+id/BTN_AlertaCarabineros"
+                android:textColor="@color/white"
+                android:text="CARABINEROS"
+                android:textSize="@dimen/activity_button_text_size"
+                android:background="@drawable/button_green_selector"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:layout_below="@+id/CNT_Grupo_Botones_1"
+        android:id="@+id/space2" />
+
+
+    <LinearLayout
+        android:id="@+id/CNT_Grupo_Botones_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/space2">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_weight="0.81" >
+
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:id="@+id/BTN_AlertaBomberos"
+                android:textColor="@color/white"
+                android:text="BOMBEROS"
+                android:textSize="@dimen/activity_button_text_size"
+                android:background="@drawable/button_red_selector"
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_weight="1" >
+
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:id="@+id/BTN_AlertaAmbulancia"
+                android:textColor="@color/white"
+                android:text="AMBULANCIA"
+                android:textSize="@dimen/activity_button_text_size"
+                android:background="@drawable/button_orange_selector"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

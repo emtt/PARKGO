@@ -2,25 +2,15 @@ package cl.suministra.parkgo;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.widget.Toast;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.channels.FileChannel;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -128,6 +118,11 @@ public class Util {
 
         Log.d(AppHelper.LOG_TAG, "Util nombreDiaSemana "+ nombre_dia);
         return nombre_dia;
+    }
+
+    public static int redondearPrecio(int precio){
+        int precio_rd = precio - precio % 10;
+        return precio_rd;
     }
 
 }

@@ -78,7 +78,7 @@ public class ListaPatente extends AppCompatActivity {
                 if (total_minutos > 0){
                     precio = total_minutos * AppHelper.getValor_minuto() * rs_espacios;
                 }
-
+                precio = Util.redondearPrecio(precio);
 
                 PatentesPendiente patentePendiente = new PatentesPendiente(rs_patente,rs_fecha_hora_in, rs_rut_usuario_in , rs_maquina_in,
                                                                            rs_espacios, rs_minutos, precio);

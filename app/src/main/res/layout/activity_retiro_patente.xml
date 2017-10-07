@@ -67,7 +67,7 @@
                 android:layout_centerHorizontal="true"
                 android:textSize="@dimen/activity_button_text_size"
                 android:textAllCaps="false"
-                android:background="@drawable/button_selector"
+                android:background="@drawable/button_blue_selector"
                 android:layout_marginRight="10dp"/>
 
         </LinearLayout>
@@ -84,7 +84,7 @@
                 android:layout_height="@dimen/activity_button_height"
                 android:layout_centerHorizontal="true"
                 android:layout_marginLeft="10dp"
-                android:background="@drawable/button_selector"
+                android:background="@drawable/button_blue_selector"
                 android:text="PREPAGO"
                 android:textAllCaps="false"
                 android:textColor="@color/white"

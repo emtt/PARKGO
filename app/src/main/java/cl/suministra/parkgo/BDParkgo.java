@@ -18,12 +18,12 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[espacios] INTEGER NULL,\n" +
                            "[fecha_hora_in] TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL,\n" +
                            "[rut_usuario_in] VARCHAR(12)  NULL,\n" +
-                           "[maquina_in] VARCHAR(255)  NULL,\n" +
+                           "[maquina_in] VARCHAR(32)  NULL,\n" +
                            "[imagen_in] VARCHAR(255)  NULL,\n" +
                            "[enviado_in] INTEGER NULL,\n" +
                            "[fecha_hora_out] TIMESTAMP  NULL,\n" +
                            "[rut_usuario_out] VARCHAR(12)  NULL,\n" +
-                           "[maquina_out] VARCHAR(255)  NULL,\n" +
+                           "[maquina_out] VARCHAR(32)  NULL,\n" +
                            "[enviado_out] INTEGER NULL,\n" +
                            "[minutos] INTEGER NULL,\n" +
                            "[precio] INTEGER NULL,\n" +
@@ -78,6 +78,17 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[suma_dia] INTEGER  NULL,\n" +
                            "[dia_hasta] VARCHAR(10)  NULL,\n" +
                            "[hora_hasta] TIME  NULL\n" +
+                           ");\n"+
+                       "DROP TABLE IF EXISTS [tb_alertas];\n"+
+                       "CREATE TABLE [tb_alertas] (\n" +
+                           "[id] VARCHAR(36)  NULL PRIMARY KEY,\n" +
+                           "[id_tipo_alerta] INTEGER  NULL,\n" +
+                           "[id_cliente_ubicacion] INTEGER  NULL,\n" +
+                           "[rut_usuario] VARCHAR(12)  NULL,\n" +
+                           "[maquina] VARCHAR(32)  NULL,\n" +
+                           "[comentario] VARCHAR(256)  NULL,\n" +
+                           "[fecha_hora] TIMESTAMP  NULL,\n" +
+                           "[enviado] INTEGER NULL\n"+
                            ");\n"+
                        "DROP TABLE IF EXISTS [tb_configuracion];\n"+
                        "CREATE TABLE [tb_configuracion] (\n" +

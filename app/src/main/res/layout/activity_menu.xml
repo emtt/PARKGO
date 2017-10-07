@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_menu"
     android:layout_width="match_parent"
@@ -32,18 +33,20 @@
         android:orientation="horizontal"
         android:id="@+id/LL_Numero_Serie"
         android:layout_below="@+id/space">
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/LB_Num_Serie_Equipo"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
             android:text="N° Serie: "
-            android:id="@+id/LB_Num_Serie_Equipo"/>
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/black" />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/blue"
+            android:textColor="@color/black"
             android:id="@+id/TV_Num_Serie_Equipo" />
     </LinearLayout>
 
@@ -52,20 +55,24 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:id="@+id/LL_Usuario_Nombre"
-        android:layout_below="@+id/LL_Numero_Serie">
+        android:layout_below="@+id/LL_Numero_Serie"
+        android:layout_alignParentStart="true">
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/LB_Usuario_Nombre"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
             android:text="Usuario: "
-            android:id="@+id/LB_Usuario_Nombre"/>
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/black" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text=""
-            android:textColor="@color/blue"
+            android:textColor="@color/black"
             android:id="@+id/TV_Usuario_Nombre"/>
     </LinearLayout>
 
@@ -75,19 +82,21 @@
         android:orientation="horizontal"
         android:id="@+id/LL_Cliente_Razon_Social"
         android:layout_below="@+id/LL_Usuario_Nombre">
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/LB_Cliente_Razon_Social"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
             android:text="Empresa: "
-            android:id="@+id/LB_Cliente_Razon_Social"/>
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/black" />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text=""
-            android:textColor="@color/blue"
+            android:textColor="@color/black"
             android:id="@+id/TV_Cliente_Razon_Social"/>
     </LinearLayout>
 
@@ -97,19 +106,21 @@
         android:orientation="horizontal"
         android:id="@+id/LL_Usuario_Ubicacion"
         android:layout_below="@+id/LL_Cliente_Razon_Social">
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/LB_Usuario_Ubicacion"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
             android:text="Ubicación: "
-            android:id="@+id/LB_Usuario_Ubicacion" />
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/black" />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text=""
-            android:textColor="@color/blue"
+            android:textColor="@color/black"
             android:id="@+id/TV_Usuario_Ubicacion" />
     </LinearLayout>
 
@@ -119,19 +130,22 @@
         android:orientation="horizontal"
         android:id="@+id/LL_Usuario_Ubicacion_Dir"
         android:layout_below="@+id/LL_Usuario_Ubicacion">
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/LB_Usuario_Ubicacion_Dir"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
             android:text="Dirección: "
-            android:id="@+id/LB_Usuario_Ubicacion_Dir"/>
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/black" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text=""
-            android:textColor="@color/blue"
+            android:textColor="@color/black"
             android:id="@+id/TV_Usuario_Ubicacion_Dir" />
     </LinearLayout>
 
@@ -141,18 +155,20 @@
         android:orientation="horizontal"
         android:id="@+id/LL_Ubicacion_Horario"
         android:layout_below="@+id/LL_Usuario_Ubicacion_Dir">
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/LB_Usuario_Ubicacion_Horario"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/black"
             android:text="Horario: "
-            android:id="@+id/LB_Usuario_Ubicacion_Horario" />
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/black" />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/blue"
+            android:textColor="@color/black"
             android:id="@+id/TV_Usuario_Ubicacion_Horario"/>
 
     </LinearLayout>
@@ -164,53 +180,136 @@
         android:layout_below="@+id/LL_Ubicacion_Horario"
         android:layout_alignParentStart="true" />
 
-    <Button
-        android:id="@+id/BTN_IngresoPatente"
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_button_height"
-        android:layout_below="@+id/space1"
-        android:layout_centerHorizontal="true"
-        android:background="@drawable/button_selector"
-        android:text="INGRESAR VEHÍCULO"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="@dimen/activity_button_text_size" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/LL_IngresarVehiculo"
+        android:layout_below="@+id/space1">
+        <ImageView
+            android:id="@+id/IMG_IngresoPatente"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@color/gray"
+            app:srcCompat="@drawable/ic_ingresar_24dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"/>
+        <Button
+            android:id="@+id/BTN_IngresoPatente"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/button_blue_selector"
+            android:text="INGRESAR VEHÍCULO"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/activity_button_text_size"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
     <Space
         android:layout_width="match_parent"
         android:id="@+id/space2"
-        android:layout_below="@+id/BTN_IngresoPatente"
+        android:layout_below="@+id/LL_IngresarVehiculo"
         android:layout_height="15dp" />
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_button_height"
-        android:text="RETIRAR VEHÍCULO"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="@dimen/activity_button_text_size"
-        android:id="@+id/BTN_RetiroPatente"
-        android:layout_centerHorizontal="true"
-        android:background="@drawable/button_selector"
-        android:layout_below="@+id/space2"/>
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/LL_RetirarVehiculo"
+        android:layout_below="@+id/space2">
+        <ImageView
+            android:id="@+id/IMG_RetiroPatente"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@color/gray"
+            app:srcCompat="@drawable/ic_retirar_24dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"/>
+
+        <Button
+            android:id="@+id/BTN_RetiroPatente"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/button_blue_selector"
+            android:text="RETIRAR VEHÍCULO"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/activity_button_text_size"
+            android:textStyle="bold"/>
+    </LinearLayout>
 
     <Space
         android:layout_width="match_parent"
         android:id="@+id/space3"
-        android:layout_below="@+id/BTN_RetiroPatente"
+        android:layout_below="@+id/LL_RetirarVehiculo"
         android:layout_height="15dp" />
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_button_height"
-        android:text="LISTAR VEHÍCULOS"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="@dimen/activity_button_text_size"
-        android:id="@+id/BTN_ListaPatente"
-        android:layout_centerHorizontal="true"
-        android:background="@drawable/button_selector"
-        android:layout_below="@+id/space3"/>
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/LL_ListarVehiculo"
+        android:layout_below="@+id/space3">
+        <ImageView
+            android:id="@+id/IMG_ListaPatente"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@color/gray"
+            app:srcCompat="@drawable/ic_listar_24dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"/>
+        <Button
+            android:id="@+id/BTN_ListaPatente"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/button_blue_selector"
+            android:text="LISTAR VEHÍCULOS"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/activity_button_text_size"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:id="@+id/space4"
+        android:layout_below="@+id/LL_ListarVehiculo"
+        android:layout_height="15dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/LL_EnviarAlerta"
+        android:layout_below="@+id/space4">
+        <ImageView
+            android:id="@+id/IMG_AlertaGeneral"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@color/gray"
+            app:srcCompat="@drawable/ic_alerta_24dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"/>
+        <Button
+            android:id="@+id/BTN_AlertaGeneral"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/button_red_selector"
+            android:text="ENVIAR ALERTA"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/activity_button_text_size"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+
 
 
 </RelativeLayout>

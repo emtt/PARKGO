@@ -67,7 +67,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
         super.onProgressUpdate(values);
         int progreso = values[0].intValue();
         autoRetiroPatentes();
-        getPatentesRetiroPendienteSYNC();
+        getPatentesRetiroPendienteSync();
         Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onProgressUpdate "+progreso);
     }
 
@@ -88,9 +88,9 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
     private void autoRetiroPatentes(){
         try{
 
-            String[] args0 = new String[] {String.valueOf(AppHelper.getUbicacion_id()), "0"};
+            String[] args0 = new String[] {"0"};
             Cursor c0 = AppHelper.getParkgoSQLite().rawQuery("SELECT id, espacios, fecha_hora_in FROM tb_registro_patente" +
-                                                                " WHERE id_cliente_ubicacion =? AND finalizado =? ", args0);
+                                                                " WHERE finalizado =? ", args0);
             if (c0.moveToFirst()){
                 do{
                     String rs_id            = c0.getString(0);
@@ -124,6 +124,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                             if (total_minutos > 0){
                                 precio = (total_minutos * AppHelper.getValor_minuto() * rs_espacios);
                             }
+                            precio = Util.redondearPrecio(precio);
 
                             try{
 
@@ -157,12 +158,12 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
     }
 
-    private void getPatentesRetiroPendienteSYNC(){
+    private void getPatentesRetiroPendienteSync(){
 
         try{
-            String[] args = new String[] {"0","1"};
+            String[] args = new String[] {"1","0","1"};
             Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, fecha_hora_out, rut_usuario_out, maquina_out, minutos, precio, prepago, efectivo " +
-                                                            "FROM tb_registro_patente WHERE enviado_out =? AND finalizado =?", args);
+                                                            "FROM tb_registro_patente WHERE enviado_in =? AND enviado_out =? AND finalizado =?", args);
             if (c.moveToFirst()){
                 String rs_id = c.getString(0);
                 String rs_fecha_hora_out = c.getString(1);
