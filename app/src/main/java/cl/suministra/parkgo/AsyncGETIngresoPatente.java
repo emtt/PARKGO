@@ -137,7 +137,7 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                     String longitud       = jsonObject.optString("longitud");
                     String comentario     = jsonObject.optString("comentario");
 
-                    qry =   "INSERT INTO tb_registro_patente "+
+                    qry =   "INSERT INTO tb_registro_patentes "+
                                 "(id, id_cliente_ubicacion, patente, " +
                                  "espacios, fecha_hora_in, rut_usuario_in, " +
                                  "maquina_in, imagen_in, enviado_in, " +

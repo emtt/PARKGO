@@ -10,8 +10,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class BDParkgo extends SQLiteOpenHelper {
 
-    String sqlScript = "DROP TABLE IF EXISTS [tb_registro_patente];\n"+
-                       "CREATE TABLE [tb_registro_patente] (\n" +
+    String sqlScript = "DROP TABLE IF EXISTS [tb_registro_patentes];\n"+
+                       "CREATE TABLE [tb_registro_patentes] (\n" +
                            "[id] VARCHAR(36) NOT NULL PRIMARY KEY,\n" +
                            "[id_cliente_ubicacion] INTEGER  NULL,\n"+
                            "[patente] VARCHAR(10)  NULL,\n" +

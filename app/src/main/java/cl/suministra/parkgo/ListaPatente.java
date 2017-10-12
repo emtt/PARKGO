@@ -61,7 +61,7 @@ public class ListaPatente extends AppCompatActivity {
                                                         "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
                                                         "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos,\n" +
                                                         "finalizado\n" +
-                                                        "FROM tb_registro_patente\n" +
+                                                        "FROM tb_registro_patentes\n" +
                                                         "WHERE id_cliente_ubicacion=? AND finalizado =?", args);
         if (c.moveToFirst()) {
             do {

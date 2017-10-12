@@ -213,7 +213,7 @@
         android:layout_width="match_parent"
         android:id="@+id/space2"
         android:layout_below="@+id/LL_IngresarVehiculo"
-        android:layout_height="15dp" />
+        android:layout_height="5dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -247,7 +247,7 @@
         android:layout_width="match_parent"
         android:id="@+id/space3"
         android:layout_below="@+id/LL_RetirarVehiculo"
-        android:layout_height="15dp" />
+        android:layout_height="5dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -280,14 +280,47 @@
         android:layout_width="match_parent"
         android:id="@+id/space4"
         android:layout_below="@+id/LL_ListarVehiculo"
-        android:layout_height="15dp" />
+        android:layout_height="5dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/LL_Recaudacion"
+        android:layout_below="@+id/space4">
+        <ImageView
+            android:id="@+id/IMG_Recaudacion"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@color/gray"
+            app:srcCompat="@drawable/ic_chart_24dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"/>
+        <Button
+            android:id="@+id/BTN_Recaudacion"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/button_blue_selector"
+            android:text="RECAUDACIÓN"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/activity_button_text_size"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:id="@+id/space5"
+        android:layout_below="@+id/LL_Recaudacion"
+        android:layout_height="5dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:id="@+id/LL_EnviarAlerta"
-        android:layout_below="@+id/space4">
+        android:layout_below="@+id/space5">
         <ImageView
             android:id="@+id/IMG_AlertaGeneral"
             android:layout_width="wrap_content"

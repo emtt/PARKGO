@@ -256,7 +256,7 @@ public class RetiroPatente extends AppCompatActivity {
                                                                 "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
                                                                 "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos, \n" +
                                                                 "prepago, efectivo \n"+
-                                                                "FROM tb_registro_patente\n" +
+                                                                "FROM tb_registro_patentes\n" +
                                                                 "WHERE patente =? AND id_cliente_ubicacion=? AND finalizado =?", args);
                 if (c.moveToFirst()) {
                     String rs_id             = c.getString(0);
@@ -459,7 +459,7 @@ public class RetiroPatente extends AppCompatActivity {
 
     private String actualizaRetiroPatente(String id_registro_patente, String fecha_hora_out, int minutos, int precio, int prepago, int efectivo ){
         try{
-            AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente " +
+            AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patentes " +
                     "SET " +
                     "fecha_hora_out = '"+fecha_hora_out+"', " +
                     "rut_usuario_out = '"+AppHelper.getUsuario_rut()+"' , " +

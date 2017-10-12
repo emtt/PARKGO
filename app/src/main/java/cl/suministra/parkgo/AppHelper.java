@@ -9,6 +9,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 /**
  * Created by LENOVO on 02-08-2017.
@@ -17,18 +18,22 @@ import java.text.SimpleDateFormat;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 8;
+    private static int db_version    = 4;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
     private static String serial_no  = "";
     private static String usuario_rut= "";
+    private static String usuario_nombre = "";
 
     public static DateFormat fechaHoraFormat   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static DateFormat fechaHoraFormatID = new SimpleDateFormat("yyyyMMddHHmmss");
+    public static DateFormat fechaFormat       = new SimpleDateFormat("dd-MM-yyyy",Locale.US);
 
     public static int cliente_id     = 0;
     public static int ubicacion_id   = 0;
+
+    public static String ubicacion_nombre = "";
     public static int minutos_gratis = 0;
     public static int valor_minuto   = 0;
 
@@ -53,6 +58,14 @@ public class AppHelper {
         AppHelper.usuario_rut = usuario_rut;
     }
 
+    public static String getUsuario_nombre() {
+        return usuario_nombre;
+    }
+
+    public static void setUsuario_nombre(String usuario_nombre) {
+        AppHelper.usuario_nombre = usuario_nombre;
+    }
+
     public static int getCliente_id() {
         return cliente_id;
     }
@@ -67,6 +80,14 @@ public class AppHelper {
 
     public static void setUbicacion_id(int ubicacion_id) {
         AppHelper.ubicacion_id = ubicacion_id;
+    }
+
+    public static String getUbicacion_nombre() {
+        return ubicacion_nombre;
+    }
+
+    public static void setUbicacion_nombre(String ubicacion_nombre) {
+        AppHelper.ubicacion_nombre = ubicacion_nombre;
     }
 
     public static int getMinutos_gratis() {

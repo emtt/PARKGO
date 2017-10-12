@@ -23,6 +23,7 @@ public class Menu extends AppCompatActivity {
     private Button BTN_IngresoPatente;
     private Button BTN_RetiroPatente;
     private Button BTN_ListaPatente;
+    private Button BTN_Recaudacion;
     private Button BTN_AlertaGeneral;
 
     private TextView TV_Num_Serie_Equipo;
@@ -149,6 +150,16 @@ public class Menu extends AppCompatActivity {
 
         });
 
+        BTN_Recaudacion = (Button) findViewById(R.id.BTN_Recaudacion);
+        BTN_Recaudacion.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick (View v){
+                inicioRecaudacion();
+            }
+
+        });
+
         BTN_AlertaGeneral = (Button) findViewById(R.id.BTN_AlertaGeneral);
         BTN_AlertaGeneral.setOnClickListener(new View.OnClickListener() {
 
@@ -193,6 +204,11 @@ public class Menu extends AppCompatActivity {
 
     private void inicioListaPatente(){
         Intent intent = new Intent(this, ListaPatente.class);
+        startActivity(intent);
+    }
+
+    private void inicioRecaudacion(){
+        Intent intent = new Intent(this, Recaudacion.class);
         startActivity(intent);
     }
 

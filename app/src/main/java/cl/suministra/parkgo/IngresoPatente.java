@@ -203,7 +203,7 @@ public class IngresoPatente extends AppCompatActivity {
             String resultado;
             String[] args = new String[] {patente, String.valueOf(AppHelper.getUbicacion_id()),"0"};
             Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, patente, fecha_hora_in " +
-                                                            "FROM tb_registro_patente " +
+                                                            "FROM tb_registro_patentes " +
                                                             "WHERE patente =? AND id_cliente_ubicacion =? AND finalizado =?", args);
             if (c.moveToFirst()){
                 String  rs_patente = c.getString(1);
@@ -226,7 +226,7 @@ public class IngresoPatente extends AppCompatActivity {
 
         try{
 
-            AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patente "+
+            AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patentes "+
                                                 "(id, id_cliente_ubicacion, patente," +
                                                 "espacios, fecha_hora_in, rut_usuario_in, " +
                                                 "maquina_in, imagen_in, enviado_in, " +

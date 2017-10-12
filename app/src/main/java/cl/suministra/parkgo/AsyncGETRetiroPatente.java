@@ -137,7 +137,7 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                     int efectivo               = jsonObject.optInt("efectivo");
                     int finalizado             = jsonObject.optInt("finalizado");
 
-                    qry =   "UPDATE tb_registro_patente " +
+                    qry =   "UPDATE tb_registro_patentes " +
                             "SET " +
                             "fecha_hora_out = '"+fecha_hora_out+"', " +
                             "rut_usuario_out = '"+rut_usuario_out+"' , " +

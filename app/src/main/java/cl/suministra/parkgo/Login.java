@@ -240,9 +240,11 @@ public class Login extends AppCompatActivity {
                 int rs_valor_minuto = c.getInt(8);
 
                 AppHelper.setUsuario_rut(rs_usuario_rut);
+                AppHelper.setUsuario_nombre(rs_usuario_nombre);
                 //De acuerdo a la ubicacion del usuario.
                 AppHelper.setCliente_id(rs_cliente_id);
                 AppHelper.setUbicacion_id(rs_ubicacion_id);
+                AppHelper.setUbicacion_nombre(rs_usuario_ubicacion);
                 AppHelper.setMinutos_gratis(rs_minutos_gratis);
                 AppHelper.setValor_minuto(rs_valor_minuto);
 

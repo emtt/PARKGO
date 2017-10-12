@@ -89,7 +89,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
         try{
 
             String[] args0 = new String[] {"0"};
-            Cursor c0 = AppHelper.getParkgoSQLite().rawQuery("SELECT id, espacios, fecha_hora_in FROM tb_registro_patente" +
+            Cursor c0 = AppHelper.getParkgoSQLite().rawQuery("SELECT id, espacios, fecha_hora_in FROM tb_registro_patentes" +
                                                                 " WHERE finalizado =? ", args0);
             if (c0.moveToFirst()){
                 do{
@@ -128,7 +128,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
                             try{
 
-                                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente " +
+                                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patentes " +
                                                                                 "SET " +
                                                                                 "fecha_hora_out = '"+fechahora_out+"', " +
                                                                                 "rut_usuario_out = '0', " +
@@ -163,7 +163,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
         try{
             String[] args = new String[] {"1","0","1"};
             Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, fecha_hora_out, rut_usuario_out, maquina_out, minutos, precio, prepago, efectivo " +
-                                                            "FROM tb_registro_patente WHERE enviado_in =? AND enviado_out =? AND finalizado =?", args);
+                                                            "FROM tb_registro_patentes WHERE enviado_in =? AND enviado_out =? AND finalizado =?", args);
             if (c.moveToFirst()){
                 String rs_id = c.getString(0);
                 String rs_fecha_hora_out = c.getString(1);
@@ -214,7 +214,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                         if(jsonArray != null){
                             try{
                                 //Marca el registro como enviado.
-                                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patente SET enviado_out = '1' WHERE id = '"+id_registro_patente+"'");
+                                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_registro_patentes SET enviado_out = '1' WHERE id = '"+id_registro_patente+"'");
                                 Log.d(AppHelper.LOG_TAG,"AsyncSENDRetiroPatente REGISTRO ID "+id_registro_patente+" ENVIADO CORRECTAMENTE AL SERVIDOR");
 
                             }catch(SQLException e){  Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente SQLException "+e.getMessage());}

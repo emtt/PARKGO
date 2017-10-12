@@ -33,8 +33,9 @@
         <activity android:name=".IngresoPatente" />
         <activity android:name=".RetiroPatente" />
         <activity android:name=".ListaPatente" />
-        <activity android:name=".Configuracion"/>
+        <activity android:name=".Configuracion" />
         <activity android:name=".Alertas" />
+        <activity android:name=".Recaudacion"></activity>
     </application>
 
 </manifest>
