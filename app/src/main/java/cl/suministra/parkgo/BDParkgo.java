@@ -40,7 +40,8 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[nombre] VARCHAR(128)  NULL,\n" +
                            "[codigo] VARCHAR(10)  NULL,\n" +
                            "[clave] VARCHAR(10)  NULL,\n" +
-                           "[id_cliente_ubicacion] INTEGER  NULL\n"+
+                           "[id_cliente_ubicacion] INTEGER  NULL,\n"+
+                           "[id_rol] INTEGER  NULL\n"+
                            ");\n" +
                        "DROP TABLE IF EXISTS [tb_usuario_ubicaciones]; \n"+
                         "CREATE TABLE [tb_usuario_ubicaciones] (\n" +
@@ -79,6 +80,32 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[dia_hasta] VARCHAR(10)  NULL,\n" +
                            "[hora_hasta] TIME  NULL\n" +
                            ");\n"+
+                       "DROP TABLE IF EXISTS [tb_conductor];\n"+
+                       "CREATE TABLE [tb_conductor] (\n" +
+                           "[rut] VARCHAR(12) NULL,\n" +
+                           "[nombre] VARCHAR(128)  NULL,\n" +
+                           "[id_conductor_grupo] INTEGER NULL,\n"+
+                           "[clave] INTEGER  NULL,\n"+
+                           "[telefono] VARCHAR(64)  NULL,\n" +
+                           "[email] VARCHAR(128)  NULL,\n" +
+                           "[saldo] INTEGER  NULL,\n"+
+                           "PRIMARY KEY ([rut],[id_conductor_grupo]) \n"+
+                           ");\n" +
+                       "DROP TABLE IF EXISTS [tb_conductor_grupo];\n"+
+                       "CREATE TABLE [tb_conductor_grupo] (\n" +
+                           "[id] INTEGER  NOT NULL PRIMARY KEY,\n"+
+                           "[id_cliente] INTEGER  NULL,\n"+
+                           "[descripcion] VARCHAR(128)  NULL,\n"+
+                           "[descuento] INTEGER  NULL,\n"+
+                           "[envia_mail_ingreso] INTEGER  NULL,\n"+
+                           "[envia_mail_retiro] INTEGER  NULL\n"+
+                           ");\n" +
+                       "DROP TABLE IF EXISTS [tb_conductor_patentes];\n"+
+                       "CREATE TABLE [tb_conductor_patentes] (\n" +
+                           "[id] INTEGER  NOT NULL PRIMARY KEY,\n" +
+                           "[rut_conductor] VARCHAR(12)  NULL,\n" +
+                           "[patente] VARCHAR(10)  NULL\n" +
+                           ");\n" +
                        "DROP TABLE IF EXISTS [tb_alertas];\n"+
                        "CREATE TABLE [tb_alertas] (\n" +
                            "[id] VARCHAR(36)  NULL PRIMARY KEY,\n" +

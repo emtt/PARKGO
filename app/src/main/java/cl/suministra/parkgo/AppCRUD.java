@@ -1,7 +1,9 @@
 package cl.suministra.parkgo;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.SQLException;
+import android.util.Log;
 
 import java.util.Date;
 
@@ -27,11 +29,39 @@ public class AppCRUD {
                     "'"+AppHelper.getSerialNum()+"' ,'"+comentario+"', datetime('now','localtime'), '0');");
             return true;
         }catch(SQLException e){
-            Util.alertDialog(context,"SQLException Menu Alerta", e.getMessage());
+            Util.alertDialog(context,"SQLException AppCRUD", e.getMessage());
             return false;
         }
     }
 
+
+    public static int getDescuentoGrupoConductor(Context context, String patente, int cliente_id){
+
+        Cursor c;
+        int rs_descuento = 0;
+        try {
+            String[] args = new String[]{patente, String.valueOf(cliente_id)};
+
+            String qry = "SELECT tcp.rut_conductor, tc.id_conductor_grupo, tcg.descuento FROM tb_conductor_patentes tcp\n" +
+                            "INNER JOIN tb_conductor tc ON tc.rut = tcp.rut_conductor\n" +
+                            "INNER JOIN tb_conductor_grupo tcg ON tcg.id = tc.id_conductor_grupo\n" +
+                            "WHERE tcp.patente =? AND tcg.id_cliente =? ";
+
+            c = AppHelper.getParkgoSQLite().rawQuery(qry, args);
+            if (c.moveToFirst()) {
+                rs_descuento = c.getInt(2);
+            } else {
+                rs_descuento = 0;
+            }
+            c.close();
+
+        } catch (SQLException e) {
+                Util.alertDialog(context, "SQLException AppCRUD", e.getMessage());
+        }
+
+        return rs_descuento;
+
+    }
 
 
 }

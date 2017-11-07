@@ -54,31 +54,35 @@ public class ListaPatente extends AppCompatActivity {
 
         String[] args = new String[]{String.valueOf(AppHelper.getUbicacion_id()),"0"};
         Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT\n" +
-                                                        "id, patente, espacios, fecha_hora_in, rut_usuario_in, maquina_in, \n" +
+                                                        "trp.id, trp.patente, trp.espacios, trp.fecha_hora_in, trp.rut_usuario_in, trp.maquina_in, \n" +
                                                         "datetime('now','localtime') as fecha_hora_out,\n" +
-                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) As Integer) as dias,\n" +
-                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 As Integer) as horas,\n" +
-                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
-                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos,\n" +
-                                                        "finalizado\n" +
-                                                        "FROM tb_registro_patentes\n" +
-                                                        "WHERE id_cliente_ubicacion=? AND finalizado =?", args);
+                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(trp.fecha_hora_in)) As Integer) as dias,\n" +
+                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(trp.fecha_hora_in)) * 24 As Integer) as horas,\n" +
+                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(trp.fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
+                                                        "CAST((JulianDay(datetime('now','localtime')) - JulianDay(trp.fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos,\n" +
+                                                        "trp.finalizado, tcu.id_cliente \n" +
+                                                        "FROM tb_registro_patentes trp\n" +
+                                                        "INNER JOIN tb_cliente_ubicaciones tcu ON tcu.id = trp.id_cliente_ubicacion\n" +
+                                                        "WHERE trp.id_cliente_ubicacion=? AND trp.finalizado =?", args);
         if (c.moveToFirst()) {
             do {
                 String rs_id      = c.getString(0);
                 String rs_patente = c.getString(1);
                 int rs_espacios   = c.getInt(2);
-                String rs_fecha_hora_in = c.getString(3);
+                String rs_fecha_hora_in  = c.getString(3);
                 String rs_rut_usuario_in = c.getString(4);
-                String rs_maquina_in = c.getString(5);
-                int rs_minutos    = c.getInt(9);
+                String rs_maquina_in     = c.getString(5);
+                int rs_minutos           = c.getInt(9);
+                int rs_id_cliente = c.getInt(12);
 
                 int precio      = 0;
                 int total_minutos =  (rs_minutos - AppHelper.getMinutos_gratis());
                 if (total_minutos > 0){
                     precio = total_minutos * AppHelper.getValor_minuto() * rs_espacios;
                 }
-                precio = Util.redondearPrecio(precio);
+
+                int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(ListaPatente.this, rs_patente, rs_id_cliente);
+                precio = Util.redondearPrecio(precio, descuento_porciento);
 
                 PatentesPendiente patentePendiente = new PatentesPendiente(rs_patente,rs_fecha_hora_in, rs_rut_usuario_in , rs_maquina_in,
                                                                            rs_espacios, rs_minutos, precio);

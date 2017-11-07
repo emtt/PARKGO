@@ -89,13 +89,18 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
         try{
 
             String[] args0 = new String[] {"0"};
-            Cursor c0 = AppHelper.getParkgoSQLite().rawQuery("SELECT id, espacios, fecha_hora_in FROM tb_registro_patentes" +
-                                                                " WHERE finalizado =? ", args0);
+            Cursor c0 = AppHelper.getParkgoSQLite().rawQuery("SELECT trp.id, trp.patente, trp.espacios, trp.fecha_hora_in, tcu.id_cliente " +
+                                                             "FROM tb_registro_patentes trp " +
+                                                             "INNER JOIN tb_cliente_ubicaciones tcu ON tcu.id = trp.id_cliente_ubicacion " +
+                                                             "WHERE finalizado =? ", args0);
             if (c0.moveToFirst()){
                 do{
                     String rs_id            = c0.getString(0);
-                    int    rs_espacios      = c0.getInt(1);
-                    String rs_fecha_hora_in = c0.getString(2);
+                    String rs_patente       = c0.getString(1);
+                    int    rs_espacios      = c0.getInt(2);
+                    String rs_fecha_hora_in = c0.getString(3);
+                    int    rs_id_cliente    = c0.getInt(4);
+
 
                     String nombre_dia_in    = Util.nombreDiaSemana(rs_fecha_hora_in);
 
@@ -124,7 +129,9 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                             if (total_minutos > 0){
                                 precio = (total_minutos * AppHelper.getValor_minuto() * rs_espacios);
                             }
-                            precio = Util.redondearPrecio(precio);
+
+                            int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(App.context, rs_patente, rs_id_cliente);
+                            precio = Util.redondearPrecio(precio, descuento_porciento);
 
                             try{
 

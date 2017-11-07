@@ -120,9 +120,14 @@ public class Util {
         return nombre_dia;
     }
 
-    public static int redondearPrecio(int precio){
-        int precio_rd = precio - precio % 10;
-        return precio_rd;
+    public static int redondearPrecio(int precio_total, int descuento_porciento){
+        //calcula el descuento.
+        int precio_descuento = Math.round((precio_total * descuento_porciento) / 100);
+        //resta el descuento al precio total.
+        int precio_final = precio_total - precio_descuento;
+        //redondea el precio.
+        int precio_redondeado = precio_final - precio_final % 10;
+        return precio_redondeado;
     }
 
 }

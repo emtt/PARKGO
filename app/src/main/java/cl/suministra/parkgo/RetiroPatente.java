@@ -248,36 +248,39 @@ public class RetiroPatente extends AppCompatActivity {
 
                 String[] args = new String[]{patente, String.valueOf(AppHelper.getUbicacion_id()), "0"};
                 Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT\n" +
-                                                                "id, patente, fecha_hora_in,\n" +
+                                                                "trp.id, trp.patente, trp.fecha_hora_in,\n" +
                                                                 "datetime('now','localtime') as fecha_hora_out,\n" +
-                                                                "espacios,\n" +
-                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) As Integer) as dias,\n" +
-                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 As Integer) as horas,\n" +
-                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
-                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos, \n" +
-                                                                "prepago, efectivo \n"+
-                                                                "FROM tb_registro_patentes\n" +
-                                                                "WHERE patente =? AND id_cliente_ubicacion=? AND finalizado =?", args);
+                                                                "trp.espacios,\n" +
+                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(trp.fecha_hora_in)) As Integer) as dias,\n" +
+                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(trp.fecha_hora_in)) * 24 As Integer) as horas,\n" +
+                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(trp.fecha_hora_in)) * 24 * 60 As Integer) as minutos,\n" +
+                                                                "CAST((JulianDay(datetime('now','localtime')) - JulianDay(trp.fecha_hora_in)) * 24 * 60 * 60 As Integer) as segundos, \n" +
+                                                                "trp.prepago, trp.efectivo, tcu.id_cliente \n"+
+                                                                "FROM tb_registro_patentes trp\n" +
+                                                                "INNER JOIN tb_cliente_ubicaciones tcu ON tcu.id = trp.id_cliente_ubicacion\n" +
+                                                                "WHERE trp.patente =? AND trp.id_cliente_ubicacion=? AND trp.finalizado =?", args);
                 if (c.moveToFirst()) {
                     String rs_id             = c.getString(0);
                     String rs_patente        = c.getString(1);
                     String rs_fecha_hora_in  = c.getString(2);
                     String rs_fecha_hora_out = c.getString(3);
-                    int rs_espacios = c.getInt(4);
-                    int rs_dias     = c.getInt(5);
-                    int rs_horas    = c.getInt(6);
-                    int rs_minutos  = c.getInt(7);
-                    int rs_segundos = c.getInt(8);
-                    int rs_prepago  = c.getInt(9);
-                    int rs_efectivo = c.getInt(10);
-
+                    int rs_espacios   = c.getInt(4);
+                    int rs_dias       = c.getInt(5);
+                    int rs_horas      = c.getInt(6);
+                    int rs_minutos    = c.getInt(7);
+                    int rs_segundos   = c.getInt(8);
+                    int rs_prepago    = c.getInt(9);
+                    int rs_efectivo   = c.getInt(10);
+                    int rs_id_cliente = c.getInt(11);
 
                     int precio      = 0;
                     int total_minutos =  (rs_minutos - AppHelper.getMinutos_gratis());
                     if (total_minutos > 0){
                         precio = (total_minutos * AppHelper.getValor_minuto() * rs_espacios) - (rs_prepago + rs_efectivo);
                     }
-                    precio = Util.redondearPrecio(precio);
+
+                    int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(RetiroPatente.this, rs_patente, rs_id_cliente);
+                    precio = Util.redondearPrecio(precio, descuento_porciento);
 
                     TV_RS_Patente.setText("Patente:    " + rs_patente);
                     TV_RS_Espacios.setText("Espacios: " + rs_espacios);

@@ -296,7 +296,7 @@ public class Login extends AppCompatActivity {
 
             g_maestro_numero = 0;
             g_maestro_nombre = "configuracion";
-            g_maestro_alias = "1/5 Configuración";
+            g_maestro_alias = "1/8 Configuración";
 
             if (esperaDialog != null && esperaDialog.isShowing()) {
                 esperaDialog.setMessage(g_maestro_alias);
@@ -359,13 +359,14 @@ public class Login extends AppCompatActivity {
 
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String rut = jsonObject.optString("rut");
+                                String rut    = jsonObject.optString("rut");
                                 String nombre = jsonObject.optString("nombre");
                                 String codigo = jsonObject.optString("codigo");
-                                String clave = jsonObject.optString("clave");
-                                String id_cliente_ubicacion = jsonObject.optString("id_cliente_ubicacion");
-                                qry = "INSERT INTO tb_usuario (rut, nombre, codigo, clave, id_cliente_ubicacion) VALUES " +
-                                        "('" + rut + "','" + nombre + "','" + codigo + "','" + clave + "','" + id_cliente_ubicacion + "');";
+                                String clave  = jsonObject.optString("clave");
+                                int id_cliente_ubicacion = jsonObject.optInt("id_cliente_ubicacion");
+                                int id_rol    = jsonObject.optInt("id_rol");
+                                qry = "INSERT INTO tb_usuario (rut, nombre, codigo, clave, id_cliente_ubicacion, id_rol) VALUES " +
+                                        "('" + rut + "','" + nombre + "','" + codigo + "','" + clave + "'," + id_cliente_ubicacion + ", "+ id_rol +");";
                                 AppHelper.getParkgoSQLite().execSQL(qry);
                             }
                             break;
@@ -374,11 +375,11 @@ public class Login extends AppCompatActivity {
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String id = jsonObject.optString("id");
+                                int id = jsonObject.optInt("id");
                                 String rut = jsonObject.optString("rut");
                                 String razon_social = jsonObject.optString("razon_social");
                                 qry = "INSERT INTO tb_cliente (id, rut, razon_social ) VALUES " +
-                                        "('" + id + "','" + rut + "','" + razon_social + "');";
+                                        "(" + id + ",'" + rut + "','" + razon_social + "');";
                                 AppHelper.getParkgoSQLite().execSQL(qry);
                             }
                             break;
@@ -387,16 +388,16 @@ public class Login extends AppCompatActivity {
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente_ubicaciones;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                String id = jsonObject.optString("id");
-                                String id_cliente = jsonObject.optString("id_cliente");
+                                int id = jsonObject.optInt("id");
+                                int id_cliente = jsonObject.optInt("id_cliente");
                                 String descripcion = jsonObject.optString("descripcion");
-                                String direccion = jsonObject.optString("direccion");
-                                String latitud = jsonObject.optString("latitud");
-                                String longitud = jsonObject.optString("longitud");
-                                String minutos_gratis = jsonObject.optString("minutos_gratis");
-                                String valor_minuto = jsonObject.optString("valor_minuto");
+                                String direccion   = jsonObject.optString("direccion");
+                                String latitud     = jsonObject.optString("latitud");
+                                String longitud    = jsonObject.optString("longitud");
+                                int minutos_gratis = jsonObject.optInt("minutos_gratis");
+                                int valor_minuto   = jsonObject.optInt("valor_minuto");
                                 qry = "INSERT INTO tb_cliente_ubicaciones (id, id_cliente, descripcion, direccion, latitud, longitud, minutos_gratis, valor_minuto ) VALUES " +
-                                        "('" + id + "','" + id_cliente + "','" + descripcion + "','" + direccion + "','" + latitud + "','" + longitud + "','" + minutos_gratis + "','" + valor_minuto + "');";
+                                        "(" + id + "," + id_cliente + ",'" + descripcion + "','" + direccion + "','" + latitud + "','" + longitud + "'," + minutos_gratis + "," + valor_minuto + ");";
                                 AppHelper.getParkgoSQLite().execSQL(qry);
                             }
                             break;
@@ -418,6 +419,58 @@ public class Login extends AppCompatActivity {
                                 AppHelper.getParkgoSQLite().execSQL(qry);
                             }
                             break;
+
+                        case 5:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor;");
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String rut     = jsonObject.optString("rut");
+                                String nombre  = jsonObject.optString("nombre");
+                                int id_conductor_grupo = jsonObject.optInt("id_conductor_grupo");
+                                int clave      = jsonObject.optInt("clave");
+                                String telefono= jsonObject.optString("telefono");
+                                String email   = jsonObject.optString("telefono");
+                                int saldo      = jsonObject.optInt("saldo");
+
+                                qry = "INSERT INTO tb_conductor (rut, nombre, id_conductor_grupo, clave, telefono, email, saldo) VALUES " +
+                                        "('" + rut + "','" + nombre + "', " + id_conductor_grupo + ", " + clave + ", '"+ telefono +"', '"+ email +"', "+ saldo +");";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
+                        case 6:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_grupo;");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                int id = jsonObject.optInt("id");
+                                int id_cliente = jsonObject.optInt("id_cliente");
+                                String descripcion = jsonObject.optString("descripcion");
+                                int descuento  = jsonObject.optInt("descuento");
+                                int envia_mail_ingreso  = jsonObject.optInt("envia_mail_ingreso");
+                                int envia_mail_retiro  = jsonObject.optInt("envia_mail_retiro");
+
+                                qry = "INSERT INTO tb_conductor_grupo (id, id_cliente, descripcion, descuento, envia_mail_ingreso, envia_mail_retiro ) VALUES " +
+                                        "(" + id + "," + id_cliente + ",'" + descripcion + "', " + descuento + " , " + envia_mail_ingreso + ", "+envia_mail_retiro+");";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
+                        case 7:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_patentes;");
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                int id     = jsonObject.optInt("id");
+                                String rut_conductor  = jsonObject.optString("rut_conductor");
+                                String patente  = jsonObject.optString("patente");
+
+                                qry = "INSERT INTO tb_conductor_patentes (id, rut_conductor, patente ) VALUES " +
+                                        "(" + id + ",'" + rut_conductor + "', '" + patente + "');";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
                     }
 
                 } catch (SQLException e0) {
@@ -430,23 +483,35 @@ public class Login extends AppCompatActivity {
                 switch (g_maestro_numero) {
                     case 1:
                         g_maestro_nombre = "usuarios";
-                        g_maestro_alias = "2/5 Usuarios";
+                        g_maestro_alias = "2/8 Usuarios";
                         break;
                     case 2:
                         g_maestro_nombre = "clientes";
-                        g_maestro_alias = "3/5 Clientes";
+                        g_maestro_alias = "3/8 Clientes";
                         break;
                     case 3:
                         g_maestro_nombre = "cliente_ubicaciones";
-                        g_maestro_alias = "4/5 Ubicaciones por cliente";
+                        g_maestro_alias = "4/8 Ubicaciones por cliente";
                         break;
                     case 4:
                         g_maestro_nombre = "cliente_ubicaciones_horarios";
-                        g_maestro_alias = "5/5 Horarios por ubicación cliente";
+                        g_maestro_alias = "5/8 Horarios por ubicación cliente";
+                        break;
+                    case 5:
+                        g_maestro_nombre = "conductores";
+                        g_maestro_alias = "6/8 Conductores";
+                        break;
+                    case 6:
+                        g_maestro_nombre = "conductores_grupo";
+                        g_maestro_alias = "7/8 Grupo Conductores";
+                        break;
+                    case 7:
+                        g_maestro_nombre = "conductor_patentes";
+                        g_maestro_alias = "8/8 Conductor Patentes";
                         break;
                 }
 
-                if (g_maestro_numero <= 5) {
+                if (g_maestro_numero <= 8) {
                     ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
                         @Override
                         public void onResponse(int esError, int statusCode, String responseBody) {
