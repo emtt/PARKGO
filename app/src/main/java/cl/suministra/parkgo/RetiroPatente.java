@@ -53,6 +53,8 @@ public class RetiroPatente extends AppCompatActivity {
     private TextView TV_RS_Fecha_OUT;
     private TextView TV_RS_Minutos;
     private TextView TV_RS_Precio;
+    private TextView TV_RS_Minutos_Gratis;
+    private TextView TV_RS_Porcentaje_Descuento;
 
     private ProgressDialog esperaDialog;
 
@@ -68,7 +70,9 @@ public class RetiroPatente extends AppCompatActivity {
     private String g_fecha_hora_in  = "";
     private String g_fecha_hora_out = "";
     private int g_minutos           = 0;
+    private int g_minutos_gratis    = 0;
     private int g_precio            = 0;
+    private int g_porcent_descuento = 0;
 
 
     private String g_prepago_clave  = "";
@@ -163,6 +167,8 @@ public class RetiroPatente extends AppCompatActivity {
         TV_RS_Fecha_OUT = (TextView) findViewById(R.id.TV_RS_Fecha_OUT);
         TV_RS_Minutos   = (TextView) findViewById(R.id.TV_RS_Minutos);
         TV_RS_Precio    = (TextView) findViewById(R.id.TV_RS_Precio);
+        TV_RS_Minutos_Gratis = (TextView) findViewById(R.id.TV_RS_Minutos_Gratis);
+        TV_RS_Porcentaje_Descuento = (TextView) findViewById(R.id.TV_RS_Porcentaje_Descuento);
 
         BTN_Efectivo = (Button) findViewById(R.id.BTN_Efectivo);
         BTN_Efectivo.setOnClickListener(new View.OnClickListener()
@@ -288,16 +294,21 @@ public class RetiroPatente extends AppCompatActivity {
                     TV_RS_Fecha_OUT.setText("Fecha retiro:     " + rs_fecha_hora_out);
                     TV_RS_Minutos.setText("Tiempo:            " + String.format("%,d", rs_minutos).replace(",",".") + " min");
                     TV_RS_Precio.setText("Precio:              $" + String.format("%,d", precio).replace(",","."));
+                    TV_RS_Minutos_Gratis.setText("Gratis:               "+ AppHelper.getMinutos_gratis()+ " min");
+                    TV_RS_Porcentaje_Descuento.setText("Descuento:       "+descuento_porciento+"%");
+
 
                     EDT_Patente.setText("");
                     //Setea las variables para finalizar el retiro.
                     g_id_registro_patente = rs_id;
-                    g_patente        = rs_patente;
-                    g_espacios       = rs_espacios;
-                    g_fecha_hora_in  = rs_fecha_hora_in;
-                    g_fecha_hora_out = rs_fecha_hora_out;
-                    g_minutos        = rs_minutos;
-                    g_precio         = precio;
+                    g_patente           = rs_patente;
+                    g_espacios          = rs_espacios;
+                    g_fecha_hora_in     = rs_fecha_hora_in;
+                    g_fecha_hora_out    = rs_fecha_hora_out;
+                    g_minutos           = rs_minutos;
+                    g_minutos_gratis    = AppHelper.getMinutos_gratis();
+                    g_precio            = precio;
+                    g_porcent_descuento = descuento_porciento;
 
                 } else {
                     Util.alertDialog(RetiroPatente.this,"Retiro Patente", "Patente: " + patente + " no registra ingreso, verifique");
@@ -372,7 +383,7 @@ public class RetiroPatente extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, 0, g_precio);
                         if (Resultado.equals("1")){
-                            imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_precio);
+                            imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
                             Util.alertDialog(RetiroPatente.this,"Retiro Patente","Patente: "+g_patente+" retirada correctamente");
                         }else{
                             Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente",Resultado);
@@ -426,7 +437,7 @@ public class RetiroPatente extends AppCompatActivity {
                     dialog.dismiss();
                     String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, prepago, efectivo);
                     if (Resultado.equals("1")) {
-                        imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_precio);
+                        imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
                         Util.alertDialog(RetiroPatente.this, "Retiro Patente", "Patente " + g_patente + " retirada correctamente");
                         reiniciaRetiro();
                     }else{
@@ -479,7 +490,8 @@ public class RetiroPatente extends AppCompatActivity {
     }
 
     private void imprimeVoucherRetiro(String patente, int espacios, String fecha_hora_in,
-                                      String fecha_hora_out, int minutos, int precio){
+                                      String fecha_hora_out, int minutos, int minutos_gratis, int precio,
+                                      int porcent_descuento){
 
 
         PrintUnits.setSpeed(mPrintConnect.os, 0);
@@ -501,12 +513,14 @@ public class RetiroPatente extends AppCompatActivity {
                             " Consultas Reclamos 35-2212017  "+"\n"+
                             "      contacto@stochile.cl      "+"\n"+
                             "--------------------------------"+"\n"+
-                            "Patente:  "+patente+"\n"+
-                            "Espacios: "+espacios+"\n"+
-                            "Ingreso:  "+fecha_hora_in+"\n"+
-                            "Retiro:   "+fecha_hora_out+"\n"+
-                            "Tiempo:   "+String.format("%,d", minutos).replace(",",".")+" min\n"+
-                            "Precio:   $"+String.format("%,d", precio).replace(",",".");
+                            "Patente:   "+patente+"\n"+
+                            "Espacios:  "+espacios+"\n"+
+                            "Ingreso:   "+fecha_hora_in+"\n"+
+                            "Retiro:    "+fecha_hora_out+"\n"+
+                            "Tiempo:    "+String.format("%,d", minutos).replace(",",".")+" min\n"+
+                            "Gratis:    $"+String.format("%,d", minutos_gratis).replace(",",".")+" min\n"+
+                            "Precio:    $"+String.format("%,d", precio).replace(",",".")+"\n"+
+                            "Descuento: "+String.format("%,d", porcent_descuento).replace(",",".")+"%";
 
         for (int i = 0; i < Texto.length(); i++) {
             sb.append(Texto.charAt(i));
@@ -527,19 +541,23 @@ public class RetiroPatente extends AppCompatActivity {
 
         EDT_Patente.setText("");
         TV_RS_Patente.setText("");
-
         TV_RS_Espacios.setText("");
         TV_RS_Fecha_IN.setText("");
         TV_RS_Fecha_OUT.setText("");
         TV_RS_Minutos.setText("");
+        TV_RS_Minutos_Gratis.setText("");
         TV_RS_Precio.setText("");
+        TV_RS_Porcentaje_Descuento.setText("");
+
         g_id_registro_patente   = "";
         g_patente               = "";
         g_espacios              = 0;
         g_fecha_hora_out        = "";
         g_fecha_hora_in         = "";
         g_minutos               = 0;
+        g_minutos_gratis        = 0;
         g_precio                = 0;
+        g_porcent_descuento     = 0;
         g_prepago_clave         = "";
         g_prepago_saldo         = 0;
 

@@ -88,11 +88,11 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
     private void autoRetiroPatentes(){
         try{
 
-            String[] args0 = new String[] {"0"};
+            String[] args0 = new String[] {String.valueOf(AppHelper.getUbicacion_id()), "0"};
             Cursor c0 = AppHelper.getParkgoSQLite().rawQuery("SELECT trp.id, trp.patente, trp.espacios, trp.fecha_hora_in, tcu.id_cliente " +
                                                              "FROM tb_registro_patentes trp " +
                                                              "INNER JOIN tb_cliente_ubicaciones tcu ON tcu.id = trp.id_cliente_ubicacion " +
-                                                             "WHERE finalizado =? ", args0);
+                                                             "WHERE trp.id_cliente_ubicacion=? AND trp.finalizado =? ", args0);
             if (c0.moveToFirst()){
                 do{
                     String rs_id            = c0.getString(0);
@@ -100,7 +100,6 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                     int    rs_espacios      = c0.getInt(2);
                     String rs_fecha_hora_in = c0.getString(3);
                     int    rs_id_cliente    = c0.getInt(4);
-
 
                     String nombre_dia_in    = Util.nombreDiaSemana(rs_fecha_hora_in);
 

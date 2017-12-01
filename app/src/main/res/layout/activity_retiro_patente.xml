@@ -159,7 +159,29 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text=""
         android:textColor="@color/black"
+        android:id="@+id/TV_RS_Minutos_Gratis"
+        android:layout_below="@+id/TV_RS_Minutos"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text=""
+        android:textColor="@color/black"
         android:id="@+id/TV_RS_Precio"
-        android:layout_below="@+id/TV_RS_Minutos"/>
+        android:layout_below="@+id/TV_RS_Minutos_Gratis"
+        android:layout_alignParentStart="true" />
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text=""
+        android:textColor="@color/black"
+        android:id="@+id/TV_RS_Porcentaje_Descuento"
+        android:layout_below="@+id/TV_RS_Precio"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>
