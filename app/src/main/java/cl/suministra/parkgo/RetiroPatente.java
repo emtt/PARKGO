@@ -266,25 +266,28 @@ public class RetiroPatente extends AppCompatActivity {
                                                                 "INNER JOIN tb_cliente_ubicaciones tcu ON tcu.id = trp.id_cliente_ubicacion\n" +
                                                                 "WHERE trp.patente =? AND trp.id_cliente_ubicacion=? AND trp.finalizado =?", args);
                 if (c.moveToFirst()) {
-                    String rs_id             = c.getString(0);
-                    String rs_patente        = c.getString(1);
-                    String rs_fecha_hora_in  = c.getString(2);
+                    String rs_id = c.getString(0);
+                    String rs_patente = c.getString(1);
+                    String rs_fecha_hora_in = c.getString(2);
                     String rs_fecha_hora_out = c.getString(3);
-                    int rs_espacios   = c.getInt(4);
-                    int rs_dias       = c.getInt(5);
-                    int rs_horas      = c.getInt(6);
-                    int rs_minutos    = c.getInt(7);
-                    int rs_segundos   = c.getInt(8);
-                    int rs_prepago    = c.getInt(9);
-                    int rs_efectivo   = c.getInt(10);
+                    int rs_espacios = c.getInt(4);
+                    int rs_dias = c.getInt(5);
+                    int rs_horas = c.getInt(6);
+                    int rs_minutos = c.getInt(7);
+                    int rs_segundos = c.getInt(8);
+                    int rs_prepago = c.getInt(9);
+                    int rs_efectivo = c.getInt(10);
                     int rs_id_cliente = c.getInt(11);
 
-                    int precio      = 0;
-                    int total_minutos =  (rs_minutos - AppHelper.getMinutos_gratis());
-                    if (total_minutos > 0){
-                        precio = (total_minutos * AppHelper.getValor_minuto() * rs_espacios) - (rs_prepago + rs_efectivo);
+                    int precio = 0;
+                    int total_minutos = (rs_minutos - AppHelper.getMinutos_gratis());
+
+                    //Calcula el precio, ya sea por minuto, tramo ó primer tramo mas minutos.
+                    if (total_minutos > 0) {
+                        precio = Util.calcularPrecio(total_minutos, rs_espacios, rs_prepago, rs_efectivo);
                     }
 
+                    //Aplica descuento de grupo conductor en caso que existe.
                     int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(RetiroPatente.this, rs_patente, rs_id_cliente);
                     precio = Util.redondearPrecio(precio, descuento_porciento);
 
@@ -384,7 +387,7 @@ public class RetiroPatente extends AppCompatActivity {
                         String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, 0, g_precio);
                         if (Resultado.equals("1")){
                             imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
-                            Util.alertDialog(RetiroPatente.this,"Retiro Patente","Patente: "+g_patente+" retirada correctamente");
+                            //Util.alertDialog(RetiroPatente.this,"Retiro Patente","Patente: "+g_patente+" retirada correctamente");
                         }else{
                             Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente",Resultado);
                         }
@@ -438,7 +441,7 @@ public class RetiroPatente extends AppCompatActivity {
                     String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, prepago, efectivo);
                     if (Resultado.equals("1")) {
                         imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
-                        Util.alertDialog(RetiroPatente.this, "Retiro Patente", "Patente " + g_patente + " retirada correctamente");
+                        //Util.alertDialog(RetiroPatente.this, "Retiro Patente", "Patente " + g_patente + " retirada correctamente");
                         reiniciaRetiro();
                     }else{
                         Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente", Resultado);
@@ -500,25 +503,16 @@ public class RetiroPatente extends AppCompatActivity {
         sb.setLength(0);
 
         /** IMPRIME EL TEXTO **/
-        String Texto    =   "--------------------------------"+"\n"+
-                            "         TICKET SALIDA          "+"\n"+
-                            "--------------------------------"+"\n"+
-                            "Sistema de Transito Ordenado S.A"+"\n"+
-                            "        RUT 96 852 690 1        "+"\n"+
-                            "      Giro Estacionamiento      "+"\n"+
-                            "         WWW.STOCHILE.CL        "+"\n"+
-                            "--------------------------------"+"\n"+
-                            "          San Antonio           "+"\n"+
-                            "     Av Centenario 285 Of 2     "+"\n"+
-                            " Consultas Reclamos 35-2212017  "+"\n"+
-                            "      contacto@stochile.cl      "+"\n"+
-                            "--------------------------------"+"\n"+
+        String Texto    =   AppHelper.getVoucher_salida()+"\n"+
+                            AppHelper.getDescripcion_tarifa()+"\n\n"+
+                            "Zona:      "+AppHelper.getUbicacion_nombre()+"\n"+
+                            "Operador:  "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre()+ "\n"+
                             "Patente:   "+patente+"\n"+
                             "Espacios:  "+espacios+"\n"+
                             "Ingreso:   "+fecha_hora_in+"\n"+
                             "Retiro:    "+fecha_hora_out+"\n"+
                             "Tiempo:    "+String.format("%,d", minutos).replace(",",".")+" min\n"+
-                            "Gratis:    $"+String.format("%,d", minutos_gratis).replace(",",".")+" min\n"+
+                            "Gratis:    "+String.format("%,d", minutos_gratis).replace(",",".")+" min\n"+
                             "Precio:    $"+String.format("%,d", precio).replace(",",".")+"\n"+
                             "Descuento: "+String.format("%,d", porcent_descuento).replace(",",".")+"%";
 

@@ -11,10 +11,23 @@
     tools:context="cl.suministra.parkgo.ListaPatente">
 
 
+    <Button
+        android:id="@+id/BTN_Imprimir_Lista"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_button_height"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/button_blue_selector"
+        android:text="Imprimir Listado"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/activity_button_text_size" />
+
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/LST_Patente"
-        android:divider="@drawable/list_divider"></ListView>
+        android:divider="@drawable/list_divider"
+        android:layout_below="@+id/BTN_Imprimir_Lista"></ListView>
 
 </RelativeLayout>

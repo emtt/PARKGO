@@ -120,6 +120,32 @@ public class Util {
         return nombre_dia;
     }
 
+    public static int calcularPrecio(int total_minutos, int espacios, int valor_prepago, int valor_efectivo){
+        int precio = 0;
+        if (total_minutos > 0) {
+            switch (AppHelper.getTipo_cobro()) {
+                case 1: //POR MINUTO
+                    precio = (total_minutos * AppHelper.getValor_minuto() * espacios) - (valor_prepago + valor_efectivo);
+                    break;
+                case 2: //POR TRAMO
+                    double tramos_vencidos = ( (double) total_minutos /  (double) AppHelper.getMinutos_tramo());
+                    precio = (int) (Math.ceil(tramos_vencidos) * AppHelper.getValor_tramo() * espacios) - (valor_prepago + valor_efectivo);
+                    break;
+                case 3: //PRIMER TRAMO + VALOR * MINUTO
+                    int minutos_restantes = (total_minutos - AppHelper.getMinutos_tramo());
+                    if (minutos_restantes > 0 ) {
+                        precio = (minutos_restantes * AppHelper.getValor_minuto() * espacios) - (valor_prepago + valor_efectivo);
+                        precio = precio + AppHelper.getValor_tramo();
+                    }else{
+                        precio = AppHelper.getValor_tramo();
+                    }
+                    break;
+            }
+        }
+        return precio;
+    }
+
+
     public static int redondearPrecio(int precio_total, int descuento_porciento){
         //calcula el descuento.
         int precio_descuento = Math.round((precio_total * descuento_porciento) / 100);

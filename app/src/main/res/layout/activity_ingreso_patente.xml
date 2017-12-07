@@ -75,20 +75,9 @@
         android:color="@color/alert"
         android:textColor="@color/alert"
         android:id="@+id/MSJ_Espacios"
-        android:layout_below="@+id/SPIN_Espacios"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/SPIN_Espacios"/>
 
-    <ImageView
-        android:id="@+id/IMG_IngresoPatente"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/BTN_IngresoPatente"
-        android:layout_below="@+id/MSJ_Espacios"
-        android:layout_centerInParent="true"
-        android:adjustViewBounds="false"
-        android:background="@android:color/darker_gray"
-        android:scaleType="center"
-        app:srcCompat="@drawable/ic_photo" />
 
 
     <android.support.design.widget.FloatingActionButton
@@ -100,35 +89,43 @@
         app:elevation="10dp"
         app:fabSize="normal"
         app:srcCompat="@drawable/ic_message_18dp"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/MSJ_Espacios"
         android:layout_alignParentStart="true" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/BTN_Camara"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
         android:clickable="true"
         app:backgroundTint="?attr/colorPrimary"
         app:elevation="10dp"
         app:fabSize="normal"
-        app:srcCompat="@drawable/ic_camera_18dp" />
-
+        app:srcCompat="@drawable/ic_camera_18dp"
+        android:layout_below="@+id/MSJ_Espacios"
+        android:layout_centerHorizontal="true" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/BTN_IngresoPatente"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
         android:clickable="true"
         app:backgroundTint="@color/success"
         app:elevation="10dp"
         app:fabSize="normal"
-        app:srcCompat="@drawable/ic_save_18dp" />
+        app:srcCompat="@drawable/ic_save_18dp"
+        android:layout_below="@+id/MSJ_Espacios"
+        android:layout_alignParentEnd="true" />
 
-
+    <ImageView
+        android:id="@+id/IMG_IngresoPatente"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="false"
+        android:background="@android:color/darker_gray"
+        android:scaleType="center"
+        app:srcCompat="@drawable/ic_photo"
+        android:layout_below="@+id/BTN_IngresoPatente"
+        android:layout_alignParentStart="true" />
 
 
 

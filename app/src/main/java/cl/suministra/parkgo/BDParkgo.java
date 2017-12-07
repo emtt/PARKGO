@@ -67,8 +67,12 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[direccion] VARCHAR(255)  NULL,\n"+
                            "[latitud] FLOAT  NULL,\n"+
                            "[longitud] FLOAT  NULL,\n"+
+                           "[tipo_cobro] INTEGER  NULL,\n"+
+                           "[valor_minuto] INTEGER  NULL,\n"+
+                           "[valor_tramo] INTEGER  NULL,\n"+
+                           "[minutos_tramo] INTEGER  NULL,\n"+
                            "[minutos_gratis] INTEGER  NULL,\n"+
-                           "[valor_minuto] INTEGER  NULL\n"+
+                           "[descripcion_tarifa] VARCHAR(128)  NULL\n"+
                            ");\n"+
                        "DROP TABLE IF EXISTS [tb_cliente_ubicaciones_horarios];\n"+
                        "CREATE TABLE [tb_cliente_ubicaciones_horarios] (\n" +

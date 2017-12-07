@@ -269,7 +269,7 @@
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
             android:background="@drawable/button_blue_selector"
-            android:text="LISTAR VEHÍCULOS"
+            android:text="LISTA VEHICULOS"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="@dimen/activity_button_text_size"

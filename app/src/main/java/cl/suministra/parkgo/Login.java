@@ -32,11 +32,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.ContentType;
+import cz.msebera.android.httpclient.entity.StringEntity;
+import cz.msebera.android.httpclient.message.BasicHeader;
+import cz.msebera.android.httpclient.protocol.HTTP;
 
 
 public class Login extends AppCompatActivity {
@@ -161,9 +166,10 @@ public class Login extends AppCompatActivity {
         {
             @Override
             public void onClick(View v) {
-                if (!verficaServidorConfigurado()){
+
+                if (!configuracionInicial()){
                 }else {
-                    loginUsuario();
+                    comparaHoraServidor();
                 }
             }
 
@@ -219,9 +225,10 @@ public class Login extends AppCompatActivity {
         try {
             String[] args = new String[]{UsuarioCodigo, UsuarioClave};
 
-            String qry = "SELECT tu.rut AS rut_usuario, tu.nombre AS nombre_usuario, tc.id AS cliente_id, tc.razon_social AS razon_social,\n" +
+            String qry = "SELECT tu.rut AS rut_usuario, tu.nombre AS nombre_usuario, tu.codigo AS codigo_usuario, tc.id AS cliente_id, tc.razon_social AS razon_social,\n" +
                                 "tcu.id AS ubicacion_id, tcu.descripcion AS ubicacion_desc, tcu.direccion AS ubicacion_dir, \n" +
-                                "tcu.minutos_gratis AS minutos_gratis, tcu.valor_minuto AS valor_minuto \n" +
+                                "tcu.tipo_cobro AS tipo_cobro, tcu.valor_minuto AS valor_minuto, tcu.valor_tramo AS valor_tramo, \n" +
+                                "tcu.minutos_tramo AS minutos_tramo, tcu.minutos_gratis AS minutos_gratis, tcu.descripcion_tarifa AS descripcion_tarifa \n" +
                                 "FROM tb_usuario tu\n" +
                                 "LEFT JOIN tb_cliente_ubicaciones tcu ON tcu.id = tu.id_cliente_ubicacion\n" +
                                 "LEFT JOIN tb_cliente tc ON tc.id = tcu.id_cliente\n" +
@@ -231,22 +238,33 @@ public class Login extends AppCompatActivity {
             if (c.moveToFirst()) {
                 String rs_usuario_rut = c.getString(0);
                 String rs_usuario_nombre = c.getString(1);
-                int rs_cliente_id = c.getInt(2);
-                String rs_cliente_razon_social = c.getString(3);
-                int rs_ubicacion_id = c.getInt(4);
-                String rs_usuario_ubicacion = c.getString(5);
-                String rs_usuario_ubicacion_dir = c.getString(6);
-                int rs_minutos_gratis = c.getInt(7);
-                int rs_valor_minuto = c.getInt(8);
+                String rs_usuario_codigo = c.getString(2);
+                int rs_cliente_id = c.getInt(3);
+                String rs_cliente_razon_social = c.getString(4);
+                int rs_ubicacion_id = c.getInt(5);
+                String rs_usuario_ubicacion     = c.getString(6);
+                String rs_usuario_ubicacion_dir = c.getString(7);
+                int rs_tipo_cobro     = c.getInt(8);
+                int rs_valor_minuto   = c.getInt(9);
+                int rs_valor_tramo    = c.getInt(10);
+                int rs_minutos_tramo  = c.getInt(11);
+                int rs_minutos_gratis = c.getInt(12);
+                String rs_descripcion_tarifa = c.getString(13);
 
                 AppHelper.setUsuario_rut(rs_usuario_rut);
                 AppHelper.setUsuario_nombre(rs_usuario_nombre);
+                AppHelper.setUsuario_codigo(rs_usuario_codigo);
                 //De acuerdo a la ubicacion del usuario.
                 AppHelper.setCliente_id(rs_cliente_id);
                 AppHelper.setUbicacion_id(rs_ubicacion_id);
                 AppHelper.setUbicacion_nombre(rs_usuario_ubicacion);
-                AppHelper.setMinutos_gratis(rs_minutos_gratis);
+
+                AppHelper.setTipo_cobro(rs_tipo_cobro);
                 AppHelper.setValor_minuto(rs_valor_minuto);
+                AppHelper.setValor_tramo(rs_valor_tramo);
+                AppHelper.setMinutos_tramo(rs_minutos_tramo);
+                AppHelper.setMinutos_gratis(rs_minutos_gratis);
+                AppHelper.setDescripcion_tarifa(rs_descripcion_tarifa);
 
                 //graba latitud y longitud del ingreso.
                 registraUsuarioUbicacion(rs_usuario_rut, rs_ubicacion_id);
@@ -291,7 +309,7 @@ public class Login extends AppCompatActivity {
 
     private void procesoSincronizarMaestros(){
 
-        if (!verficaServidorConfigurado()){
+        if (!configuracionInicial()){
         }else {
 
             g_maestro_numero = 0;
@@ -388,16 +406,21 @@ public class Login extends AppCompatActivity {
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente_ubicaciones;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                int id = jsonObject.optInt("id");
-                                int id_cliente = jsonObject.optInt("id_cliente");
+                                int id             = jsonObject.optInt("id");
+                                int id_cliente     = jsonObject.optInt("id_cliente");
                                 String descripcion = jsonObject.optString("descripcion");
                                 String direccion   = jsonObject.optString("direccion");
                                 String latitud     = jsonObject.optString("latitud");
                                 String longitud    = jsonObject.optString("longitud");
-                                int minutos_gratis = jsonObject.optInt("minutos_gratis");
+                                int tipo_cobro     = jsonObject.optInt("tipo_cobro");
                                 int valor_minuto   = jsonObject.optInt("valor_minuto");
-                                qry = "INSERT INTO tb_cliente_ubicaciones (id, id_cliente, descripcion, direccion, latitud, longitud, minutos_gratis, valor_minuto ) VALUES " +
-                                        "(" + id + "," + id_cliente + ",'" + descripcion + "','" + direccion + "','" + latitud + "','" + longitud + "'," + minutos_gratis + "," + valor_minuto + ");";
+                                int valor_tramo    = jsonObject.optInt("valor_tramo");
+                                int minutos_tramo  = jsonObject.optInt("minutos_tramo");
+                                int minutos_gratis = jsonObject.optInt("minutos_gratis");
+                                String descripcion_tarifa = jsonObject.optString("descripcion_tarifa");
+
+                                qry = "INSERT INTO tb_cliente_ubicaciones (id, id_cliente, descripcion, direccion, latitud, longitud, tipo_cobro, valor_minuto, valor_tramo, minutos_tramo , minutos_gratis, descripcion_tarifa ) VALUES " +
+                                        "(" + id + "," + id_cliente + ",'" + descripcion + "','" + direccion + "','" + latitud + "','" + longitud + "'," + tipo_cobro + "," + valor_minuto + "," + valor_tramo + "," + minutos_tramo + "," + minutos_gratis + ", '" + descripcion_tarifa + "' );";
                                 AppHelper.getParkgoSQLite().execSQL(qry);
                             }
                             break;
@@ -564,7 +587,7 @@ public class Login extends AppCompatActivity {
 
     }
 
-    private boolean verficaServidorConfigurado(){
+    private boolean configuracionInicial(){
 
         Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT seccion, clave, valor FROM tb_configuracion", null);
         if (c.moveToFirst()){
@@ -573,6 +596,14 @@ public class Login extends AppCompatActivity {
                     AppHelper.setUrl_restful(c.getString(2));
                 }else if (c.getString(0).equals("SERVER") && c.getString(1).equals("PAGINA_TEST")) {
                     AppHelper.setPagina_test(c.getString(2));
+                }else if (c.getString(0).equals("SERVER_MAQUINA") && c.getString(1).equals("MINUTOS_DIFF")) {
+                    AppHelper.setMinutos_diff(c.getInt(2));
+                }else if (c.getString(0).equals("VOUCHER") && c.getString(1).equals("INGRESO")) {
+                AppHelper.setVoucher_ingreso(c.getString(2));
+                }else if (c.getString(0).equals("VOUCHER") && c.getString(1).equals("SALIDA")) {
+                    AppHelper.setVoucher_salida(c.getString(2));
+                }else if (c.getString(0).equals("VOUCHER") && c.getString(1).equals("ESTACIONADOS")) {
+                    AppHelper.setVoucher_estacionados(c.getString(2));
                 }
             }while(c.moveToNext());
         }
@@ -652,6 +683,90 @@ public class Login extends AppCompatActivity {
 
         Intent intent = new Intent(this, Configuracion.class);
         startActivity(intent);
+
+    }
+
+    public void comparaHoraServidor(){
+
+        String fecha_hora_maquina   = AppHelper.fechaHoraFormat.format(new Date());
+        final AsyncHttpClient cliente = new AsyncHttpClient();
+        JSONObject jsonParams  = null;
+        StringEntity entity    = null;
+
+
+        try {
+
+            jsonParams = new JSONObject();
+            jsonParams.put("fecha_hora_maquina",fecha_hora_maquina);
+            entity = new StringEntity(jsonParams.toString());
+
+            entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
+            cliente.post(App.context, AppHelper.getUrl_restful() + "fecha_hora_servidor" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+
+                    Log.d(AppHelper.LOG_TAG, "AsyncComparaHoraServidor onSuccess "+new String(responseBody));
+
+                    try {
+                        JSONObject jsonRootObject = new JSONObject(new String(responseBody));
+                        JSONArray jsonArray       = jsonRootObject.optJSONArray("success");
+                        if(jsonArray != null){
+
+                            JSONObject jsonObject = jsonArray.getJSONObject(0);
+                            int minutos_diff      = jsonObject.optInt("minutos_diff");
+                            String fecha_hora_servidor =  jsonObject.optString("fecha_hora_servidor");
+
+                            //Si la diferencia en minutos es mayor a la configurada, entonces deberá ajustar la hora.
+                            if(minutos_diff > AppHelper.getMinutos_diff()){
+                                AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+                                builder.setTitle("Información importante!");
+                                builder.setMessage("Fecha y hora configurada en la máquina no coincide con el servidor "+fecha_hora_servidor+", existe una diferencia de "+minutos_diff+" minutos, verifique");
+                                builder.setPositiveButton("Configurar",
+                                        new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        startActivityForResult(new Intent(android.provider.Settings.ACTION_DATE_SETTINGS), 0);
+                                    }
+                                });
+                                builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+                                builder.show();
+
+                            }else{
+                                loginUsuario();
+                            }
+
+                        }else{
+                            jsonArray = jsonRootObject.optJSONArray("error");
+                            if(jsonArray != null){
+                                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                Util.alertDialog(Login.this,"Error comparaHoraServidor Login", jsonObject.optString("text"));
+                              }
+                        }
+                    } catch (JSONException e) {
+                        Util.alertDialog(Login.this, "JSONException comparaHoraServidor Login", e.getMessage());
+                    }
+
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                   Util.alertDialog(Login.this, "onFailure comparaHoraServidor Login", error.getMessage());
+                   cliente.cancelRequests(App.context, true);
+                }
+
+            });
+
+        } catch (UnsupportedEncodingException e0) {
+            Util.alertDialog(Login.this, "UnsupportedEncodingException comparaHoraServidor Login", e0.getMessage());
+        } catch (JSONException e1) {
+            Util.alertDialog(Login.this, "JSONException comparaHoraServidor Login", e1.getMessage());
+        }
+
 
     }
 

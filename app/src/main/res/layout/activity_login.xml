@@ -175,6 +175,15 @@
 
     </LinearLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textAlignment="textEnd"
+        android:text="@string/version"
+        android:id="@+id/Version"
+        android:layout_below="@+id/CNT_Botones" />
+
 </RelativeLayout>
 
     <android.support.design.widget.NavigationView

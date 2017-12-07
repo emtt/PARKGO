@@ -4,22 +4,31 @@ import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.menu.BaseMenuPresenter;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.obm.mylibrary.PrintConnect;
+import com.obm.mylibrary.PrintUnits;
+
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ListaPatente extends AppCompatActivity {
 
 
+    public static PrintConnect mPrintConnect;
+
+    private Button BTN_Imprimir_Lista;
     private ListView LST_Patente;
     private TextView TV_Patente;
     private TextView TV_Fecha_IN;
@@ -35,7 +44,8 @@ public class ListaPatente extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_patente);
-        this.setTitle("Listado de Vehículos Pendientes");
+        this.setTitle("Vehículos Estacionados");
+        mPrintConnect = new PrintConnect(this);
         inicio();
     }
 
@@ -47,6 +57,22 @@ public class ListaPatente extends AppCompatActivity {
         CustomAdapter customAdapter = new CustomAdapter();
         LST_Patente.setAdapter(customAdapter);
 
+        BTN_Imprimir_Lista = (Button) findViewById(R.id.BTN_Imprimir_Lista);
+        BTN_Imprimir_Lista.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+               String patentes = "";
+               for (int i = patentesList.size() - 1; i >= 0; i--){
+                    //String.valueOf(patentesList.get(i).patente);
+                   patentes =  patentesList.get(i).patente + "\n" + patentes;
+               }
+               imprimeVoucherEstacionados(patentes);
+               Log.d(AppHelper.LOG_TAG,String.valueOf(patentes));
+
+            }
+        });
 
     }
 
@@ -63,9 +89,12 @@ public class ListaPatente extends AppCompatActivity {
                                                         "trp.finalizado, tcu.id_cliente \n" +
                                                         "FROM tb_registro_patentes trp\n" +
                                                         "INNER JOIN tb_cliente_ubicaciones tcu ON tcu.id = trp.id_cliente_ubicacion\n" +
-                                                        "WHERE trp.id_cliente_ubicacion=? AND trp.finalizado =?", args);
+                                                        "WHERE trp.id_cliente_ubicacion=? AND trp.finalizado =? \n"+
+                                                        "ORDER BY trp.patente ASC", args);
         if (c.moveToFirst()) {
             do {
+
+
                 String rs_id      = c.getString(0);
                 String rs_patente = c.getString(1);
                 int rs_espacios   = c.getInt(2);
@@ -77,8 +106,8 @@ public class ListaPatente extends AppCompatActivity {
 
                 int precio      = 0;
                 int total_minutos =  (rs_minutos - AppHelper.getMinutos_gratis());
-                if (total_minutos > 0){
-                    precio = total_minutos * AppHelper.getValor_minuto() * rs_espacios;
+                if (total_minutos > 0) {
+                    precio = Util.calcularPrecio(total_minutos, rs_espacios, 0, 0);
                 }
 
                 int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(ListaPatente.this, rs_patente, rs_id_cliente);
@@ -87,9 +116,40 @@ public class ListaPatente extends AppCompatActivity {
                 PatentesPendiente patentePendiente = new PatentesPendiente(rs_patente,rs_fecha_hora_in, rs_rut_usuario_in , rs_maquina_in,
                                                                            rs_espacios, rs_minutos, precio);
                 patentesList.add(patentePendiente);
+
             } while(c.moveToNext());
         }
 
+    }
+
+
+    private void imprimeVoucherEstacionados(String patentes){
+
+        PrintUnits.setSpeed(mPrintConnect.os, 0);
+        PrintUnits.setConcentration(mPrintConnect.os, 2);
+        StringBuffer sb = new StringBuffer();
+        sb.setLength(0);
+
+        /** IMPRIME EL TEXTO **/
+        String Texto    =  AppHelper.getVoucher_estacionados()+"\n"+
+                           "Fecha hora: "+ AppHelper.fechaHoraFormat.format(new Date())+"\n"+
+                           "Zona:       "+AppHelper.getUbicacion_nombre()+"\n"+
+                           "Operador:   "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre()+ "\n\n"+
+                           patentes;
+
+
+        for (int i = 0; i < Texto.length(); i++) {
+            sb.append(Texto.charAt(i));
+        }
+        sb.append("\n");
+        mPrintConnect.send(sb.toString());
+
+        /** IMPRIME ESPACIO PARA CORTAR ETIQUETA **/
+        sb.setLength(0);
+        for (int i = 0; i < 4; i++) {
+            sb.append("\n");
+        }
+        mPrintConnect.send(sb.toString());
     }
 
     class CustomAdapter extends BaseAdapter{
@@ -130,6 +190,14 @@ public class ListaPatente extends AppCompatActivity {
 
             return convertView;
 
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mPrintConnect != null) {
+            mPrintConnect.stop();
         }
     }
 

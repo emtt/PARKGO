@@ -84,8 +84,8 @@ public class Menu extends AppCompatActivity {
 
         String[] args = new String[] {String.valueOf(AppHelper.getUbicacion_id()),nombre_dia_actual};
         Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT suma_dia, dia_desde, hora_desde, dia_hasta, hora_hasta " +
-                "FROM tb_cliente_ubicaciones_horarios "+
-                "WHERE id_cliente_ubicacion =? AND dia_desde =? ", args);
+                                                        "FROM tb_cliente_ubicaciones_horarios "+
+                                                        "WHERE id_cliente_ubicacion =? AND dia_desde =? ", args);
         if (c.moveToFirst()) {
             horario_definido   = true;
             horario_suma_dia   = c.getInt(0);

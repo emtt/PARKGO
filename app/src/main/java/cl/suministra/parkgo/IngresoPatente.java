@@ -122,7 +122,8 @@ public class IngresoPatente extends AppCompatActivity {
                 String fecha_hora_in = AppHelper.fechaHoraFormat.format(fechahora_in);
                 String id_registro_patente  = AppHelper.fechaHoraFormatID.format(fechahora_in)+"_"+AppHelper.getSerialNum()+"_"+patente;
 
-                confirmDialog(IngresoPatente.this,"Confirme para ingresar la patente "+patente, id_registro_patente ,patente, espacios, fecha_hora_in);
+                //confirmDialog(IngresoPatente.this,"Confirme para ingresar la patente "+patente, id_registro_patente ,patente, espacios, fecha_hora_in);
+                finalizarIngresoPatente(id_registro_patente ,patente, espacios, fecha_hora_in);
 
             }
 
@@ -149,6 +150,45 @@ public class IngresoPatente extends AppCompatActivity {
 
     }
 
+    public void finalizarIngresoPatente(final String id_registro_patente, final String patente, final String espacios, final String fecha_hora_in){
+
+        String Resultado = consultaPatenteIngreso(patente);
+        if (Resultado.equals("1")){ //patente existe
+            reiniciaIngreso();
+        }else if (Resultado.equals("0")){ //patente no existe (inserta)
+            //Intenta obtener la ubicación GPS
+            AppGPS.getLastLocation(new GPSCallback() {
+                @Override
+                public void onResponseSuccess(Location location) {
+                    if(location != null){
+                        g_latitud  = Double.toString(location.getLatitude());
+                        g_longitud = Double.toString(location.getLongitude());
+                    }else{
+                        g_latitud = "";
+                        g_longitud= "";
+                    }
+                    insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
+                }
+                @Override
+                public void onResponseFailure(Exception e) {
+                    g_latitud = "";
+                    g_longitud= "";
+                    insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
+                    Log.d(AppHelper.LOG_TAG, "Ingreso Patente onResponseFailure "+e.getMessage());
+                }
+            });
+
+        }else{ //error SQL consulta patente
+            reiniciaIngreso();
+            Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente",Resultado);
+        }
+
+
+
+
+    }
+
+    /*
     public void confirmDialog(Context context, String mensaje, final String id_registro_patente, final String patente, final String espacios, final String fecha_hora_in) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder
@@ -196,6 +236,7 @@ public class IngresoPatente extends AppCompatActivity {
                 })
                 .show();
     }
+    */
 
     private String consultaPatenteIngreso(String patente){
 
@@ -245,7 +286,7 @@ public class IngresoPatente extends AppCompatActivity {
 
             imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
             reiniciaIngreso();
-            Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
+            //Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
 
         }catch(SQLException e){
             reiniciaIngreso();
@@ -257,29 +298,20 @@ public class IngresoPatente extends AppCompatActivity {
 
     private void imprimeVoucherIngreso(String patente, String espacios, String fecha_hora_in){
 
-
         PrintUnits.setSpeed(mPrintConnect.os, 0);
         PrintUnits.setConcentration(mPrintConnect.os, 2);
         StringBuffer sb = new StringBuffer();
         sb.setLength(0);
 
         /** IMPRIME EL TEXTO **/
-        String Texto    = "--------------------------------"+"\n"+
-                          "          TICKET INGRESO        "+"\n"+
-                          "--------------------------------"+"\n"+
-                          "Sistema de Transito Ordenado S.A"+"\n"+
-                          "        RUT 96 852 690 1        "+"\n"+
-                          "      Giro Estacionamiento      "+"\n"+
-                          "         WWW.STOCHILE.CL        "+"\n"+
-                          "--------------------------------"+"\n"+
-                          "          San Antonio           "+"\n"+
-                          "     Av Centenario 285 Of 2     "+"\n"+
-                          " Consultas Reclamos 35-2212017  "+"\n"+
-                          "      contacto@stochile.cl      "+"\n"+
-                          "--------------------------------"+"\n"+
-                          "Patente: "+patente+"\n"+
-                          "Ingreso: "+fecha_hora_in+"\n"+
-                          "Espacios: "+espacios+"\n";
+        String Texto    =  AppHelper.getVoucher_ingreso()+"\n"+
+                           AppHelper.getDescripcion_tarifa()+"\n\n"+
+                           "Zona:     "+AppHelper.getUbicacion_nombre()+"\n"+
+                           "Operador: "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre()+ "\n"+
+                           "Patente:  "+patente+"\n"+
+                           "Ingreso:  "+fecha_hora_in+"\n"+
+                           "Espacios: "+espacios+"\n";
+
         for (int i = 0; i < Texto.length(); i++) {
             sb.append(Texto.charAt(i));
         }

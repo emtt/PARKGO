@@ -18,13 +18,14 @@ import java.util.Locale;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 1;
+    private static int db_version    = 3;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
     private static String serial_no  = "";
     private static String usuario_rut= "";
     private static String usuario_nombre = "";
+    private static String usuario_codigo = "";
 
     public static DateFormat fechaHoraFormat   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static DateFormat fechaHoraFormatID = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -34,11 +35,22 @@ public class AppHelper {
     public static int ubicacion_id   = 0;
 
     public static String ubicacion_nombre = "";
-    public static int minutos_gratis = 0;
+    public static int tipo_cobro     = 0;
     public static int valor_minuto   = 0;
+    public static int valor_tramo    = 0;
+    public static int minutos_tramo  = 0;
+    public static int minutos_gratis = 0;
+    public static String descripcion_tarifa = "";
+
+    public static String voucher_ingreso = "";
+    public static String voucher_salida  = "";
+
+    public static String voucher_estacionados = "";
 
     public static String url_restful = "";
     public static String pagina_test = "";
+
+    public static int minutos_diff   = 0; //diferencia máxima de minutos posible entre hora máquina y hora servidor. (se configura en tabla configuración);
     public static String LOG_TAG     = "parkgo_log";
 
     public static void initParkgoDB(Context context){
@@ -66,6 +78,15 @@ public class AppHelper {
         AppHelper.usuario_nombre = usuario_nombre;
     }
 
+    public static String getUsuario_codigo() {
+        return usuario_codigo;
+    }
+
+    public static void setUsuario_codigo(String usuario_codigo) {
+        AppHelper.usuario_codigo = usuario_codigo;
+    }
+
+
     public static int getCliente_id() {
         return cliente_id;
     }
@@ -90,12 +111,12 @@ public class AppHelper {
         AppHelper.ubicacion_nombre = ubicacion_nombre;
     }
 
-    public static int getMinutos_gratis() {
-        return minutos_gratis;
+    public static int getTipo_cobro() {
+        return tipo_cobro;
     }
 
-    public static void setMinutos_gratis(int minutos_gratis) {
-        AppHelper.minutos_gratis = minutos_gratis;
+    public static void setTipo_cobro(int tipo_cobro) {
+        AppHelper.tipo_cobro = tipo_cobro;
     }
 
     public static int getValor_minuto() {
@@ -105,6 +126,64 @@ public class AppHelper {
     public static void setValor_minuto(int valor_minuto) {
         AppHelper.valor_minuto = valor_minuto;
     }
+
+    public static int getValor_tramo() {
+        return valor_tramo;
+    }
+
+    public static void setValor_tramo(int valor_tramo) {
+        AppHelper.valor_tramo = valor_tramo;
+    }
+
+    public static int getMinutos_tramo() {
+        return minutos_tramo;
+    }
+
+    public static void setMinutos_tramo(int minutos_tramo) {
+        AppHelper.minutos_tramo = minutos_tramo;
+    }
+
+    public static int getMinutos_gratis() {
+        return minutos_gratis;
+    }
+
+    public static void setMinutos_gratis(int minutos_gratis) {
+        AppHelper.minutos_gratis = minutos_gratis;
+    }
+
+    public static String getDescripcion_tarifa() {
+        return descripcion_tarifa;
+    }
+
+    public static void setDescripcion_tarifa(String descripcion_tarifa) {
+        AppHelper.descripcion_tarifa = descripcion_tarifa;
+    }
+
+
+    public static String getVoucher_ingreso() {
+        return voucher_ingreso;
+    }
+
+    public static void setVoucher_ingreso(String voucher_ingreso) {
+        AppHelper.voucher_ingreso = voucher_ingreso;
+    }
+
+    public static String getVoucher_salida() {
+        return voucher_salida;
+    }
+
+    public static void setVoucher_salida(String voucher_salida) {
+        AppHelper.voucher_salida = voucher_salida;
+    }
+
+    public static String getVoucher_estacionados() {
+        return voucher_estacionados;
+    }
+
+    public static void setVoucher_estacionados(String voucher_estacionados) {
+        AppHelper.voucher_estacionados = voucher_estacionados;
+    }
+
 
     public static void initSerialNum(Context context){
         try {
@@ -132,6 +211,14 @@ public class AppHelper {
 
     public static void setPagina_test(String pagina_test) {
         AppHelper.pagina_test = pagina_test;
+    }
+
+    public static int getMinutos_diff() {
+        return minutos_diff;
+    }
+
+    public static void setMinutos_diff(int minutos_diff) {
+        AppHelper.minutos_diff = minutos_diff;
     }
 
     //retorna directorio de almacenamiento para las imagenes de la camara.
