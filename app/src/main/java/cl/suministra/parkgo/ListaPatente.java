@@ -44,7 +44,7 @@ public class ListaPatente extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_patente);
-        this.setTitle("Vehículos Estacionados");
+        this.setTitle("Lista Vehículos Estacionados");
         mPrintConnect = new PrintConnect(this);
         inicio();
     }
@@ -62,15 +62,17 @@ public class ListaPatente extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-
-               String patentes = "";
-               for (int i = patentesList.size() - 1; i >= 0; i--){
+            if(patentesList.size() > 0) {
+                String patentes = "";
+                for (int i = patentesList.size() - 1; i >= 0; i--) {
                     //String.valueOf(patentesList.get(i).patente);
-                   patentes =  patentesList.get(i).patente + "\n" + patentes;
-               }
-               imprimeVoucherEstacionados(patentes);
-               Log.d(AppHelper.LOG_TAG,String.valueOf(patentes));
-
+                    patentes = patentesList.get(i).patente + "\n" + patentes;
+                }
+                imprimeVoucherEstacionados(patentes);
+                Log.d(AppHelper.LOG_TAG, String.valueOf(patentes));
+            }else{
+                Util.alertDialog(ListaPatente.this,"Lista Patentes", "No hay patentes para imprimir");
+            }
             }
         });
 

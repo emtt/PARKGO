@@ -151,6 +151,23 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
                     AppHelper.getParkgoSQLite().execSQL(qry);
                     Log.d(AppHelper.LOG_TAG, qry);
+
+                    //Marca el registro como recibido en el servidor.
+                    ClienteAsync(AppHelper.getUrl_restful() + "registro_patentes_maquinas_upt_out/" + AppHelper.getSerialNum() + "/" + id_registro_patente, new ClienteCallback() {
+
+                        @Override
+                        public void onResponse(int esError, int statusCode, String responseBody) {
+                            if(esError == 0 && !responseBody.equals("")) {
+                                //Si no hay error entonces recibira
+                            }else{
+                                Log.d(AppHelper.LOG_TAG,"AsyncGETRetiroPatente ERROR SYNC Código: " + statusCode + "\n" + responseBody);
+                            }
+                        }
+
+                    });
+
+
+
                 }
 
             }else{

@@ -137,7 +137,7 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                     String longitud       = jsonObject.optString("longitud");
                     String comentario     = jsonObject.optString("comentario");
 
-                    qry =   "INSERT INTO tb_registro_patentes "+
+                    qry =   "INSERT OR IGNORE INTO tb_registro_patentes "+
                                 "(id, id_cliente_ubicacion, patente, " +
                                  "espacios, fecha_hora_in, rut_usuario_in, " +
                                  "maquina_in, imagen_in, enviado_in, " +
@@ -156,6 +156,21 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
 
                     AppHelper.getParkgoSQLite().execSQL(qry);
                     Log.d(AppHelper.LOG_TAG, qry);
+
+                    //Marca el registro como recibido en el servidor.
+                    ClienteAsync(AppHelper.getUrl_restful() + "registro_patentes_maquinas_upt_in/" + AppHelper.getSerialNum() + "/" + id_registro_patente, new ClienteCallback() {
+
+                        @Override
+                        public void onResponse(int esError, int statusCode, String responseBody) {
+                            if(esError == 0 && !responseBody.equals("")) {
+                                //Si no hay error entonces recibira
+                            }else{
+                                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente ERROR SYNC Código: " + statusCode + "\n" + responseBody);
+                            }
+                        }
+
+                    });
+
                 }
 
             }else{
