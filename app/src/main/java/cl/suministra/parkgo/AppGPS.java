@@ -2,6 +2,7 @@ package cl.suministra.parkgo;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -111,6 +112,16 @@ public class AppGPS implements GoogleApiClient.ConnectionCallbacks, GoogleApiCli
                         Log.d(AppHelper.LOG_TAG, "AppGPS getLastLocation.onFailure "+e.getMessage());
                     }
                 });
+    }
+
+    public boolean verificaConexionGoogleApi(Context context){
+
+        if (!googleApiClient.isConnected()){
+            googleApiClient.connect();
+        }
+        Log.d(AppHelper.LOG_TAG, "CONEXION GOOGLE API "+googleApiClient.isConnected());
+        return googleApiClient.isConnected();
+
     }
 
     @Override

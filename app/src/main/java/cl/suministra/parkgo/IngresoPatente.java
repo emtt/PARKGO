@@ -465,7 +465,9 @@ public class IngresoPatente extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        appGPS.conectaGPS();
+        if (appGPS.verificaConexionGoogleApi(IngresoPatente.this)) {
+            appGPS.conectaGPS();
+        }
     }
 
     @Override
@@ -476,15 +478,18 @@ public class IngresoPatente extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        appGPS.pausarGPS();
+        if (appGPS.verificaConexionGoogleApi(IngresoPatente.this)) {
+            appGPS.pausarGPS();
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        appGPS.desconectaGPS();
+        if (appGPS.verificaConexionGoogleApi(IngresoPatente.this)) {
+            appGPS.desconectaGPS();
+        }
     }
-
 
     @Override
     protected void onDestroy() {

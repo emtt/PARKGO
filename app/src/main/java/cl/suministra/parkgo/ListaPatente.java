@@ -1,10 +1,13 @@
 package cl.suministra.parkgo;
 
+import android.app.ProgressDialog;
 import android.database.Cursor;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.menu.BaseMenuPresenter;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -29,6 +32,7 @@ public class ListaPatente extends AppCompatActivity {
     public static PrintConnect mPrintConnect;
 
     private Button BTN_Imprimir_Lista;
+    private Button BTN_Actualizar_Lista;
     private ListView LST_Patente;
     private TextView TV_Patente;
     private TextView TV_Fecha_IN;
@@ -38,7 +42,11 @@ public class ListaPatente extends AppCompatActivity {
     private TextView TV_Minutos;
     private TextView TV_Precio;
 
-   List<PatentesPendiente> patentesList = new ArrayList<PatentesPendiente>();
+    private ProgressDialog esperaDialog;
+
+    CustomAdapter customAdapter = null;
+
+    List<PatentesPendiente> patentesList = new ArrayList<PatentesPendiente>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +59,9 @@ public class ListaPatente extends AppCompatActivity {
 
     private void inicio(){
 
-        ConsultaPatentesPendiente();
-
         LST_Patente = (ListView) findViewById(R.id.LST_Patente);
-        CustomAdapter customAdapter = new CustomAdapter();
-        LST_Patente.setAdapter(customAdapter);
+
+        ConsultaPatentesPendiente();
 
         BTN_Imprimir_Lista = (Button) findViewById(R.id.BTN_Imprimir_Lista);
         BTN_Imprimir_Lista.setOnClickListener(new View.OnClickListener() {
@@ -76,10 +82,32 @@ public class ListaPatente extends AppCompatActivity {
             }
         });
 
+        BTN_Actualizar_Lista = (Button) findViewById(R.id.BTN_Actualizar_Lista);
+        BTN_Actualizar_Lista.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                esperaDialog = ProgressDialog.show(ListaPatente.this, "", "Actualizando...", true);
+                esperaDialog.show();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+
+                        ConsultaPatentesPendiente();
+
+                        esperaDialog.dismiss();
+                    }
+                }, 500);
+
+            }
+        });
+
     }
 
     private void ConsultaPatentesPendiente(){
 
+        patentesList.clear();
         String[] args = new String[]{String.valueOf(AppHelper.getUbicacion_id()),"0"};
         Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT\n" +
                                                         "trp.id, trp.patente, trp.espacios, trp.fecha_hora_in, trp.rut_usuario_in, trp.maquina_in, \n" +
@@ -120,10 +148,14 @@ public class ListaPatente extends AppCompatActivity {
                 patentesList.add(patentePendiente);
 
             } while(c.moveToNext());
+
+            customAdapter = new CustomAdapter();
+            customAdapter.notifyDataSetChanged();
+            LST_Patente.setAdapter(customAdapter);
+
         }
 
     }
-
 
     private void imprimeVoucherEstacionados(String patentes){
 
@@ -155,6 +187,8 @@ public class ListaPatente extends AppCompatActivity {
     }
 
     class CustomAdapter extends BaseAdapter{
+
+
         @Override
         public int getCount() {
             return patentesList.size();

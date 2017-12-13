@@ -10,24 +10,59 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="cl.suministra.parkgo.ListaPatente">
 
-
-    <Button
-        android:id="@+id/BTN_Imprimir_Lista"
+    <LinearLayout
+        android:id="@+id/CNT_Botones"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/activity_button_height"
-        android:layout_centerHorizontal="true"
-        android:layout_marginLeft="10dp"
-        android:background="@drawable/button_blue_selector"
-        android:text="Imprimir Listado"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="@dimen/activity_button_text_size" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1" >
+
+            <Button
+                android:id="@+id/BTN_Imprimir_Lista"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/activity_button_height"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/button_blue_selector"
+                android:text="IMPRIMIR"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/activity_button_text_size"
+                android:layout_marginRight="10dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1" >
+
+            <Button
+                android:id="@+id/BTN_Actualizar_Lista"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/activity_button_height"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/button_blue_selector"
+                android:text="ACTUALIZAR"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/activity_button_text_size"
+                android:layout_marginLeft="10dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/LST_Patente"
         android:divider="@drawable/list_divider"
-        android:layout_below="@+id/BTN_Imprimir_Lista"></ListView>
+        android:layout_below="@+id/CNT_Botones"></ListView>
 
 </RelativeLayout>

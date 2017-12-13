@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -25,6 +26,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.loopj.android.http.*;
 
 import org.json.JSONArray;
@@ -325,12 +328,31 @@ public class Login extends AppCompatActivity {
             ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
                 @Override
                 public void onResponse(int esError, int statusCode, String responseBody) {
-                    if (esError == 0) {
-                        SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
-                    } else {
-                        esperaDialog.dismiss();
-                        Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
+
+                    try {
+
+                        JSONObject jsonRootObject = new JSONObject(responseBody);
+                        JSONArray jsonArray = jsonRootObject.optJSONArray(g_maestro_nombre);
+                        if(jsonArray != null){
+
+                            if (esError == 0) {
+                                SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                            } else {
+                                esperaDialog.dismiss();
+                                Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
+                            }
+
+                        }else{
+                            esperaDialog.dismiss();
+                            jsonArray = jsonRootObject.optJSONArray("error");
+                            JSONObject jsonObject = jsonArray.getJSONObject(0);
+                            Util.alertDialog(Login.this,"ErrorSync Login", jsonObject.optString("text") );
+                        }
+
+                    } catch (JSONException e) {
+                        Util.alertDialog(Login.this,"ErrorSync Login",e.getMessage() );
                     }
+
                 }
             });
 
@@ -538,12 +560,31 @@ public class Login extends AppCompatActivity {
                     ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
                         @Override
                         public void onResponse(int esError, int statusCode, String responseBody) {
-                            if (esError == 0) {
-                                SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
-                            } else {
-                                esperaDialog.dismiss();
-                                Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
+
+                            try {
+
+                                JSONObject jsonRootObject = new JSONObject(responseBody);
+                                JSONArray jsonArray = jsonRootObject.optJSONArray(g_maestro_nombre);
+                                if(jsonArray != null){
+
+                                    if (esError == 0) {
+                                        SincronizarMaestros(g_maestro_numero, g_maestro_nombre, g_maestro_alias, responseBody);
+                                    } else {
+                                        esperaDialog.dismiss();
+                                        Util.alertDialog(Login.this, "ErrorSync Login", "Código: " + statusCode + "\n" + responseBody);
+                                    }
+
+                                }else{
+                                    esperaDialog.dismiss();
+                                    jsonArray = jsonRootObject.optJSONArray("error");
+                                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                    Util.alertDialog(Login.this,"ErrorSync Login", jsonObject.optString("text") );
+                                }
+
+                            } catch (JSONException e) {
+                                Util.alertDialog(Login.this,"ErrorSync Login",e.getMessage() );
                             }
+
                         }
                     });
                 } else {
@@ -609,7 +650,6 @@ public class Login extends AppCompatActivity {
         }
         c.close();
 
-
        if(!AppHelper.getUrl_restful().isEmpty() && !AppHelper.getPagina_test().isEmpty()) {
 
            //AsyncTask.Status.PENDING (Tarea no se ha iniciado)
@@ -651,8 +691,14 @@ public class Login extends AppCompatActivity {
             builder.setPositiveButton("Configurar",  new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
-                    Intent intent = new Intent(Login.this, Configuracion.class);
-                    startActivity(intent);
+
+                    try{
+                        Intent intent = new Intent(Login.this, Configuracion.class);
+                        startActivity(intent);
+                    }catch (IllegalStateException e){
+                        Util.alertDialog(Login.this, "Login", e.getMessage());
+                    }
+
                 }
             });
             builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
@@ -680,7 +726,6 @@ public class Login extends AppCompatActivity {
     }
 
     public void abrirConfiguracion(MenuItem item){
-
         Intent intent = new Intent(this, Configuracion.class);
         startActivity(intent);
 
@@ -773,7 +818,9 @@ public class Login extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        appGPS.conectaGPS();
+        if (appGPS.verificaConexionGoogleApi(Login.this)) {
+            appGPS.conectaGPS();
+        }
     }
 
     @Override
@@ -784,13 +831,17 @@ public class Login extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        appGPS.pausarGPS();
+        if (appGPS.verificaConexionGoogleApi(Login.this)) {
+            appGPS.pausarGPS();
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        appGPS.desconectaGPS();
+        if (appGPS.verificaConexionGoogleApi(Login.this)) {
+            appGPS.desconectaGPS();
+        }
     }
 
 }

@@ -123,14 +123,18 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                             long diff   = fechahora_auto_retiro.getTime() - fechahora_in.getTime();//as given
                             int minutos = (int) TimeUnit.MILLISECONDS.toMinutes(diff);
 
-                            int precio  = 0;
-                            int total_minutos =  (minutos - AppHelper.getMinutos_gratis());
-                            if (total_minutos > 0){
-                                precio = (total_minutos * AppHelper.getValor_minuto() * rs_espacios);
+                            int precio = 0;
+                            int total_minutos = (minutos - AppHelper.getMinutos_gratis());
+
+                            //Calcula el precio, ya sea por minuto, tramo ó primer tramo mas minutos.
+                            if (total_minutos > 0) {
+                                precio = Util.calcularPrecio(total_minutos, rs_espacios, 0, 0);
                             }
 
+                            //Aplica descuento de grupo conductor en caso que existe.
                             int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(App.context, rs_patente, rs_id_cliente);
                             precio = Util.redondearPrecio(precio, descuento_porciento);
+
 
                             try{
 
