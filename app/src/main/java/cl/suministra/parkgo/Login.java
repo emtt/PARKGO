@@ -645,6 +645,10 @@ public class Login extends AppCompatActivity {
                     AppHelper.setVoucher_salida(c.getString(2));
                 }else if (c.getString(0).equals("VOUCHER") && c.getString(1).equals("ESTACIONADOS")) {
                     AppHelper.setVoucher_estacionados(c.getString(2));
+                }else if (c.getString(0).equals("IMAGEN") && c.getString(1).equals("CALIDAD")) {
+                    AppHelper.setImagen_calidad(Integer.parseInt(c.getString(2)));
+                }else if (c.getString(0).equals("IMAGEN") && c.getString(1).equals("MAX_MB")) {
+                    AppHelper.setImagen_max_mb(Double.parseDouble(c.getString(2)));
                 }
             }while(c.moveToNext());
         }

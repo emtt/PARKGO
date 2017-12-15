@@ -18,7 +18,7 @@ import java.util.Locale;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 5;
+    private static int db_version    = 6;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
@@ -52,6 +52,12 @@ public class AppHelper {
 
     public static int minutos_diff   = 0; //diferencia máxima de minutos posible entre hora máquina y hora servidor. (se configura en tabla configuración);
     public static String LOG_TAG     = "parkgo_log";
+    public static String LOG_TST     = "parkgo_tst";
+
+    public static int imagen_calidad   = 0;
+    public static double imagen_max_mb = 0;
+
+
 
     public static void initParkgoDB(Context context){
         parkgoDB = new BDParkgo(context, db_nombre, null, db_version);
@@ -159,7 +165,6 @@ public class AppHelper {
         AppHelper.descripcion_tarifa = descripcion_tarifa;
     }
 
-
     public static String getVoucher_ingreso() {
         return voucher_ingreso;
     }
@@ -183,7 +188,6 @@ public class AppHelper {
     public static void setVoucher_estacionados(String voucher_estacionados) {
         AppHelper.voucher_estacionados = voucher_estacionados;
     }
-
 
     public static void initSerialNum(Context context){
         try {
@@ -221,9 +225,26 @@ public class AppHelper {
         AppHelper.minutos_diff = minutos_diff;
     }
 
+    public static int getImagen_calidad() {
+        return imagen_calidad;
+    }
+
+    public static void setImagen_calidad(int imagen_calidad) {
+        AppHelper.imagen_calidad = imagen_calidad;
+    }
+
+    public static double getImagen_max_mb() {
+        return imagen_max_mb;
+    }
+
+    public static void setImagen_max_mb(double imagen_max_mb) {
+        AppHelper.imagen_max_mb = imagen_max_mb;
+    }
+
     //retorna directorio de almacenamiento para las imagenes de la camara.
     public static File getImageDir(Context context){
-        File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DCIM);
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        //File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DCIM);
         return storageDir;
 
     }

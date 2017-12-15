@@ -125,16 +125,16 @@ public class Util {
         if (total_minutos > 0) {
             switch (AppHelper.getTipo_cobro()) {
                 case 1: //POR MINUTO
-                    precio = (total_minutos * AppHelper.getValor_minuto() * espacios) - (valor_prepago + valor_efectivo);
+                    precio = (total_minutos * AppHelper.getValor_minuto()) - (valor_prepago + valor_efectivo);
                     break;
                 case 2: //POR TRAMO
                     double tramos_vencidos = ( (double) total_minutos /  (double) AppHelper.getMinutos_tramo());
-                    precio = (int) (Math.ceil(tramos_vencidos) * AppHelper.getValor_tramo() * espacios) - (valor_prepago + valor_efectivo);
+                    precio = (int) (Math.ceil(tramos_vencidos) * AppHelper.getValor_tramo()) - (valor_prepago + valor_efectivo);
                     break;
                 case 3: //PRIMER TRAMO + VALOR * MINUTO
                     int minutos_restantes = (total_minutos - AppHelper.getMinutos_tramo());
                     if (minutos_restantes > 0 ) {
-                        precio = (minutos_restantes * AppHelper.getValor_minuto() * espacios) - (valor_prepago + valor_efectivo);
+                        precio = (minutos_restantes * AppHelper.getValor_minuto()) - (valor_prepago + valor_efectivo);
                         precio = precio + AppHelper.getValor_tramo();
                     }else{
                         precio = AppHelper.getValor_tramo();
@@ -142,7 +142,7 @@ public class Util {
                     break;
             }
         }
-        return precio;
+        return precio * espacios;
     }
 
 

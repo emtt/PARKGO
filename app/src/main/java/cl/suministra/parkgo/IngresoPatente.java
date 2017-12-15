@@ -34,6 +34,8 @@ import com.obm.mylibrary.PrintConnect;
 import com.obm.mylibrary.PrintUnits;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -374,6 +376,7 @@ public class IngresoPatente extends AppCompatActivity {
             File photoFile = null;
             try {
                 photoFile = creaArchivoImagen(patente);
+
             } catch (IOException ex) {
                 Util.alertDialog(IngresoPatente.this,"IOException Ingreso Patente","Error al crear archivo imagen "+ex.getMessage());
             }
@@ -382,6 +385,7 @@ public class IngresoPatente extends AppCompatActivity {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,  Uri.fromFile(photoFile));
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
+
         }
     }
 
@@ -395,10 +399,12 @@ public class IngresoPatente extends AppCompatActivity {
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
+
         //elimina la imagen anterior para reemplazarla por la actual.
         if(!g_imagen_path.isEmpty()) {
             File file = new File(g_imagen_path);
             if(file.delete()){
+
                 IMG_IngresoPatente.setScaleType(ImageView.ScaleType.CENTER);
                 IMG_IngresoPatente.setImageResource(R.drawable.ic_photo);
             }
@@ -407,6 +413,7 @@ public class IngresoPatente extends AppCompatActivity {
         // Save a file: path for use with ACTION_VIEW intents
         g_imagen_path   = image.getAbsolutePath();
         g_imagen_nombre = image.getName();
+
         return image;
     }
 
@@ -418,6 +425,23 @@ public class IngresoPatente extends AppCompatActivity {
             IMG_IngresoPatente.setScaleType(ImageView.ScaleType.FIT_XY);
             IMG_IngresoPatente.setImageBitmap(imagenBitmap);
             BTN_Camara.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.orange));
+
+            //Obtiene el tamaño del archivo en KB
+            double sizeInBytes = new File(g_imagen_path).length();
+            //Convierte los KB a MB
+            double sizeInMb = sizeInBytes / (double)(1024 * 1024);
+            if (sizeInMb > AppHelper.getImagen_max_mb()){
+                //elimina la imagen.
+                if(!g_imagen_path.isEmpty()) {
+                    File file = new File(g_imagen_path);
+                    if(file.delete()){
+                        IMG_IngresoPatente.setScaleType(ImageView.ScaleType.CENTER);
+                        IMG_IngresoPatente.setImageResource(R.drawable.ic_photo);
+                    }
+                }
+                Util.alertDialog(IngresoPatente.this, "Ingreso Patente","El tamaño de la imagen es "+sizeInMb+" MB y excede el máximo permitido de "+AppHelper.getImagen_max_mb()+" MB, configure la cámara del dispositivo según la especificación entregada.");
+            }
+
         }else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_CANCELED) {
             File file = new File(g_imagen_path);
             file.delete();
