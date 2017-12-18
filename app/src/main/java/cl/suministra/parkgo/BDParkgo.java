@@ -100,10 +100,16 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[id] INTEGER  NOT NULL PRIMARY KEY,\n"+
                            "[id_cliente] INTEGER  NULL,\n"+
                            "[descripcion] VARCHAR(128)  NULL,\n"+
-                           "[descuento] INTEGER  NULL,\n"+
                            "[envia_mail_ingreso] INTEGER  NULL,\n"+
                            "[envia_mail_retiro] INTEGER  NULL\n"+
                            ");\n" +
+                       "DROP TABLE IF EXISTS [tb_conductor_grupo_ubicacion_descuento];\n"+
+                       "CREATE TABLE [tb_conductor_grupo_ubicacion_descuento] (\n" +
+                           "[id_conductor_grupo] INTEGER  NOT NULL,\n"+
+                           "[id_cliente_ubicacion] INTEGER  NULL,\n"+
+                           "[descuento] INTEGER  NULL,\n"+
+                           "PRIMARY KEY ([id_conductor_grupo],[id_cliente_ubicacion]) \n"+
+                           ");\n"+
                        "DROP TABLE IF EXISTS [tb_conductor_patentes];\n"+
                        "CREATE TABLE [tb_conductor_patentes] (\n" +
                            "[id] INTEGER  NOT NULL PRIMARY KEY,\n" +

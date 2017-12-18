@@ -132,7 +132,7 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                             }
 
                             //Aplica descuento de grupo conductor en caso que existe.
-                            int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(App.context, rs_patente, rs_id_cliente);
+                            int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(App.context, rs_patente);
                             precio = Util.redondearPrecio(precio, descuento_porciento);
 
 

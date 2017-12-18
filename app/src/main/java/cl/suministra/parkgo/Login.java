@@ -317,7 +317,7 @@ public class Login extends AppCompatActivity {
 
             g_maestro_numero = 0;
             g_maestro_nombre = "configuracion";
-            g_maestro_alias = "1/8 Configuración";
+            g_maestro_alias = "1/9 Configuración";
 
             if (esperaDialog != null && esperaDialog.isShowing()) {
                 esperaDialog.setMessage(g_maestro_alias);
@@ -491,17 +491,31 @@ public class Login extends AppCompatActivity {
                                 int id = jsonObject.optInt("id");
                                 int id_cliente = jsonObject.optInt("id_cliente");
                                 String descripcion = jsonObject.optString("descripcion");
-                                int descuento  = jsonObject.optInt("descuento");
                                 int envia_mail_ingreso  = jsonObject.optInt("envia_mail_ingreso");
                                 int envia_mail_retiro  = jsonObject.optInt("envia_mail_retiro");
 
-                                qry = "INSERT INTO tb_conductor_grupo (id, id_cliente, descripcion, descuento, envia_mail_ingreso, envia_mail_retiro ) VALUES " +
-                                        "(" + id + "," + id_cliente + ",'" + descripcion + "', " + descuento + " , " + envia_mail_ingreso + ", "+envia_mail_retiro+");";
+                                qry = "INSERT INTO tb_conductor_grupo (id, id_cliente, descripcion, envia_mail_ingreso, envia_mail_retiro ) VALUES " +
+                                        "(" + id + "," + id_cliente + ",'" + descripcion + "', " + envia_mail_ingreso + ", "+envia_mail_retiro+");";
                                 AppHelper.getParkgoSQLite().execSQL(qry);
                             }
                             break;
 
                         case 7:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_grupo_ubicacion_descuento;");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                int id_conductor_grupo   = jsonObject.optInt("id_conductor_grupo");
+                                int id_cliente_ubicacion = jsonObject.optInt("id_cliente_ubicacion");
+                                int descuento  = jsonObject.optInt("descuento");
+
+                                qry = "INSERT INTO tb_conductor_grupo_ubicacion_descuento (id_conductor_grupo, id_cliente_ubicacion, descuento ) VALUES " +
+                                        "(" + id_conductor_grupo + "," + id_cliente_ubicacion + ", " + descuento + " );";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
+
+                        case 8:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_patentes;");
 
                             for (int i = 0; i < jsonArray.length(); i++) {
@@ -528,31 +542,35 @@ public class Login extends AppCompatActivity {
                 switch (g_maestro_numero) {
                     case 1:
                         g_maestro_nombre = "usuarios";
-                        g_maestro_alias = "2/8 Usuarios";
+                        g_maestro_alias = "2/9 Usuarios";
                         break;
                     case 2:
                         g_maestro_nombre = "clientes";
-                        g_maestro_alias = "3/8 Clientes";
+                        g_maestro_alias = "3/9 Clientes";
                         break;
                     case 3:
                         g_maestro_nombre = "cliente_ubicaciones";
-                        g_maestro_alias = "4/8 Ubicaciones por cliente";
+                        g_maestro_alias = "4/9 Ubicaciones por cliente";
                         break;
                     case 4:
                         g_maestro_nombre = "cliente_ubicaciones_horarios";
-                        g_maestro_alias = "5/8 Horarios por ubicación cliente";
+                        g_maestro_alias = "5/9 Horarios por ubicación cliente";
                         break;
                     case 5:
                         g_maestro_nombre = "conductores";
-                        g_maestro_alias = "6/8 Conductores";
+                        g_maestro_alias = "6/9 Conductores";
                         break;
                     case 6:
                         g_maestro_nombre = "conductores_grupo";
-                        g_maestro_alias = "7/8 Grupo Conductores";
+                        g_maestro_alias = "7/9 Grupo Conductores";
                         break;
                     case 7:
+                        g_maestro_nombre = "conductores_grupo_ubicacion_descuento";
+                        g_maestro_alias = "8/9 Descuento para grupo conductores por ubicación";
+                        break;
+                    case 8:
                         g_maestro_nombre = "conductor_patentes";
-                        g_maestro_alias = "8/8 Conductor Patentes";
+                        g_maestro_alias = "9/9 Conductor Patentes";
                         break;
                 }
 

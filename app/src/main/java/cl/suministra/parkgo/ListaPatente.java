@@ -140,7 +140,7 @@ public class ListaPatente extends AppCompatActivity {
                     precio = Util.calcularPrecio(total_minutos, rs_espacios, 0, 0);
                 }
 
-                int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(ListaPatente.this, rs_patente, rs_id_cliente);
+                int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(ListaPatente.this, rs_patente);
                 precio = Util.redondearPrecio(precio, descuento_porciento);
 
                 PatentesPendiente patentePendiente = new PatentesPendiente(rs_patente,rs_fecha_hora_in, rs_rut_usuario_in , rs_maquina_in,

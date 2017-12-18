@@ -35,17 +35,18 @@ public class AppCRUD {
     }
 
 
-    public static int getDescuentoGrupoConductor(Context context, String patente, int cliente_id){
+    public static int getDescuentoGrupoConductor(Context context, String patente){
 
         Cursor c;
         int rs_descuento = 0;
         try {
-            String[] args = new String[]{patente, String.valueOf(cliente_id)};
+            String[] args = new String[]{patente, String.valueOf(AppHelper.getUbicacion_id())};
 
-            String qry = "SELECT tcp.rut_conductor, tc.id_conductor_grupo, tcg.descuento FROM tb_conductor_patentes tcp\n" +
-                            "INNER JOIN tb_conductor tc ON tc.rut = tcp.rut_conductor\n" +
-                            "INNER JOIN tb_conductor_grupo tcg ON tcg.id = tc.id_conductor_grupo\n" +
-                            "WHERE tcp.patente =? AND tcg.id_cliente =? ";
+            String qry = "SELECT tcgud.id_cliente_ubicacion, tcgud.id_cliente_ubicacion, tcgud.descuento\n" +
+                            "FROM tb_conductor_grupo_ubicacion_descuento tcgud\n" +
+                            "INNER JOIN tb_conductor tc ON tc.id_conductor_grupo = tcgud.id_conductor_grupo\n" +
+                            "INNER JOIN tb_conductor_patentes tcp ON tcp.rut_conductor = tc.rut\n" +
+                            "WHERE tcp.patente =? AND tcgud.id_cliente_ubicacion =?";
 
             c = AppHelper.getParkgoSQLite().rawQuery(qry, args);
             if (c.moveToFirst()) {

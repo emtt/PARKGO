@@ -18,7 +18,7 @@ import java.util.Locale;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 6;
+    private static int db_version    = 1;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 

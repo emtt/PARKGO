@@ -288,7 +288,7 @@ public class RetiroPatente extends AppCompatActivity {
                     }
 
                     //Aplica descuento de grupo conductor en caso que existe.
-                    int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(RetiroPatente.this, rs_patente, rs_id_cliente);
+                    int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(RetiroPatente.this, rs_patente);
                     precio = Util.redondearPrecio(precio, descuento_porciento);
 
                     TV_RS_Patente.setText("Patente:    " + rs_patente);
