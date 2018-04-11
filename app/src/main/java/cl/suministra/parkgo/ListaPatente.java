@@ -72,7 +72,7 @@ public class ListaPatente extends AppCompatActivity {
                 String patentes = "";
                 for (int i = patentesList.size() - 1; i >= 0; i--) {
                     //String.valueOf(patentesList.get(i).patente);
-                    patentes = patentesList.get(i).patente + "\n" + patentes;
+                    patentes = patentesList.get(i).patente +" "+ patentesList.get(i).fecha_in + "\n" + patentes;
                 }
                 imprimeVoucherEstacionados(patentes);
                 Log.d(AppHelper.LOG_TAG, String.valueOf(patentes));

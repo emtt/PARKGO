@@ -57,13 +57,16 @@ public class BDParkgo extends SQLiteOpenHelper {
                        "CREATE TABLE [tb_cliente] (\n"+
                            "[id] INTEGER  NOT NULL PRIMARY KEY,\n"+
                            "[rut] VARCHAR(12)  NULL,\n"+
-                           "[razon_social] VARCHAR(255)  NULL\n"+
+                           "[razon_social] VARCHAR(255)  NULL,\n"+
+                           "[logo] VARCHAR(36)  NULL, \n"+
+                           "[email] VARCHAR(128)  NULL \n"+
                            ");\n"+
                        "DROP TABLE IF EXISTS [tb_cliente_ubicaciones];\n"+
                        "CREATE TABLE [tb_cliente_ubicaciones] (\n"+
                            "[id] INTEGER  NOT NULL PRIMARY KEY,\n"+
                            "[id_cliente] INTEGER  NULL,\n"+
                            "[descripcion] VARCHAR(255)  NULL,\n"+
+                           "[id_comuna] INTEGER  NULL,\n"+
                            "[direccion] VARCHAR(255)  NULL,\n"+
                            "[latitud] FLOAT  NULL,\n"+
                            "[longitud] FLOAT  NULL,\n"+
@@ -133,7 +136,32 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[seccion] VARCHAR(24)  NULL,\n" +
                            "[clave] VARCHAR(24)  NULL,\n" +
                            "[valor] VARCHAR(1024)  NULL\n" +
+                           ");\n"+
+                       "DROP TABLE IF EXISTS [tb_recaudacion_retiro];\n"+
+                       "CREATE TABLE [tb_recaudacion_retiro] (\n" +
+                           "[id] VARCHAR(36)  PRIMARY KEY NULL,\n" +
+                           "[id_cliente_ubicacion] INTEGER  NULL,\n" +
+                           "[rut_usuario_operador] VARCHAR(12)  NULL,\n" +
+                           "[maquina] VARCHAR(32)  NULL,\n" +
+                           "[rut_usuario_retiro] VARCHAR(12)  NULL,\n" +
+                           "[fecha_recaudacion] DATE  NULL,\n" +
+                           "[monto] INTEGER  NULL,\n" +
+                           "[enviado] INTEGER  NULL\n" +
+                           ");\n"+
+                       "DROP TABLE IF EXISTS [tb_rol];\n"+
+                       "CREATE TABLE [tb_rol] (\n" +
+                           "[id] INTEGER  NOT NULL PRIMARY KEY,\n" +
+                           "[nombre] VARCHAR(128)  NULL,\n" +
+                           "[ing_web] INTEGER  NULL,\n" +
+                           "[ing_web_pagina_inicio] VARCHAR(128)  NULL,\n" +
+                           "[ing_mobile] INTEGER  NULL,\n" +
+                           "[es_recaudador] INTEGER  NULL\n" +
+                       ");\n"+
+                       "DROP TABLE IF EXISTS [tb_etiquetas];\n"+
+                       "CREATE TABLE [tb_etiquetas] (\n" +
+                           "[num_etiqueta_actual] INTEGER  NOT NULL PRIMARY KEY\n" +
                            ");";
+
 
     public BDParkgo(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);

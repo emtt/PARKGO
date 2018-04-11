@@ -64,5 +64,26 @@ public class AppCRUD {
 
     }
 
+    public static int actualizaNumeroEtiqueta(Context context, int num_etiqueta_actual, int num_etiqueta_nueva, boolean suma_uno){
+        try{
+            if (suma_uno){
+                num_etiqueta_nueva++;
+                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_etiquetas " +
+                        "SET " +
+                        "num_etiqueta_actual = '"+num_etiqueta_nueva+"' " +
+                        "WHERE num_etiqueta_actual = "+num_etiqueta_actual+" ");
+            }else{
+                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_etiquetas " +
+                        "SET " +
+                        "num_etiqueta_actual = '"+num_etiqueta_nueva+"' " +
+                        "WHERE num_etiqueta_actual = "+num_etiqueta_actual+" ");
+            }
+        } catch (SQLException e) {
+            Util.alertDialog(context, "SQLException AppCRUD", e.getMessage());
+        }
+
+        return 100;
+
+    }
 
 }

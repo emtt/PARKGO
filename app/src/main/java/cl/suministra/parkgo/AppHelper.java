@@ -18,7 +18,7 @@ import java.util.Locale;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 1;
+    private static int db_version    = 2;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
@@ -44,6 +44,9 @@ public class AppHelper {
 
     public static String voucher_ingreso = "";
     public static String voucher_salida  = "";
+
+    public static int voucher_rollo_max  = 0;
+    public static int voucher_rollo_alert= 0;
 
     public static String voucher_estacionados = "";
 
@@ -180,6 +183,23 @@ public class AppHelper {
     public static void setVoucher_salida(String voucher_salida) {
         AppHelper.voucher_salida = voucher_salida;
     }
+
+    public static int getVoucher_rollo_max() {
+        return voucher_rollo_max;
+    }
+
+    public static void setVoucher_rollo_max(int voucher_rollo_max) {
+        AppHelper.voucher_rollo_max = voucher_rollo_max;
+    }
+
+    public static int getVoucher_rollo_alert() {
+        return voucher_rollo_alert;
+    }
+
+    public static void setVoucher_rollo_alert(int voucher_rollo_alert) {
+        AppHelper.voucher_rollo_alert = voucher_rollo_alert;
+    }
+
 
     public static String getVoucher_estacionados() {
         return voucher_estacionados;

@@ -11,12 +11,24 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="cl.suministra.parkgo.Recaudacion">
 
+    <Button
+        android:id="@+id/BTN_Recaudar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_button_height"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/button_blue_selector"
+        android:text="RECAUDAR MONTO"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/activity_button_text_size"
+        android:layout_marginRight="5dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:id="@+id/LL_FechaRecaudacion">
+        android:id="@+id/LL_FechaRecaudacion"
+        android:layout_below="@+id/BTN_Recaudar">
 
         <TextView
             android:id="@+id/LB_FechaRecaudación"

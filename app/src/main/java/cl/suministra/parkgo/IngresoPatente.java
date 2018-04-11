@@ -335,6 +335,33 @@ public class IngresoPatente extends AppCompatActivity {
             sb.append("\n");
         }
         mPrintConnect.send(sb.toString());
+
+
+        /** SUMA UNA ETIQUETA IMPRESA **/
+        int num_etiqueta_actual = 0;
+        try{
+            String[] args = new String[] {};
+            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT num_etiqueta_actual FROM tb_etiquetas",args);
+            if (c.moveToFirst()) {
+                num_etiqueta_actual = c.getInt(0);
+            }else{
+                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_etiquetas (num_etiqueta_actual) VALUES (0);");
+            }
+
+            c.close();
+
+            int etiquetas_restantes = AppHelper.getVoucher_rollo_max() - num_etiqueta_actual;
+            if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual < AppHelper.getVoucher_rollo_max()){
+                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_LONG).show();
+            }else if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual >= AppHelper.getVoucher_rollo_max()){
+                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_LONG).show();
+            }
+
+            AppCRUD.actualizaNumeroEtiqueta(IngresoPatente.this, num_etiqueta_actual, num_etiqueta_actual, true);
+
+        }catch(SQLException e){
+            Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente", e.getMessage());
+        }
     }
 
     private void reiniciaIngreso(){
