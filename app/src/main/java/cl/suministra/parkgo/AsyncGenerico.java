@@ -62,6 +62,7 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
         int progreso = values[0].intValue();
         getUbicacionUsuarioPendienteSync();
         getAlertasPendienteSync();
+        getRetiroRecaudacionSync();
         Log.d(AppHelper.LOG_TAG, "AsyncGenerico onProgressUpdate "+progreso);
     }
 
@@ -223,6 +224,99 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
                                 //Marca el registro como enviado.
                                 AppHelper.getParkgoSQLite().execSQL("UPDATE tb_alertas SET enviado = '1' WHERE id = '"+id+"'");
                                 Log.d(AppHelper.LOG_TAG,"AsyncGenerico ALERTA ID "+id+" ENVIADO CORRECTAMENTE AL SERVIDOR");
+
+                            }catch(SQLException e){  Log.d(AppHelper.LOG_TAG, "AsyncGenerico SQLException "+e.getMessage());}
+                        }else{
+                            jsonArray = jsonRootObject.optJSONArray("error");
+                            if(jsonArray != null){
+                                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                Log.d(AppHelper.LOG_TAG, "AsyncGenerico ERROR RESPONSE "+jsonObject.optString("text"));
+                            }
+                        }
+                    } catch (JSONException e) {
+                        Log.d(AppHelper.LOG_TAG, "AsyncGenerico JSONException "+e.getMessage());
+                    }
+
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure "+error.getMessage());
+                    cliente.cancelRequests(App.context, true);
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure cancelRequests");
+                }
+
+            });
+
+        } catch (UnsupportedEncodingException e0) {
+            Log.d(AppHelper.LOG_TAG, "AsyncGenerico UnsupportedEncodingException "+e0.getMessage());
+        } catch (JSONException e1) {
+            Log.d(AppHelper.LOG_TAG, "AsyncGenerico UnsupportedEncodingException "+e1.getMessage());
+        }
+
+    }
+
+    private void getRetiroRecaudacionSync(){
+
+        try{
+
+            String[] args = new String[] {"0"};
+            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT id, id_cliente_ubicacion, rut_usuario_operador," +
+                                                            "maquina, rut_usuario_retiro, fecha_recaudacion, monto " +
+                                                            "FROM tb_recaudacion_retiro WHERE enviado =? ", args);
+            if (c.moveToFirst()){
+                String rs_id = c.getString(0);
+                int rs_id_cliente_ubicacion    = c.getInt(1);
+                String rs_rut_usuario_operador = c.getString(2);
+                String rs_maquina = c.getString(3);
+                String rs_rut_usuario_retiro = c.getString(4);
+                String rs_fecha_recaudacion  = c.getString(5);
+                int rs_monto = c.getInt(6);
+
+                sinncronizaRetiroRecaudacion(rs_id, rs_id_cliente_ubicacion, rs_rut_usuario_operador,
+                                             rs_maquina, rs_rut_usuario_retiro, rs_fecha_recaudacion, rs_monto);
+
+            }
+            c.close();
+
+        }catch(SQLException e){ Log.d(AppHelper.LOG_TAG, "AsyncGenerico SQLException "+e.getMessage()); }
+
+    }
+
+    public void sinncronizaRetiroRecaudacion(final String id, final int id_cliente_ubicacion, final String rut_usuario_operador,
+                                             final String maquina, final String rut_usuario_retiro, final String fecha_recaudacion,
+                                             final int monto) {
+
+        cliente = new AsyncHttpClient();
+        JSONObject jsonParams  = null;
+        StringEntity entity    = null;
+        try {
+
+            jsonParams = new JSONObject();
+            jsonParams.put("id",id);
+            jsonParams.put("id_cliente_ubicacion",id_cliente_ubicacion);
+            jsonParams.put("rut_usuario_operador",rut_usuario_operador);
+            jsonParams.put("maquina",maquina);
+            jsonParams.put("rut_usuario_retiro",rut_usuario_retiro);
+            jsonParams.put("fecha_recaudacion",fecha_recaudacion);
+            jsonParams.put("monto",monto);
+
+            entity = new StringEntity(jsonParams.toString());
+
+            entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
+            cliente.post(App.context, AppHelper.getUrl_restful() + "recaudacion_retiro/add" , entity , ContentType.APPLICATION_JSON.getMimeType() , new AsyncHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onSuccess "+new String(responseBody));
+                    try {
+
+                        JSONObject jsonRootObject = new JSONObject(new String(responseBody));
+                        JSONArray jsonArray       = jsonRootObject.optJSONArray("success");
+                        if(jsonArray != null){
+                            try{
+                                //Marca el registro como enviado.
+                                AppHelper.getParkgoSQLite().execSQL("UPDATE tb_recaudacion_retiro SET enviado = '1' WHERE id = '"+id+"'");
+                                Log.d(AppHelper.LOG_TAG,"AsyncGenerico RECAUDACION RETIRO ID "+id+" ENVIADO CORRECTAMENTE AL SERVIDOR");
 
                             }catch(SQLException e){  Log.d(AppHelper.LOG_TAG, "AsyncGenerico SQLException "+e.getMessage());}
                         }else{

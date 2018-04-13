@@ -196,11 +196,11 @@ public class Login extends AppCompatActivity {
 
                         //OBTIENE EL LISTADO DE UBICACIONES PARA EL USUARIO QUE SE ENCUENTREN EN LA MISMA COMUNA DE SU UBICACION POR DEFECTO.
                         String qry = "SELECT tcu2.id, tcu2.descripcion, tcu2.direccion, tu.id_cliente_ubicacion AS id_ubicacion_default, tcu1.id_comuna \n" +
-                                        "FROM tb_usuario tu \n" +
-                                     "LEFT JOIN tb_cliente_ubicaciones tcu1 ON tcu1.id = tu.id_cliente_ubicacion \n" +
-                                     "LEFT JOIN tb_cliente_ubicaciones tcu2 ON tcu2.id_comuna = tcu1.id_comuna \n" +
-                                     "WHERE tu.rut = ? \n" +
-                                     "ORDER BY tcu2.descripcion";
+                                "FROM tb_usuario tu \n" +
+                                "LEFT JOIN tb_cliente_ubicaciones tcu1 ON tcu1.id = tu.id_cliente_ubicacion \n" +
+                                "LEFT JOIN tb_cliente_ubicaciones tcu2 ON tcu2.id_comuna = tcu1.id_comuna \n" +
+                                "WHERE tu.codigo = ? \n" +
+                                "ORDER BY tcu2.descripcion";
 
                         Cursor c = AppHelper.getParkgoSQLite().rawQuery(qry, args);
                         if (c.moveToFirst()) {
@@ -225,9 +225,9 @@ public class Login extends AppCompatActivity {
                         SPIN_UsuarioUbicacion.setAdapter(adapter);
                         SPIN_UsuarioUbicacion.setSelection(ubicacionDefaultIndex);
 
-                } catch (SQLException e) {
-                    Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
-                }
+                    } catch (SQLException e) {
+                        Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
+                    }
 
             }
         });
@@ -260,7 +260,6 @@ public class Login extends AppCompatActivity {
                 }
             }
         });
-
 
 
         BTN_Login = (Button) findViewById(R.id.BTN_Login);
@@ -795,6 +794,8 @@ public class Login extends AppCompatActivity {
                     AppHelper.setVoucher_salida(c.getString(2));
                 }else if (c.getString(0).equals("VOUCHER") && c.getString(1).equals("ESTACIONADOS")) {
                     AppHelper.setVoucher_estacionados(c.getString(2));
+                }else if (c.getString(0).equals("VOUCHER") && c.getString(1).equals("RECAUDACION")) {
+                    AppHelper.setVoucher_retiro_recaudacion(c.getString(2));
                 }else if (c.getString(0).equals("IMAGEN") && c.getString(1).equals("CALIDAD")) {
                     AppHelper.setImagen_calidad(Integer.parseInt(c.getString(2)));
                 }else if (c.getString(0).equals("IMAGEN") && c.getString(1).equals("MAX_MB")) {

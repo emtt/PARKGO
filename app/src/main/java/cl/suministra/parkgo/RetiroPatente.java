@@ -502,19 +502,30 @@ public class RetiroPatente extends AppCompatActivity {
         StringBuffer sb = new StringBuffer();
         sb.setLength(0);
 
+        String lb_ubicacion         = Util.formateaLineaEtiqueta("Zona:      "+AppHelper.getUbicacion_nombre());
+        String lb_operador          = Util.formateaLineaEtiqueta("Operador:  "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre());
+        String lb_patente           = Util.formateaLineaEtiqueta("Patente:   "+patente);
+        String lb_espacios          = Util.formateaLineaEtiqueta("Espacios:  "+espacios);
+        String lb_fecha_hora_in     = Util.formateaLineaEtiqueta("Ingreso:   "+fecha_hora_in);
+        String lb_fecha_hora_out    = Util.formateaLineaEtiqueta("Retiro:    "+fecha_hora_out);
+        String lb_tiempo            = Util.formateaLineaEtiqueta("Tiempo:    "+String.format("%,d", minutos).replace(",",".")+" min");
+        String lb_gratis            = Util.formateaLineaEtiqueta("Gratis:    "+String.format("%,d", minutos_gratis).replace(",",".")+" min");
+        String lb_total             = Util.formateaLineaEtiqueta("TOTAL:     $"+String.format("%,d", precio).replace(",","."));
+        String lb_descuento         = Util.formateaLineaEtiqueta("Descuento: "+String.format("%,d", porcent_descuento).replace(",",".")+"%");
+
         /** IMPRIME EL TEXTO **/
         String Texto    =   AppHelper.getVoucher_salida()+"\n"+
                             AppHelper.getDescripcion_tarifa()+"\n\n"+
-                            "Zona:      "+AppHelper.getUbicacion_nombre()+"\n"+
-                            "Operador:  "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre()+ "\n"+
-                            "Patente:   "+patente+"\n"+
-                            "Espacios:  "+espacios+"\n"+
-                            "Ingreso:   "+fecha_hora_in+"\n"+
-                            "Retiro:    "+fecha_hora_out+"\n"+
-                            "Tiempo:    "+String.format("%,d", minutos).replace(",",".")+" min\n"+
-                            "Gratis:    "+String.format("%,d", minutos_gratis).replace(",",".")+" min\n"+
-                            "TOTAL:     $"+String.format("%,d", precio).replace(",",".")+"\n"+
-                            "Descuento: "+String.format("%,d", porcent_descuento).replace(",",".")+"%";
+                            lb_ubicacion+"\n"+
+                            lb_operador+"\n"+
+                            lb_patente+"\n"+
+                            lb_espacios+"\n"+
+                            lb_fecha_hora_in+"\n"+
+                            lb_fecha_hora_out+"\n"+
+                            lb_tiempo+"\n"+
+                            lb_gratis+"\n"+
+                            lb_total+"\n"+
+                            lb_descuento;
 
         for (int i = 0; i < Texto.length(); i++) {
             sb.append(Texto.charAt(i));

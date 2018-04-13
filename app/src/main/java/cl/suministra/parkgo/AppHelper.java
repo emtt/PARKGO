@@ -44,11 +44,13 @@ public class AppHelper {
 
     public static String voucher_ingreso = "";
     public static String voucher_salida  = "";
+    public static String voucher_estacionados = "";
+    public static String voucher_retiro_recaudacion  = "";
 
+    public static int voucher_largo_linea = 32;
     public static int voucher_rollo_max  = 0;
     public static int voucher_rollo_alert= 0;
 
-    public static String voucher_estacionados = "";
 
     public static String url_restful = "";
     public static String pagina_test = "";
@@ -59,7 +61,6 @@ public class AppHelper {
 
     public static int imagen_calidad   = 0;
     public static double imagen_max_mb = 0;
-
 
 
     public static void initParkgoDB(Context context){
@@ -94,7 +95,6 @@ public class AppHelper {
     public static void setUsuario_codigo(String usuario_codigo) {
         AppHelper.usuario_codigo = usuario_codigo;
     }
-
 
     public static int getCliente_id() {
         return cliente_id;
@@ -184,6 +184,22 @@ public class AppHelper {
         AppHelper.voucher_salida = voucher_salida;
     }
 
+    public static String getVoucher_estacionados() {
+        return voucher_estacionados;
+    }
+
+    public static void setVoucher_estacionados(String voucher_estacionados) {
+        AppHelper.voucher_estacionados = voucher_estacionados;
+    }
+
+    public static String getVoucher_retiro_recaudacion() {
+        return voucher_retiro_recaudacion;
+    }
+
+    public static void setVoucher_retiro_recaudacion(String voucher_retiro_recaudacion) {
+        AppHelper.voucher_retiro_recaudacion = voucher_retiro_recaudacion;
+    }
+
     public static int getVoucher_rollo_max() {
         return voucher_rollo_max;
     }
@@ -200,13 +216,12 @@ public class AppHelper {
         AppHelper.voucher_rollo_alert = voucher_rollo_alert;
     }
 
-
-    public static String getVoucher_estacionados() {
-        return voucher_estacionados;
+    public static int getVoucher_largo_linea() {
+        return voucher_largo_linea;
     }
 
-    public static void setVoucher_estacionados(String voucher_estacionados) {
-        AppHelper.voucher_estacionados = voucher_estacionados;
+    public static void setVoucher_largo_linea(int voucher_largo_linea) {
+        AppHelper.voucher_largo_linea = voucher_largo_linea;
     }
 
     public static void initSerialNum(Context context){

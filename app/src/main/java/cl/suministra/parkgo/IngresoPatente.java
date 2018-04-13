@@ -305,14 +305,20 @@ public class IngresoPatente extends AppCompatActivity {
         StringBuffer sb = new StringBuffer();
         sb.setLength(0);
 
+        String lb_ubicacion         = Util.formateaLineaEtiqueta("Zona:      "+AppHelper.getUbicacion_nombre());
+        String lb_operador          = Util.formateaLineaEtiqueta("Operador:  "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre());
+        String lb_patente           = Util.formateaLineaEtiqueta("Patente:   "+patente);
+        String lb_fecha_hora_in     = Util.formateaLineaEtiqueta("Ingreso:   "+fecha_hora_in);
+        String lb_espacios          = Util.formateaLineaEtiqueta("Espacios:  "+espacios);
+
         /** IMPRIME EL TEXTO **/
         String Texto    =  AppHelper.getVoucher_ingreso()+"\n"+
                            AppHelper.getDescripcion_tarifa()+"\n\n"+
-                           "Zona:     "+AppHelper.getUbicacion_nombre()+"\n"+
-                           "Operador: "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre()+ "\n"+
-                           "Patente:  "+patente+"\n"+
-                           "Ingreso:  "+fecha_hora_in+"\n"+
-                           "Espacios: "+espacios+"\n";
+                           lb_ubicacion+"\n"+
+                           lb_operador+ "\n"+
+                           lb_patente+"\n"+
+                           lb_fecha_hora_in+"\n"+
+                           lb_espacios+"\n";
 
         for (int i = 0; i < Texto.length(); i++) {
             sb.append(Texto.charAt(i));
@@ -335,7 +341,6 @@ public class IngresoPatente extends AppCompatActivity {
             sb.append("\n");
         }
         mPrintConnect.send(sb.toString());
-
 
         /** SUMA UNA ETIQUETA IMPRESA **/
         int num_etiqueta_actual = 0;

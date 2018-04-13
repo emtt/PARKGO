@@ -156,4 +156,12 @@ public class Util {
         return precio_redondeado;
     }
 
+    public static String formateaLineaEtiqueta(String linea){
+        if (linea.length() > AppHelper.getVoucher_largo_linea()){
+            return linea.substring(0, AppHelper.getVoucher_largo_linea());
+        }else{
+            return linea;
+        }
+    }
+
 }
