@@ -47,6 +47,8 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
     private TextView TV_Minutos;
     private TextView TV_Prepago;
     private TextView TV_Efectivo;
+    private TextView TV_Recaudado;
+    private TextView TV_Retirado;
     private TextView TV_Total;
 
     private TextView TXT_Usuario_MSJ;
@@ -57,6 +59,7 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
     private EditText EDT_Monto;
 
     private int g_total_recaudado = 0;
+    private int g_total_operador  = 0;
 
     private DatePickerDialog fechaDatePickerDialog;
 
@@ -80,6 +83,8 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
         TV_Minutos           = (TextView) findViewById(R.id.TV_Minutos);
         TV_Prepago           = (TextView) findViewById(R.id.TV_Prepago);
         TV_Efectivo          = (TextView) findViewById(R.id.TV_Efectivo);
+        TV_Recaudado         = (TextView) findViewById(R.id.TV_Recaudado);
+        TV_Retirado          = (TextView) findViewById(R.id.TV_Retirado);
         TV_Total             = (TextView) findViewById(R.id.TV_Total);
 
         EDT_FechaRecaudacion.setInputType(InputType.TYPE_NULL);
@@ -95,7 +100,6 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
 
         });
     }
-
 
     private void setDateTimeField() {
         EDT_FechaRecaudacion.setOnClickListener(this);
@@ -148,14 +152,14 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
                 int rs_minutos = c.getInt(7);
                 int rs_prepago = c.getInt(8);
                 int rs_efectivo= c.getInt(9);
-                int rs_total   = c.getInt(10);
+                int rs_recaudado  = c.getInt(10);
                 g_total_recaudado = c.getInt(10);
 
                 TV_Transacciones.setText(rs_transacciones);
                 TV_Minutos.setText(String.format("%,d", rs_minutos).replace(",","."));
                 TV_Prepago.setText("$"+String.format("%,d", rs_prepago).replace(",","."));
                 TV_Efectivo.setText("$"+String.format("%,d",rs_efectivo).replace(",","."));
-                TV_Total.setText("$"+String.format("%,d", rs_total).replace(",","."));
+                TV_Recaudado.setText("$"+String.format("%,d", rs_recaudado).replace(",","."));
 
             } else {
 
@@ -163,10 +167,29 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
                 TV_Minutos.setText("0");
                 TV_Prepago.setText("$0");
                 TV_Efectivo.setText("$0");
-                TV_Total.setText("$0");
+                TV_Recaudado.setText("$0");
 
             }
             c.close();
+
+            //Calcula el resto que se queda el operador.
+            String[] args_1 = new String[]{String.valueOf(AppHelper.getUbicacion_id()), String.valueOf(AppHelper.getUsuario_rut()), fecha_recaudacion };
+            String qry_1    = "SELECT SUM(monto) FROM tb_recaudacion_retiro "+
+                             "WHERE "+
+                             "id_cliente_ubicacion =? AND rut_usuario_operador =? AND fecha_recaudacion =? ";
+
+            c = AppHelper.getParkgoSQLite().rawQuery(qry_1, args_1);
+            if (c.moveToFirst()) {
+                int rs_monto_retirado = c.getInt(0);
+                g_total_operador      = g_total_recaudado -  rs_monto_retirado;
+                TV_Retirado.setText("$"+String.format("%,d", rs_monto_retirado).replace(",","."));
+                TV_Total.setText("$"+String.format("%,d", g_total_operador).replace(",","."));
+            }else{
+                TV_Retirado.setText("$0");
+                TV_Total.setText("$0");
+            }
+            c.close();
+
 
         } catch (SQLException e) {
             Util.alertDialog(Recaudacion.this, "SQLException Recaudación", e.getMessage());

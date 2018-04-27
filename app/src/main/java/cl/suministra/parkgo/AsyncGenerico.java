@@ -60,9 +60,12 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
         int progreso = values[0].intValue();
+
         getUbicacionUsuarioPendienteSync();
         getAlertasPendienteSync();
         getRetiroRecaudacionSync();
+
+        getRetiroRecaudacionExterno();
         Log.d(AppHelper.LOG_TAG, "AsyncGenerico onProgressUpdate "+progreso);
     }
 
@@ -350,6 +353,113 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
     }
 
 
+    private void getRetiroRecaudacionExterno(){
+
+        String rut_usuario = AppHelper.getUsuario_rut();
+        String maquina     = AppHelper.getSerialNum();
+        int id_cliente_ubicacion = AppHelper.getUbicacion_id();
+
+        if (id_cliente_ubicacion > 0 && !maquina.equals("") && !rut_usuario.equals("")) {
+            ClienteAsync(AppHelper.getUrl_restful() + "recaudacion_retiro_operador_in/"+ rut_usuario +"/" + maquina + "/" + id_cliente_ubicacion, new ClienteCallback() {
+
+                @Override
+                public void onResponse(int esError, int statusCode, String responseBody) {
+                    if(esError == 0 && !responseBody.equals("")) {
+                        insertaRetiroRecaudacionExternas(responseBody);
+                    }else{
+                        Log.d(AppHelper.LOG_TAG,"AsyncGenerico ERROR SYNC Código: " + statusCode + "\n" + responseBody);
+                    }
+                }
+
+            });
+        }
+
+    }
+
+
+    private void insertaRetiroRecaudacionExternas(String jsonString){
+
+        String qry;
+        try {
+
+            JSONObject jsonRootObject = new JSONObject(jsonString);
+            JSONArray jsonArray = jsonRootObject.optJSONArray("recaudacion_retiro_operador_in");
+            if(jsonArray != null){
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    String id_recaudacion_retiro = jsonObject.optString("id");
+                    int id_cliente_ubicacion     = jsonObject.optInt("id_cliente_ubicacion");
+                    String rut_usuario_operador  = jsonObject.optString("rut_usuario_operador");
+                    String maquina               = jsonObject.optString("maquina");
+                    String rut_usuario_retiro    = jsonObject.optString("rut_usuario_retiro");
+                    String fecha_recaudacion     = jsonObject.optString("fecha_recaudacion");
+                    int monto                    = jsonObject.optInt("monto");
+
+                    qry =  "INSERT OR IGNORE INTO tb_recaudacion_retiro " +
+                            "(id, id_cliente_ubicacion, rut_usuario_operador," +
+                            "maquina, rut_usuario_retiro, fecha_recaudacion, " +
+                            "monto, enviado)" +
+                            "VALUES " +
+                            "('" + id_recaudacion_retiro + "', " + id_cliente_ubicacion + " , '" + rut_usuario_operador +
+                            "', '" + maquina + "', '" + rut_usuario_retiro + "' , '" + fecha_recaudacion +
+                            "', " + monto + ", 1);";
+
+                    AppHelper.getParkgoSQLite().execSQL(qry);
+                    Log.d(AppHelper.LOG_TAG, qry);
+
+                    //Marca el registro como recibido en el servidor.
+                    ClienteAsync(AppHelper.getUrl_restful() + "recaudacion_retiro_operador_upt_in/"+ AppHelper.getUsuario_rut()+ "/" + AppHelper.getSerialNum() + "/" + id_recaudacion_retiro, new ClienteCallback() {
+
+                        @Override
+                        public void onResponse(int esError, int statusCode, String responseBody) {
+                            if(esError == 0 && !responseBody.equals("")) {
+                                //Si no hay error entonces recibira
+                            }else{
+                                Log.d(AppHelper.LOG_TAG,"AsyncGenerico ERROR SYNC Código: " + statusCode + "\n" + responseBody);
+                            }
+                        }
+
+                    });
+
+                }
+
+            }else{
+                jsonArray = jsonRootObject.optJSONArray("error");
+                if(jsonArray != null){
+                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico ERROR RESPONSE "+jsonObject.optString("text"));
+                }
+            }
+
+        } catch (SQLException e0) {
+            Log.d(AppHelper.LOG_TAG, "AsyncGenerico AppHelper "+e0.getMessage());
+        } catch (JSONException e1) {
+            Log.d(AppHelper.LOG_TAG, "AsyncGenerico JSONException "+e1.getMessage());
+        }
+
+    }
+
+
+    public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
+
+        cliente = new AsyncHttpClient();
+        cliente.get(App.context, url, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Log.d(AppHelper.LOG_TAG,"AsyncGenerico onSuccess " + new String(responseBody));
+                clienteCallback.onResponse(0, statusCode, new String(responseBody));
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Log.d(AppHelper.LOG_TAG,"AsyncGenerico onFailure " + error.getMessage());
+                cliente.cancelRequests(App.context, true);
+                Log.d(AppHelper.LOG_TAG,"AsyncGenerico onFailure cancelRequests");
+            }
+
+        });
+    }
 
 
 }

@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -17,8 +18,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.PasswordTransformationMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
@@ -26,10 +29,13 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.obm.mylibrary.PrintConnect;
 import com.obm.mylibrary.PrintUnits;
 
@@ -37,12 +43,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import cz.msebera.android.httpclient.Header;
 
 
 public class IngresoPatente extends AppCompatActivity {
 
+    private AsyncHttpClient cliente = null;
 
     public static PrintConnect mPrintConnect;
     static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -62,6 +72,21 @@ public class IngresoPatente extends AppCompatActivity {
     private AppGPS appGPS;
     private String g_latitud;
     private String g_longitud;
+
+    //CONTROLES PAGO DEUDA DIALOG.
+    private TextView TXT_LB_Transaccion;
+    private TextView TXT_Transaccion;
+    private TextView TXT_LB_FechaHora;
+    private TextView TXT_FechaHora;
+    private TextView TXT_LB_Ubicacion;
+    private TextView TXT_Ubicacion;
+    private TextView TXT_LB_Espacios;
+    private TextView TXT_Espacios;
+    private TextView TXT_LB_Operador;
+    private TextView TXT_Operador;
+    private TextView TXT_LB_Precio;
+    private TextView TXT_Precio;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +143,13 @@ public class IngresoPatente extends AppCompatActivity {
                 if (validaPatente() == 0){
                     return;
                 }
+                //Si tiene conexion a internet, entonces verifica si la patente registra deuda.
+                if(Util.internetStatus(IngresoPatente.this)){
+                    if (verificaPatenteDeuda(patente, 1) == 0){
+                        return;
+                    }
+                }
+
                 String espacios  = SPIN_Espacios.getSelectedItem().toString();
 
                 Date fechahora_in = new Date();
@@ -394,6 +426,184 @@ public class IngresoPatente extends AppCompatActivity {
             return 0;
         }
         return 100;
+    }
+
+    private int verificaPatenteDeuda(final String patente, final int resultado){
+
+        if (resultado == 1){
+           ClienteAsync(AppHelper.getUrl_restful() + "verifica_patente_deuda/" + patente, new ClienteCallback() {
+
+               @Override
+               public void onResponse(int esError, int statusCode, String responseBody) {
+                   if (esError == 0 && !responseBody.equals("")) {
+                       //Util.alertDialog(IngresoPatente.this, "Ingreso Patente", responseBody);
+                       confirmDialogRegularizaDeudaPatente(IngresoPatente.this, "Mensaje de test");
+                       verificaPatenteDeuda(patente, 0);
+                   } else {
+                       Util.alertDialog(IngresoPatente.this, "Async Ingreso Patente", "ERROR SYNC Código: " + statusCode + "\n" + responseBody);
+                       verificaPatenteDeuda(patente, 0);
+                   }
+               }
+
+           });
+       }
+
+       return resultado;
+    }
+
+    private void confirmDialogRegularizaDeudaPatente(Context context, String mensaje) {
+
+        LinearLayout lilav = new LinearLayout(this);
+        lilav.setOrientation(LinearLayout.VERTICAL);
+
+        LinearLayout lilah = new LinearLayout(this);
+        lilah.setOrientation(LinearLayout.HORIZONTAL);
+        lilah.setPadding(35,0,10,0);
+
+        TXT_LB_Transaccion = new TextView(this);
+        TXT_LB_Transaccion.setTextColor(Color.BLACK);
+        TXT_LB_Transaccion.setTextSize(15);
+        TXT_LB_Transaccion.setText("ID: ");
+        TXT_Transaccion    = new TextView(this);
+        TXT_Transaccion.setTextColor(Color.GRAY);
+        TXT_Transaccion.setTextSize(15);
+        TXT_Transaccion.setText("20180427171245_1f7b113e_AAAAA");
+        lilah.addView(TXT_LB_Transaccion);
+        lilah.addView(TXT_Transaccion);
+        lilav.addView(lilah);
+
+        lilah = new LinearLayout(this);
+        lilah.setOrientation(LinearLayout.HORIZONTAL);
+        lilah.setPadding(35,0,10,0);
+        TXT_LB_FechaHora = new TextView(this);
+        TXT_LB_FechaHora.setTextColor(Color.BLACK);
+        TXT_LB_FechaHora.setTextSize(15);
+        TXT_LB_FechaHora.setText("Fecha: ");
+        TXT_FechaHora    = new TextView(this);
+        TXT_FechaHora.setTextColor(Color.GRAY);
+        TXT_FechaHora.setTextSize(15);
+        TXT_FechaHora.setText("2018-04-27");
+        lilah.addView(TXT_LB_FechaHora);
+        lilah.addView(TXT_FechaHora);
+        lilav.addView(lilah);
+
+        lilah = new LinearLayout(this);
+        lilah.setOrientation(LinearLayout.HORIZONTAL);
+        lilah.setPadding(35,0,10,0);
+        TXT_LB_Ubicacion = new TextView(this);
+        TXT_LB_Ubicacion.setTextColor(Color.BLACK);
+        TXT_LB_Ubicacion.setTextSize(15);
+        TXT_LB_Ubicacion.setText("Ubicación: ");
+        TXT_Ubicacion    = new TextView(this);
+        TXT_Ubicacion.setTextColor(Color.GRAY);
+        TXT_Ubicacion.setTextSize(15);
+        TXT_Ubicacion.setText("ABC 1");
+        lilah.addView(TXT_LB_Ubicacion);
+        lilah.addView(TXT_Ubicacion);
+        lilav.addView(lilah);
+
+        lilah = new LinearLayout(this);
+        lilah.setOrientation(LinearLayout.HORIZONTAL);
+        lilah.setPadding(35,0,10,0);
+        TXT_LB_Espacios = new TextView(this);
+        TXT_LB_Espacios.setTextColor(Color.BLACK);
+        TXT_LB_Espacios.setTextSize(15);
+        TXT_LB_Espacios.setText("Espacios: ");
+        TXT_Espacios    = new TextView(this);
+        TXT_Espacios.setTextColor(Color.GRAY);
+        TXT_Espacios.setTextSize(15);
+        TXT_Espacios.setText("1");
+        lilah.addView(TXT_LB_Espacios);
+        lilah.addView(TXT_Espacios);
+        lilav.addView(lilah);
+
+        lilah = new LinearLayout(this);
+        lilah.setOrientation(LinearLayout.HORIZONTAL);
+        lilah.setPadding(35,0,10,0);
+        TXT_LB_Operador = new TextView(this);
+        TXT_LB_Operador.setTextColor(Color.BLACK);
+        TXT_LB_Operador.setTextSize(15);
+        TXT_LB_Operador.setText("Operador: ");
+        TXT_Operador    = new TextView(this);
+        TXT_Operador.setTextColor(Color.GRAY);
+        TXT_Operador.setTextSize(15);
+        TXT_Operador.setText("Nicole Bustos");
+        lilah.addView(TXT_LB_Operador);
+        lilah.addView(TXT_Operador);
+        lilav.addView(lilah);
+
+        lilah = new LinearLayout(this);
+        lilah.setOrientation(LinearLayout.HORIZONTAL);
+        lilah.setPadding(35,0,10,0);
+        TXT_LB_Precio = new TextView(this);
+        TXT_LB_Precio.setTextColor(Color.BLACK);
+        TXT_LB_Precio.setTextSize(15);
+        TXT_LB_Precio.setText("Precio: ");
+        TXT_Precio    = new TextView(this);
+        TXT_Precio.setTextColor(Color.GRAY);
+        TXT_Precio.setTextSize(15);
+        TXT_Precio.setText("$100");
+        lilah.addView(TXT_LB_Precio);
+        lilah.addView(TXT_Precio);
+        lilav.addView(lilah);
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Registrar Recaudación");
+        builder.setMessage(mensaje);
+        builder.setView(lilav);
+        builder.setPositiveButton("Confirmar",  new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+
+            }
+        });
+        builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog,int id) {
+                dialog.cancel();
+            }
+        });
+
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+
+                //proceso.
+
+            }
+
+        });
+
+
+
+    }
+
+
+
+
+    public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
+
+        cliente = new AsyncHttpClient();
+        cliente.get(App.context, url, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onSuccess " + new String(responseBody));
+                clienteCallback.onResponse(0, statusCode, new String(responseBody));
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure " + error.getMessage());
+                cliente.cancelRequests(App.context, true);
+                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure cancelRequests");
+            }
+
+        });
     }
 
     private void abrirCamara() {

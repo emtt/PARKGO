@@ -185,8 +185,52 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:id="@+id/LL_Total"
+        android:id="@+id/LL_Recaudado"
         android:layout_below="@+id/LL_Efectivo">
+        <TextView
+            android:id="@+id/LB_Recaudado"
+            android:layout_width="130dp"
+            android:layout_height="wrap_content"
+            android:text="Recaudado: "
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/TV_Recaudado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/LL_Retirado"
+        android:layout_below="@+id/LL_Recaudado">
+        <TextView
+            android:id="@+id/LB_Retirado"
+            android:layout_width="130dp"
+            android:layout_height="wrap_content"
+            android:text="Retirado: "
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/TV_Retirado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/LL_Total"
+        android:layout_below="@+id/LL_Retirado">
         <TextView
             android:id="@+id/LB_Total"
             android:layout_width="130dp"
