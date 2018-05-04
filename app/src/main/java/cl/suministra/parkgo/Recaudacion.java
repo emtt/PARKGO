@@ -127,7 +127,7 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
         try {
             fecha_recaudacion = new SimpleDateFormat("yyyy-MM-dd").format(new SimpleDateFormat("dd-MM-yyyy").parse(fecha_recaudacion));
 
-            String[] args = new String[]{String.valueOf(AppHelper.getUbicacion_id()), String.valueOf(AppHelper.getUsuario_rut()), fecha_recaudacion };
+            String[] args = new String[]{String.valueOf(AppHelper.getUbicacion_id()), String.valueOf(AppHelper.getUsuario_rut()), fecha_recaudacion, "0", fecha_recaudacion, "2" };
             String qry = "SELECT  trp.id_cliente_ubicacion, "+
                                   "tcu.descripcion, "+
                                   "tcu.minutos_gratis, "+
@@ -142,7 +142,9 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
                             "FROM tb_registro_patentes trp "+
                             "INNER JOIN tb_cliente_ubicaciones tcu ON tcu.id = trp.id_cliente_ubicacion "+
                             "INNER JOIN tb_usuario tu ON tu.rut = trp.rut_usuario_out "+
-                            "WHERE trp.id_cliente_ubicacion=? AND tu.rut =? AND DATE(trp.fecha_hora_out) =? "+
+                            "WHERE trp.id_cliente_ubicacion=? AND tu.rut =? " +
+                            "AND ( ( DATE(trp.fecha_hora_out) =? AND trp.id_estado_deuda =? )  " +
+                            "OR ( DATE(trp.fecha_hora_estado_deuda) =? AND trp.id_estado_deuda =? ) ) "+
                             "GROUP BY trp.id_cliente_ubicacion, rut_usuario_out ";
 
             c = AppHelper.getParkgoSQLite().rawQuery(qry, args);

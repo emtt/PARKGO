@@ -485,7 +485,9 @@ public class RetiroPatente extends AppCompatActivity {
                     "precio = "+precio+", " +
                     "prepago = "+prepago+", " +
                     "efectivo = "+efectivo+", " +
-                    "finalizado = '1' " +
+                    "finalizado = '1', " +
+                    "id_estado_deuda = '0', " +
+                    "fecha_hora_estado_deuda = datetime('now','localtime') "+
                     "WHERE id = '"+id_registro_patente+"'");
         }catch(SQLException e){  return e.getMessage(); }
 

@@ -32,7 +32,9 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[latitud] VARCHAR(32)  NULL,\n" +
                            "[longitud] VARCHAR(32)  NULL,\n" +
                            "[comentario] VARCHAR(255)  NULL,\n" +
-                           "[finalizado] INTEGER NULL\n" +
+                           "[finalizado] INTEGER NULL,\n" +
+                           "[id_estado_deuda] INTEGER NULL,\n" +
+                           "[fecha_hora_estado_deuda] TIMESTAMP  NULL\n" +
                            ");\n"+
                        "DROP TABLE IF EXISTS [tb_usuario];\n"+
                        "CREATE TABLE [tb_usuario] (\n" +
