@@ -97,6 +97,9 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
     public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         cliente.get(App.context, url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -106,7 +109,11 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure " + error.getMessage());
+
+                Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onFailure statusCode "+String.valueOf(statusCode));
+                Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onFailure responseBody "+String.valueOf(responseBody));
+                Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onFailure error "+String.valueOf(Log.getStackTraceString(error)));
+
                 cliente.cancelRequests(App.context, true);
                 Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure cancelRequests");
             }
@@ -144,7 +151,7 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                                  "fecha_hora_out, rut_usuario_out, maquina_out, " +
                                  "enviado_out, minutos, precio, " +
                                  "prepago, efectivo, latitud, " +
-                                 "longitud, comentario, finalizado)"+
+                                 "longitud, comentario, finalizado, id_estado_deuda, fecha_hora_estado_deuda)"+
                             "VALUES " +
                                 "('"+id_registro_patente+"','"+id_cliente_ubicacion+"','"+patente+"'," +
                                  "'"+espacios+"','"+fecha_hora_in+"' ,'"+rut_usuario_in+"'," +
@@ -152,7 +159,7 @@ public class AsyncGETIngresoPatente extends AsyncTask<Void, Integer,  Boolean> {
                                  "'', '', ''," +
                                  "'0','0','0'," +
                                  "'0','0','"+latitud+"'," +
-                                 "'"+longitud+"','"+comentario+"','0');";
+                                 "'"+longitud+"','"+comentario+"','0', '0', '');";
 
                     AppHelper.getParkgoSQLite().execSQL(qry);
                     Log.d(AppHelper.LOG_TAG, qry);

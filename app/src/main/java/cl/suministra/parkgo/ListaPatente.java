@@ -5,31 +5,19 @@ import android.database.Cursor;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.view.menu.BaseMenuPresenter;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.obm.mylibrary.PrintConnect;
-import com.obm.mylibrary.PrintUnits;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class ListaPatente extends AppCompatActivity {
-
-
-    public static PrintConnect mPrintConnect;
 
     private Button BTN_Imprimir_Lista;
     private Button BTN_Actualizar_Lista;
@@ -46,6 +34,7 @@ public class ListaPatente extends AppCompatActivity {
 
     CustomAdapter customAdapter = null;
 
+    Print_Thread printThread = null;
     List<PatentesPendiente> patentesList = new ArrayList<PatentesPendiente>();
 
     @Override
@@ -53,7 +42,6 @@ public class ListaPatente extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_patente);
         this.setTitle("Lista Vehículos Estacionados");
-        mPrintConnect = new PrintConnect(this);
         inicio();
     }
 
@@ -68,17 +56,19 @@ public class ListaPatente extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-            if(patentesList.size() > 0) {
-                String patentes = "";
-                for (int i = patentesList.size() - 1; i >= 0; i--) {
-                    //String.valueOf(patentesList.get(i).patente);
-                    patentes = patentesList.get(i).patente +" "+ patentesList.get(i).fecha_in + "\n" + patentes;
+                if(patentesList.size() > 0) {
+                    /** IMPRIME LA ETIQUETA **/
+                    if (printThread != null && !printThread.isThreadFinished()) {
+                        Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+                        return;
+                    }
+
+                    printThread = new Print_Thread(2,patentesList);
+                    printThread.start();
+
+                }else{
+                    Util.alertDialog(ListaPatente.this,"Lista Patentes", "No hay patentes para imprimir");
                 }
-                imprimeVoucherEstacionados(patentes);
-                Log.d(AppHelper.LOG_TAG, String.valueOf(patentes));
-            }else{
-                Util.alertDialog(ListaPatente.this,"Lista Patentes", "No hay patentes para imprimir");
-            }
             }
         });
 
@@ -157,35 +147,6 @@ public class ListaPatente extends AppCompatActivity {
 
     }
 
-    private void imprimeVoucherEstacionados(String patentes){
-
-        PrintUnits.setSpeed(mPrintConnect.os, 0);
-        PrintUnits.setConcentration(mPrintConnect.os, 2);
-        StringBuffer sb = new StringBuffer();
-        sb.setLength(0);
-
-        /** IMPRIME EL TEXTO **/
-        String Texto    =  AppHelper.getVoucher_estacionados()+"\n"+
-                           "Fecha hora: "+ AppHelper.fechaHoraFormat.format(new Date())+"\n"+
-                           "Zona:       "+AppHelper.getUbicacion_nombre()+"\n"+
-                           "Operador:   "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre()+ "\n\n"+
-                           patentes;
-
-
-        for (int i = 0; i < Texto.length(); i++) {
-            sb.append(Texto.charAt(i));
-        }
-        sb.append("\n");
-        mPrintConnect.send(sb.toString());
-
-        /** IMPRIME ESPACIO PARA CORTAR ETIQUETA **/
-        sb.setLength(0);
-        for (int i = 0; i < 4; i++) {
-            sb.append("\n");
-        }
-        mPrintConnect.send(sb.toString());
-    }
-
     class CustomAdapter extends BaseAdapter{
 
 
@@ -232,9 +193,6 @@ public class ListaPatente extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mPrintConnect != null) {
-            mPrintConnect.stop();
-        }
     }
 
 

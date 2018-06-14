@@ -219,6 +219,9 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                                          final String latitud, final String longitud, final String comentario) {
 
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
         try {
@@ -279,7 +282,11 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente onFailure "+error.getMessage());
+
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente onFailure statusCode "+String.valueOf(statusCode));
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente onFailure responseBody "+String.valueOf(responseBody));
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente onFailure error "+String.valueOf(Log.getStackTraceString(error)));
+
                     cliente.cancelRequests(App.context, true);
                     Log.d(AppHelper.LOG_TAG, "AsyncSENDIngresoPatente onFailure cancelRequests");
                 }

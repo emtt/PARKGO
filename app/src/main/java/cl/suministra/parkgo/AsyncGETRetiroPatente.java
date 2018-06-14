@@ -97,6 +97,9 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
     public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         cliente.get(App.context, url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -106,7 +109,11 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.d(AppHelper.LOG_TAG,"AsyncGETRetiroPatente onFailure " + error.getMessage());
+
+                Log.d(AppHelper.LOG_TAG, "AsyncGETRetiroPatente onFailure statusCode "+String.valueOf(statusCode));
+                Log.d(AppHelper.LOG_TAG, "AsyncGETRetiroPatente onFailure responseBody "+String.valueOf(responseBody));
+                Log.d(AppHelper.LOG_TAG, "AsyncGETRetiroPatente onFailure error "+String.valueOf(Log.getStackTraceString(error)));
+
                 cliente.cancelRequests(App.context, true);
                 Log.d(AppHelper.LOG_TAG,"AsyncGETRetiroPatente onFailure cancelRequests");
             }
@@ -136,6 +143,8 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                     int prepago                = jsonObject.optInt("prepago");
                     int efectivo               = jsonObject.optInt("efectivo");
                     int finalizado             = jsonObject.optInt("finalizado");
+                    int id_estado_deuda        = jsonObject.optInt("id_estado_deuda");
+                    String fecha_hora_estado_deuda = jsonObject.optString("fecha_hora_estado_deuda");
 
                     qry =   "UPDATE tb_registro_patentes " +
                             "SET " +
@@ -146,7 +155,9 @@ public class AsyncGETRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                             "precio = "+precio+", " +
                             "prepago = "+prepago+", " +
                             "efectivo = "+efectivo+", " +
-                            "finalizado = "+finalizado+" " +
+                            "finalizado = "+finalizado+", " +
+                            "id_estado_deuda = "+id_estado_deuda+", " +
+                            "fecha_hora_estado_deuda = '"+fecha_hora_estado_deuda+"' " +
                             "WHERE id = '"+id_registro_patente+"'";
 
                     AppHelper.getParkgoSQLite().execSQL(qry);

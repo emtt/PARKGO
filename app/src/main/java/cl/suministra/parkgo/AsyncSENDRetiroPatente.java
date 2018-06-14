@@ -196,6 +196,9 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
                                          final int precio, final int prepago, final int efectivo) {
 
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
         try {
@@ -243,7 +246,11 @@ public class AsyncSENDRetiroPatente extends AsyncTask<Void, Integer,  Boolean> {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onFailure "+error.getMessage());
+
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onFailure statusCode "+String.valueOf(statusCode));
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onFailure responseBody "+String.valueOf(responseBody));
+                    Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onFailure error "+String.valueOf(Log.getStackTraceString(error)));
+
                     cliente.cancelRequests(App.context, true);
                     Log.d(AppHelper.LOG_TAG, "AsyncSENDRetiroPatente onFailure cancelRequests");
                 }

@@ -18,9 +18,11 @@ import java.util.Locale;
 public class AppHelper {
 
     private static String db_nombre  = "db_parkgo";
-    private static int db_version    = 2;
+    private static int db_version    = 1;
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
+
+    public static int timeout = 5000;
 
     private static String serial_no  = "";
     private static String usuario_rut= "";
@@ -51,16 +53,18 @@ public class AppHelper {
     public static int voucher_rollo_max  = 0;
     public static int voucher_rollo_alert= 0;
 
-
     public static String url_restful = "";
     public static String pagina_test = "";
 
     public static int minutos_diff   = 0; //diferencia máxima de minutos posible entre hora máquina y hora servidor. (se configura en tabla configuración);
     public static String LOG_TAG     = "parkgo_log";
+    public static String LOG_PRINT     = "parkgo_printer";
     public static String LOG_TST     = "parkgo_tst";
 
     public static int imagen_calidad   = 0;
     public static double imagen_max_mb = 0;
+
+    public static int print_densidad = 5;
 
 
     public static void initParkgoDB(Context context){
@@ -229,6 +233,7 @@ public class AppHelper {
             Class<?> c = Class.forName("android.os.SystemProperties");
             Method get = c.getMethod("get", String.class);
             serial_no = (String) get.invoke(c, "ro.serialno");
+            serial_no = serial_no.substring(0,8);
         }catch (Exception e) {Toast.makeText(context,"Ocurrió un error al obtener número de serie "+e.getMessage(),Toast.LENGTH_LONG).show();}
     }
 

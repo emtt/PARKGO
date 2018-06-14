@@ -16,6 +16,7 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -26,21 +27,16 @@ import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.obm.mylibrary.PrintConnect;
-import com.obm.mylibrary.PrintUnits;
-import com.obm.mylibrary.ScanConnect;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import cz.msebera.android.httpclient.Header;
 
 public class RetiroPatente extends AppCompatActivity {
 
+    Print_Thread printThread = null;
     private AsyncHttpClient cliente = null;
 
     private EditText EDT_Patente;
@@ -58,8 +54,6 @@ public class RetiroPatente extends AppCompatActivity {
 
     private ProgressDialog esperaDialog;
 
-    public  PrintConnect mPrintConnect;
-    private ScanConnect mScanConnect;
     private String data = "";
     private int    count= 0;
 
@@ -105,8 +99,6 @@ public class RetiroPatente extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_retiro_patente);
         this.setTitle("Retirar Vehículo");
-        mPrintConnect = new PrintConnect(this);
-        mScanConnect  = new ScanConnect(this, mHandler);
         inicio();
     }
 
@@ -384,14 +376,17 @@ public class RetiroPatente extends AppCompatActivity {
                 .setPositiveButton("Si",  new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, 0, g_precio);
-                        if (Resultado.equals("1")){
-                            imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
-                            //Util.alertDialog(RetiroPatente.this,"Retiro Patente","Patente: "+g_patente+" retirada correctamente");
-                        }else{
-                            Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente",Resultado);
+
+                        int print_result =  imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
+                        if (print_result == 0) {
+                            String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, 0, g_precio);
+                            if (Resultado.equals("1")) {
+                                //Util.alertDialog(RetiroPatente.this,"Retiro Patente","Patente: "+g_patente+" retirada correctamente");
+                            } else {
+                                Util.alertDialog(RetiroPatente.this, "SQLException Retiro Patente", Resultado);
+                            }
+                            reiniciaRetiro();
                         }
-                        reiniciaRetiro();
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -438,13 +433,15 @@ public class RetiroPatente extends AppCompatActivity {
                     Util.alertDialog(RetiroPatente.this,"Retiro Patente","Clave ingresada no corresponde, verifique");
                 }else {
                     dialog.dismiss();
-                    String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, prepago, efectivo);
-                    if (Resultado.equals("1")) {
-                        imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
-                        //Util.alertDialog(RetiroPatente.this, "Retiro Patente", "Patente " + g_patente + " retirada correctamente");
-                        reiniciaRetiro();
-                    }else{
-                        Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente", Resultado);
+                    int print_result = imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
+                    if (print_result == 0) {
+                        String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, prepago, efectivo);
+                        if (Resultado.equals("1")) {
+                            //Util.alertDialog(RetiroPatente.this, "Retiro Patente", "Patente " + g_patente + " retirada correctamente");
+                            reiniciaRetiro();
+                        } else {
+                            Util.alertDialog(RetiroPatente.this, "SQLException Retiro Patente", Resultado);
+                        }
                     }
 
                 }
@@ -494,57 +491,31 @@ public class RetiroPatente extends AppCompatActivity {
         return "1";
     }
 
-    private void imprimeVoucherRetiro(String patente, int espacios, String fecha_hora_in,
+    private int imprimeVoucherRetiro(String patente, int espacios, String fecha_hora_in,
                                       String fecha_hora_out, int minutos, int minutos_gratis, int precio,
                                       int porcent_descuento){
 
 
-        PrintUnits.setSpeed(mPrintConnect.os, 0);
-        PrintUnits.setConcentration(mPrintConnect.os, 2);
-        StringBuffer sb = new StringBuffer();
-        sb.setLength(0);
-
-        String lb_ubicacion         = Util.formateaLineaEtiqueta("Zona:      "+AppHelper.getUbicacion_nombre());
-        String lb_operador          = Util.formateaLineaEtiqueta("Operador:  "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre());
-        String lb_patente           = Util.formateaLineaEtiqueta("Patente:   "+patente);
-        String lb_espacios          = Util.formateaLineaEtiqueta("Espacios:  "+espacios);
-        String lb_fecha_hora_in     = Util.formateaLineaEtiqueta("Ingreso:   "+fecha_hora_in);
-        String lb_fecha_hora_out    = Util.formateaLineaEtiqueta("Retiro:    "+fecha_hora_out);
-        String lb_tiempo            = Util.formateaLineaEtiqueta("Tiempo:    "+String.format("%,d", minutos).replace(",",".")+" min");
-        String lb_gratis            = Util.formateaLineaEtiqueta("Gratis:    "+String.format("%,d", minutos_gratis).replace(",",".")+" min");
-        String lb_total             = Util.formateaLineaEtiqueta("TOTAL:     $"+String.format("%,d", precio).replace(",","."));
-        String lb_descuento         = Util.formateaLineaEtiqueta("Descuento: "+String.format("%,d", porcent_descuento).replace(",",".")+"%");
-
-        /** IMPRIME EL TEXTO **/
-        String Texto    =   AppHelper.getVoucher_salida()+"\n"+
-                            AppHelper.getDescripcion_tarifa()+"\n\n"+
-                            lb_ubicacion+"\n"+
-                            lb_operador+"\n"+
-                            lb_patente+"\n"+
-                            lb_espacios+"\n"+
-                            lb_fecha_hora_in+"\n"+
-                            lb_fecha_hora_out+"\n"+
-                            lb_tiempo+"\n"+
-                            lb_gratis+"\n"+
-                            lb_total+"\n"+
-                            lb_descuento;
-
-        for (int i = 0; i < Texto.length(); i++) {
-            sb.append(Texto.charAt(i));
+        /** IMPRIME LA ETIQUETA **/
+        if (printThread != null && !printThread.isThreadFinished()) {
+            Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+            return -1;
+        }else {
+            printThread = new Print_Thread(1, patente, espacios, fecha_hora_in, fecha_hora_out,
+                                           minutos, minutos_gratis, precio, porcent_descuento);
+            printThread.start();
+            try {
+                printThread.join();
+            } catch (InterruptedException e) {
+                System.out.println("Main thread Interrupted");
+            }
+            EDT_Patente.setText("");
+            return printThread.getRESULT_CODE();
         }
-        sb.append("\n");
-        mPrintConnect.send(sb.toString());
-
-        /** IMPRIME ESPACIO PARA CORTAR ETIQUETA **/
-        sb.setLength(0);
-        for (int i = 0; i < 4; i++) {
-            sb.append("\n");
-        }
-        mPrintConnect.send(sb.toString());
-        EDT_Patente.setText("");
 
 
-        /** SUMA UNA ETIQUETA IMPRESA **/
+
+        /** SUMA UNA ETIQUETA IMPRESA
         int num_etiqueta_actual = 0;
         try{
             String[] args = new String[] {};
@@ -558,9 +529,9 @@ public class RetiroPatente extends AppCompatActivity {
 
             int etiquetas_restantes = AppHelper.getVoucher_rollo_max() - num_etiqueta_actual;
             if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual < AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(RetiroPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_LONG).show();
+                Toast.makeText(RetiroPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_SHORT).show();
             }else if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual >= AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(RetiroPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_LONG).show();
+                Toast.makeText(RetiroPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_SHORT).show();
             }
 
             AppCRUD.actualizaNumeroEtiqueta(RetiroPatente.this, num_etiqueta_actual, num_etiqueta_actual, true);
@@ -568,6 +539,7 @@ public class RetiroPatente extends AppCompatActivity {
         }catch(SQLException e){
             Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente", e.getMessage());
         }
+         **/
     }
 
     private void reiniciaRetiro(){
@@ -598,6 +570,9 @@ public class RetiroPatente extends AppCompatActivity {
 
     public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         cliente.get(RetiroPatente.this, url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -607,8 +582,13 @@ public class RetiroPatente extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
+                Log.d(AppHelper.LOG_TAG, "onFailure RetiroPatente statusCode "+String.valueOf(statusCode));
+                Log.d(AppHelper.LOG_TAG, "onFailure RetiroPatente responseBody "+String.valueOf(responseBody));
+                Log.d(AppHelper.LOG_TAG, "onFailure RetiroPatente error "+String.valueOf(Log.getStackTraceString(error)));
+
                 esperaDialog.dismiss();
-                Util.alertDialog(RetiroPatente.this, "onFailure Retiro Patente Prepago", error.getMessage());
+                Util.alertDialog(RetiroPatente.this, "onFailure RetiroPatente Prepago", error.getMessage());
             }
         });
     }
@@ -618,10 +598,8 @@ public class RetiroPatente extends AppCompatActivity {
 
         switch (event.getKeyCode()) {
             case 223:
-                mScanConnect.scan();
                 break;
             case 224:
-                mScanConnect.scan();
                 break;
             default:
                 break;
@@ -632,12 +610,6 @@ public class RetiroPatente extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mScanConnect != null) {
-            mScanConnect.stop();
-        }
-        if (mPrintConnect != null) {
-            mPrintConnect.stop();
-        }
     }
 
 

@@ -36,8 +36,6 @@ import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.obm.mylibrary.PrintConnect;
-import com.obm.mylibrary.PrintUnits;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,9 +54,9 @@ import cz.msebera.android.httpclient.Header;
 
 public class IngresoPatente extends AppCompatActivity {
 
+    Print_Thread printThread = null;
     private AsyncHttpClient cliente = null;
 
-    public static PrintConnect mPrintConnect;
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
     private EditText EDT_Patente;
@@ -98,7 +96,6 @@ public class IngresoPatente extends AppCompatActivity {
         setContentView(R.layout.activity_ingreso_patente);
         this.setTitle("Ingresar Vehículo");
         appGPS = new AppGPS();
-        mPrintConnect = new PrintConnect(this);
         inicio();
     }
 
@@ -180,7 +177,7 @@ public class IngresoPatente extends AppCompatActivity {
     }
 
     private void iniciarIngresoPatente(String patente){
-        String espacios  = SPIN_Espacios.getSelectedItem().toString();
+        int espacios  = Integer.parseInt(SPIN_Espacios.getSelectedItem().toString());
 
         Date fechahora_in = new Date();
         String fecha_hora_in = AppHelper.fechaHoraFormat.format(fechahora_in);
@@ -190,7 +187,7 @@ public class IngresoPatente extends AppCompatActivity {
         finalizarIngresoPatente(id_registro_patente ,patente, espacios, fecha_hora_in);
     }
 
-    public void finalizarIngresoPatente(final String id_registro_patente, final String patente, final String espacios, final String fecha_hora_in){
+    public void finalizarIngresoPatente(final String id_registro_patente, final String patente, final int espacios, final String fecha_hora_in){
 
         String Resultado = consultaPatenteIngreso(patente);
         if (Resultado.equals("1")){ //patente existe
@@ -222,9 +219,6 @@ public class IngresoPatente extends AppCompatActivity {
             reiniciaIngreso();
             Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente",Resultado);
         }
-
-
-
 
     }
 
@@ -302,32 +296,32 @@ public class IngresoPatente extends AppCompatActivity {
 
     }
 
-    private void insertaPatenteIngreso(String id_registro_patente, String patente, String espacios,
+    private void insertaPatenteIngreso(String id_registro_patente, String patente, int espacios,
                                        String fecha_hora_in, String imagen_nombre, String latitud, String longitud, String comentario){
 
         try{
 
-            AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patentes "+
-                                                "(id, id_cliente_ubicacion, patente," +
-                                                "espacios, fecha_hora_in, rut_usuario_in, " +
-                                                "maquina_in, imagen_in, enviado_in, " +
-                                                "fecha_hora_out, rut_usuario_out, maquina_out, " +
-                                                "enviado_out, minutos, precio, " +
-                                                "prepago, efectivo, latitud, " +
-                                                "longitud, comentario ,finalizado, id_estado_deuda, fecha_hora_estado_deuda)"+
-                                                "VALUES " +
-                                                "('"+id_registro_patente+"','"+AppHelper.getUbicacion_id()+"','"+patente+"'," +
-                                                "'"+espacios+"','"+fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"'," +
-                                                "'"+AppHelper.getSerialNum()+"' ,'"+imagen_nombre+"', '0', " +
-                                                "'', '', ''," +
-                                                "'0','0','0'," +
-                                                "'0','0','"+latitud+"'," +
-                                                "'"+longitud+"','"+comentario+"','0', '0', datetime('now','localtime'));");
-
-            imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
-            reiniciaIngreso();
-            //Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
-
+                int print_result = imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
+                if (print_result == 0) {
+                    AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patentes "+
+                                                        "(id, id_cliente_ubicacion, patente," +
+                                                        "espacios, fecha_hora_in, rut_usuario_in, " +
+                                                        "maquina_in, imagen_in, enviado_in, " +
+                                                        "fecha_hora_out, rut_usuario_out, maquina_out, " +
+                                                        "enviado_out, minutos, precio, " +
+                                                        "prepago, efectivo, latitud, " +
+                                                        "longitud, comentario ,finalizado, id_estado_deuda, fecha_hora_estado_deuda)"+
+                                                        "VALUES " +
+                                                        "('"+id_registro_patente+"','"+AppHelper.getUbicacion_id()+"','"+patente+"'," +
+                                                        "'"+espacios+"','"+fecha_hora_in+"' ,'"+AppHelper.getUsuario_rut()+"'," +
+                                                        "'"+AppHelper.getSerialNum()+"' ,'"+imagen_nombre+"', '0', " +
+                                                        "'', '', ''," +
+                                                        "'0','0','0'," +
+                                                        "'0','0','"+latitud+"'," +
+                                                        "'"+longitud+"','"+comentario+"','0', '0', datetime('now','localtime'));");
+                    reiniciaIngreso();
+                    //Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Patente: "+patente+" registrada correctamente");
+                }
         }catch(SQLException e){
             reiniciaIngreso();
             Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente", e.getMessage());
@@ -336,51 +330,25 @@ public class IngresoPatente extends AppCompatActivity {
 
     }
 
-    private void imprimeVoucherIngreso(String patente, String espacios, String fecha_hora_in){
+    private int imprimeVoucherIngreso(String patente, int espacios, String fecha_hora_in){
 
-        PrintUnits.setSpeed(mPrintConnect.os, 0);
-        PrintUnits.setConcentration(mPrintConnect.os, 2);
-        StringBuffer sb = new StringBuffer();
-        sb.setLength(0);
-
-        String lb_ubicacion         = Util.formateaLineaEtiqueta("Zona:      "+AppHelper.getUbicacion_nombre());
-        String lb_operador          = Util.formateaLineaEtiqueta("Operador:  "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre());
-        String lb_patente           = Util.formateaLineaEtiqueta("Patente:   "+patente);
-        String lb_fecha_hora_in     = Util.formateaLineaEtiqueta("Ingreso:   "+fecha_hora_in);
-        String lb_espacios          = Util.formateaLineaEtiqueta("Espacios:  "+espacios);
-
-        /** IMPRIME EL TEXTO **/
-        String Texto    =  AppHelper.getVoucher_ingreso()+"\n"+
-                           AppHelper.getDescripcion_tarifa()+"\n\n"+
-                           lb_ubicacion+"\n"+
-                           lb_operador+ "\n"+
-                           lb_patente+"\n"+
-                           lb_fecha_hora_in+"\n"+
-                           lb_espacios+"\n";
-
-        for (int i = 0; i < Texto.length(); i++) {
-            sb.append(Texto.charAt(i));
+        /** IMPRIME LA ETIQUETA **/
+        if (printThread != null && !printThread.isThreadFinished()) {
+            Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+            return -1;
+        }else {
+            printThread = new Print_Thread(0, patente, espacios, fecha_hora_in);
+            printThread.start();
+            try {
+                //Espera que el thread finalice la ejecución.
+                printThread.join();
+            } catch (InterruptedException e) {
+                System.out.println("Main thread Interrupted");
+            }
+            return printThread.getRESULT_CODE();
         }
-        sb.append("\n");
-        mPrintConnect.send(sb.toString());
 
-        /** IMPRIME EL CODIGO DE BARRAS **/
-        sb.setLength(0);
-        String Codigo_Barras = patente;
-        for (int i = 0; i < Codigo_Barras.length(); i++) {
-            sb.append(Codigo_Barras.charAt(i));
-        }
-        sb.append("\n");
-        mPrintConnect.sendCode128(sb.toString(), 2, 80);
-
-        /** IMPRIME ESPACIO PARA CORTAR ETIQUETA **/
-        sb.setLength(0);
-        for (int i = 0; i < 4; i++) {
-            sb.append("\n");
-        }
-        mPrintConnect.send(sb.toString());
-
-        /** SUMA UNA ETIQUETA IMPRESA **/
+        /** SUMA UNA ETIQUETA IMPRESA
         int num_etiqueta_actual = 0;
         try{
             String[] args = new String[] {};
@@ -395,9 +363,9 @@ public class IngresoPatente extends AppCompatActivity {
 
             int etiquetas_restantes = AppHelper.getVoucher_rollo_max() - num_etiqueta_actual;
             if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual < AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_LONG).show();
+                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_SHORT).show();
             }else if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual >= AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_LONG).show();
+                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_SHORT).show();
             }
 
             AppCRUD.actualizaNumeroEtiqueta(IngresoPatente.this, num_etiqueta_actual, num_etiqueta_actual, true);
@@ -405,6 +373,7 @@ public class IngresoPatente extends AppCompatActivity {
         }catch(SQLException e){
             Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente", e.getMessage());
         }
+         **/
     }
 
     private void reiniciaIngreso(){
@@ -658,7 +627,7 @@ public class IngresoPatente extends AppCompatActivity {
                                             imprimeVoucherPagaPatenteDeuda(jsonObject.optString("patente"), jsonObject.optInt("espacios"), jsonObject.optString("fecha_hora_in"),
                                                                            jsonObject.optString("fecha_hora_out"), jsonObject.optInt("minutos"), AppHelper.getMinutos_gratis(),
                                                                            jsonObject.optInt("precio"), descuento_porciento);
-                                            Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Pago registrado correctamente. Ahora puede ingresar el vehículo.");
+                                            //Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Pago registrado correctamente. Ahora puede ingresar el vehículo.");
 
                                         }catch(SQLException e){
                                             dialog.dismiss();
@@ -695,56 +664,53 @@ public class IngresoPatente extends AppCompatActivity {
 
     }
 
-    private void imprimeVoucherPagaPatenteDeuda(String patente, int espacios, String fecha_hora_in,
-                                                      String fecha_hora_out, int minutos, int minutos_gratis, int precio,
-                                                      int porcent_descuento){
+    private void imprimeVoucherPagaPatenteDeuda(final String patente, final int espacios, final String fecha_hora_in,
+                                                final String fecha_hora_out, final int minutos, final int minutos_gratis, final int precio,
+                                                final int porcent_descuento){
 
-        PrintUnits.setSpeed(mPrintConnect.os, 0);
-        PrintUnits.setConcentration(mPrintConnect.os, 2);
-        StringBuffer sb = new StringBuffer();
-        sb.setLength(0);
+        int print_result = 0;
 
-        String lb_ubicacion         = Util.formateaLineaEtiqueta("Zona:      "+AppHelper.getUbicacion_nombre());
-        String lb_operador          = Util.formateaLineaEtiqueta("Operador:  "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre());
-        String lb_patente           = Util.formateaLineaEtiqueta("Patente:   "+patente);
-        String lb_espacios          = Util.formateaLineaEtiqueta("Espacios:  "+espacios);
-        String lb_fecha_hora_in     = Util.formateaLineaEtiqueta("Ingreso:   "+fecha_hora_in);
-        String lb_fecha_hora_out    = Util.formateaLineaEtiqueta("Retiro:    "+fecha_hora_out);
-        String lb_tiempo            = Util.formateaLineaEtiqueta("Tiempo:    "+String.format("%,d", minutos).replace(",",".")+" min");
-        String lb_gratis            = Util.formateaLineaEtiqueta("Gratis:    "+String.format("%,d", minutos_gratis).replace(",",".")+" min");
-        String lb_total             = Util.formateaLineaEtiqueta("TOTAL:     $"+String.format("%,d", precio).replace(",","."));
-        String lb_descuento         = Util.formateaLineaEtiqueta("Descuento: "+String.format("%,d", porcent_descuento).replace(",",".")+"%");
-
-        /** IMPRIME EL TEXTO **/
-        String Texto    =   AppHelper.getVoucher_salida()+"\n"+
-                AppHelper.getDescripcion_tarifa()+"\n\n"+
-                lb_ubicacion+"\n"+
-                lb_operador+"\n"+
-                lb_patente+"\n"+
-                lb_espacios+"\n"+
-                lb_fecha_hora_in+"\n"+
-                lb_fecha_hora_out+"\n"+
-                lb_tiempo+"\n"+
-                lb_gratis+"\n"+
-                lb_total+"\n"+
-                lb_descuento;
-
-        for (int i = 0; i < Texto.length(); i++) {
-            sb.append(Texto.charAt(i));
+        /** IMPRIME LA ETIQUETA **/
+        if (printThread != null && !printThread.isThreadFinished()) {
+            Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+            print_result = -1;
+        }else {
+            printThread = new Print_Thread(1, patente, espacios, fecha_hora_in, fecha_hora_out,
+                                            minutos, minutos_gratis, precio, porcent_descuento);
+            printThread.start();
+            try {
+                //Espera que el thread finalice la ejecución.
+                printThread.join();
+            } catch (InterruptedException e) {
+                System.out.println("Main thread Interrupted");
+            }
+            print_result =  printThread.getRESULT_CODE();
         }
-        sb.append("\n");
-        mPrintConnect.send(sb.toString());
 
-        /** IMPRIME ESPACIO PARA CORTAR ETIQUETA **/
-        sb.setLength(0);
-        for (int i = 0; i < 4; i++) {
-            sb.append("\n");
+        /** SI SE PRODUCE UN ERROR AL IMPRIMIR, EJEMPLO NO HAY PAPEL, ETC.. INFORMA Y REINTENTA 3 VECES**/
+        if (print_result == 0){
+            EDT_Patente.setText("");
+        }else{
+              AlertDialog.Builder builder = new AlertDialog.Builder(IngresoPatente.this);
+              builder
+                        .setMessage("¿Desea reintentar la impresión?")
+                        .setPositiveButton("Si",  new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                imprimeVoucherPagaPatenteDeuda(patente, espacios, fecha_hora_in, fecha_hora_out,
+                                                               minutos, minutos_gratis, precio, porcent_descuento);
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog,int id) {
+                                dialog.cancel();
+                            }
+                        })
+                        .show();
         }
-        mPrintConnect.send(sb.toString());
-        EDT_Patente.setText("");
 
-
-        /** SUMA UNA ETIQUETA IMPRESA **/
+        /** SUMA UNA ETIQUETA IMPRESA
         int num_etiqueta_actual = 0;
         try{
             String[] args = new String[] {};
@@ -758,9 +724,9 @@ public class IngresoPatente extends AppCompatActivity {
 
             int etiquetas_restantes = AppHelper.getVoucher_rollo_max() - num_etiqueta_actual;
             if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual < AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_LONG).show();
+                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_SHORT).show();
             }else if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual >= AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_LONG).show();
+                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_SHORT).show();
             }
 
             AppCRUD.actualizaNumeroEtiqueta(IngresoPatente.this, num_etiqueta_actual, num_etiqueta_actual, true);
@@ -768,11 +734,15 @@ public class IngresoPatente extends AppCompatActivity {
         }catch(SQLException e){
             Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente", e.getMessage());
         }
+        **/
     }
 
     public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         cliente.get(App.context, url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -782,7 +752,11 @@ public class IngresoPatente extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure " + error.getMessage());
+
+                Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onFailure statusCode "+String.valueOf(statusCode));
+                Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onFailure responseBody "+String.valueOf(responseBody));
+                Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onFailure error "+String.valueOf(Log.getStackTraceString(error)));
+
                 cliente.cancelRequests(App.context, true);
                 Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure cancelRequests");
             }
@@ -944,9 +918,6 @@ public class IngresoPatente extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mPrintConnect != null) {
-            mPrintConnect.stop();
-        }
     }
 
 }

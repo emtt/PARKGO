@@ -110,6 +110,9 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
                                             final String latitud, final String longitud, final String fecha_hora) {
 
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
         try {
@@ -153,7 +156,11 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure "+error.getMessage());
+
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure statusCode "+String.valueOf(statusCode));
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure responseBody "+String.valueOf(responseBody));
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure error "+String.valueOf(Log.getStackTraceString(error)));
+
                     cliente.cancelRequests(App.context, true);
                     Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure cancelRequests");
                 }
@@ -200,6 +207,9 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
                                    final String fecha_hora) {
 
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
         try {
@@ -244,7 +254,11 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure "+error.getMessage());
+
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure statusCode "+String.valueOf(statusCode));
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure responseBody "+String.valueOf(responseBody));
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure error "+String.valueOf(Log.getStackTraceString(error)));
+
                     cliente.cancelRequests(App.context, true);
                     Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure cancelRequests");
                 }
@@ -291,6 +305,9 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
                                              final int monto) {
 
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
         try {
@@ -337,7 +354,11 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure "+error.getMessage());
+
+                    Log.d(AppHelper.LOG_TAG, "oAsyncGenerico onFailure statusCode "+String.valueOf(statusCode));
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure responseBody "+String.valueOf(responseBody));
+                    Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure error "+String.valueOf(Log.getStackTraceString(error)));
+
                     cliente.cancelRequests(App.context, true);
                     Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure cancelRequests");
                 }
@@ -444,6 +465,9 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
     public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
         cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         cliente.get(App.context, url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -453,7 +477,11 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.d(AppHelper.LOG_TAG,"AsyncGenerico onFailure " + error.getMessage());
+
+                Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure statusCode "+String.valueOf(statusCode));
+                Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure responseBody "+String.valueOf(responseBody));
+                Log.d(AppHelper.LOG_TAG, "AsyncGenerico onFailure error "+String.valueOf(Log.getStackTraceString(error)));
+
                 cliente.cancelRequests(App.context, true);
                 Log.d(AppHelper.LOG_TAG,"AsyncGenerico onFailure cancelRequests");
             }

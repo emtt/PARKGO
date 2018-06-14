@@ -26,9 +26,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.obm.mylibrary.PrintConnect;
-import com.obm.mylibrary.PrintUnits;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,7 +35,8 @@ import java.util.Locale;
 
 public class Recaudacion extends AppCompatActivity implements View.OnClickListener {
 
-    public static PrintConnect mPrintConnect;
+    Print_Thread printThread = null;
+
     private Button BTN_Recaudar;
     private EditText EDT_FechaRecaudacion;
     private TextView TV_Operador;
@@ -68,7 +66,6 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recaudacion);
         this.setTitle("Recaudación");
-        mPrintConnect = new PrintConnect(this);
         inicio();
         setDateTimeField();
         getRecaudacion();
@@ -403,17 +400,19 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
                                     String fecha_recaudacion = EDT_FechaRecaudacion.getText().toString();
                                     fecha_recaudacion = new SimpleDateFormat("yyyy-MM-dd").format(new SimpleDateFormat("dd-MM-yyyy").parse(fecha_recaudacion));
 
-                                    Date fechahora = new Date();
-                                    String id_recaudacion_retiro = AppHelper.fechaHoraFormatID.format(fechahora) + "_" + AppHelper.getSerialNum() + "_" + EDT_Usuario.getText().toString();
+                                    int print_result = imprimeVoucherRetiroRecaudacion(fecha_recaudacion, rs_rut_usuario_retiro, rs_nombre_usuario_retiro, monto);
+                                    if (print_result == 0) {
+                                        Date fechahora = new Date();
+                                        String id_recaudacion_retiro = AppHelper.fechaHoraFormatID.format(fechahora) + "_" + AppHelper.getSerialNum() + "_" + EDT_Usuario.getText().toString();
 
-                                    AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_recaudacion_retiro " +
-                                            "(id, id_cliente_ubicacion, rut_usuario_operador," +
-                                            "maquina, rut_usuario_retiro, fecha_recaudacion, " +
-                                            "monto, enviado)" +
-                                            "VALUES " +
-                                            "('" + id_recaudacion_retiro + "', " + AppHelper.getUbicacion_id() + " , '" + AppHelper.getUsuario_rut() + "', '" + AppHelper.getSerialNum() + "', '" + rs_rut_usuario_retiro + "' , '" + fecha_recaudacion + "', " + monto + ", 0);");
+                                        AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_recaudacion_retiro " +
+                                                "(id, id_cliente_ubicacion, rut_usuario_operador," +
+                                                "maquina, rut_usuario_retiro, fecha_recaudacion, " +
+                                                "monto, enviado)" +
+                                                "VALUES " +
+                                                "('" + id_recaudacion_retiro + "', " + AppHelper.getUbicacion_id() + " , '" + AppHelper.getUsuario_rut() + "', '" + AppHelper.getSerialNum() + "', '" + rs_rut_usuario_retiro + "' , '" + fecha_recaudacion + "', " + monto + ", 0);");
 
-                                    imprimeVoucherRetiroRecaudacion(fecha_recaudacion, rs_rut_usuario_retiro, rs_nombre_usuario_retiro, monto);
+                                    }
                                     dialog.dismiss();
 
                                 } catch (SQLException e) {
@@ -482,45 +481,26 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
 
     }
 
-    private void imprimeVoucherRetiroRecaudacion(String fecha_recaudacion, String rut_usuario_retiro, String nombre_usuario_retiro, int monto){
+    private int imprimeVoucherRetiroRecaudacion(String fecha_recaudacion, String rut_usuario_retiro, String nombre_usuario_retiro, int monto){
 
-        PrintUnits.setSpeed(mPrintConnect.os, 0);
-        PrintUnits.setConcentration(mPrintConnect.os, 2);
-        StringBuffer sb = new StringBuffer();
-        sb.setLength(0);
 
-        String lb_fecha_recaudacion = Util.formateaLineaEtiqueta("Fecha:     "+fecha_recaudacion);
-        String lb_ubicacion         = Util.formateaLineaEtiqueta("Zona:      "+AppHelper.getUbicacion_nombre());
-        String lb_operador          = Util.formateaLineaEtiqueta("Operador:  "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre());
-        String lb_maquina           = Util.formateaLineaEtiqueta("Maquina:   "+AppHelper.getSerialNum());
-        String lb_recaudador        = Util.formateaLineaEtiqueta("Recaudador:"+rut_usuario_retiro+" "+nombre_usuario_retiro);
-        String lb_monto             = Util.formateaLineaEtiqueta("Monto:     "+String.format("%,d", monto).replace(",","."));
-        String lb_firma             = Util.formateaLineaEtiqueta("Firma:__________________________");
-
-        /** IMPRIME EL TEXTO **/
-        String Texto  =  AppHelper.getVoucher_retiro_recaudacion()+"\n"+
-                         lb_fecha_recaudacion+"\n"+
-                         lb_ubicacion+"\n"+
-                         lb_operador+"\n"+
-                         lb_maquina+"\n"+
-                         lb_recaudador+"\n"+
-                         lb_monto+"\n"+
-                         "\n"+"\n"+"\n"+ //salta espacios para agregar la firma
-                         lb_firma+"\n";
-
-        for (int i = 0; i < Texto.length(); i++) {
-            sb.append(Texto.charAt(i));
+        /** IMPRIME LA ETIQUETA **/
+        if (printThread != null && !printThread.isThreadFinished()) {
+            Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+            return -1;
+        }else {
+            printThread = new Print_Thread(3, fecha_recaudacion, rut_usuario_retiro, nombre_usuario_retiro, monto);
+            printThread.start();
+            try {
+                printThread.join();
+            } catch (InterruptedException e) {
+                System.out.println("Main thread Interrupted");
+            }
+            return printThread.getRESULT_CODE();
         }
-        mPrintConnect.send(sb.toString());
 
-        /** IMPRIME ESPACIO PARA CORTAR ETIQUETA **/
-        sb.setLength(0);
-        for (int i = 0; i < 4; i++) {
-            sb.append("\n");
-        }
-        mPrintConnect.send(sb.toString());
 
-        /** SUMA UNA ETIQUETA IMPRESA **/
+        /** SUMA UNA ETIQUETA IMPRESA
         int num_etiqueta_actual = 0;
         try{
             String[] args = new String[] {};
@@ -544,7 +524,7 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
 
         }catch(SQLException e){
             Util.alertDialog(Recaudacion.this,"SQLException Recaudación", e.getMessage());
-        }
+        } **/
     }
 
     @Override
@@ -557,9 +537,6 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mPrintConnect != null) {
-            mPrintConnect.stop();
-        }
     }
 
 }

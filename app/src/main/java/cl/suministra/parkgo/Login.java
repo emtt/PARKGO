@@ -87,7 +87,6 @@ public class Login extends AppCompatActivity {
 
     AsyncGenerico asyncGenerico;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -232,7 +231,6 @@ public class Login extends AppCompatActivity {
             }
         });
 
-
         EDT_UsuarioClave = (EditText) findViewById(R.id.EDT_UsuarioClave);
         EDT_UsuarioClave.addTextChangedListener(new TextWatcher() {
             @Override
@@ -261,7 +259,6 @@ public class Login extends AppCompatActivity {
             }
         });
 
-
         BTN_Login = (Button) findViewById(R.id.BTN_Login);
         BTN_Login.setOnClickListener(new View.OnClickListener()
 
@@ -273,6 +270,7 @@ public class Login extends AppCompatActivity {
                 }else {
                     comparaHoraServidor();
                 }
+
             }
 
         });
@@ -398,18 +396,25 @@ public class Login extends AppCompatActivity {
     private void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
         AsyncHttpClient cliente = new AsyncHttpClient();
-        cliente.setConnectTimeout(1000);
-        cliente.setResponseTimeout(1000);
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
         cliente.get(url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+
                 clienteCallback.onResponse(0, statusCode, new String(responseBody));
+
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
+                Log.d(AppHelper.LOG_TAG, "onFailure Login statusCode "+String.valueOf(statusCode));
+                Log.d(AppHelper.LOG_TAG, "onFailure Login responseBody "+String.valueOf(responseBody));
+                Log.d(AppHelper.LOG_TAG, "onFailure Login error "+String.valueOf(Log.getStackTraceString(error)));
+
                 esperaDialog.dismiss();
-                Util.alertDialog(Login.this, "onFailure Login", error.getMessage());
+                Util.alertDialog(Login.this, "onFailure Login ", String.valueOf(Log.getStackTraceString(error)));
             }
 
         });
@@ -890,6 +895,10 @@ public class Login extends AppCompatActivity {
 
     }
 
+    public void salirApp(MenuItem item){
+       System.exit(0);
+    }
+
     public void cambiarEtiqueta(MenuItem item){
 
         g_num_etiqueta_actual = 0;
@@ -951,6 +960,9 @@ public class Login extends AppCompatActivity {
 
         String fecha_hora_maquina   = AppHelper.fechaHoraFormat.format(new Date());
         final AsyncHttpClient cliente = new AsyncHttpClient();
+        cliente.setConnectTimeout(AppHelper.timeout);
+        cliente.setResponseTimeout(AppHelper.timeout);
+
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
 
@@ -1016,7 +1028,12 @@ public class Login extends AppCompatActivity {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                   Util.alertDialog(Login.this, "onFailure comparaHoraServidor Login", error.getMessage());
+
+                    Log.d(AppHelper.LOG_TAG, "onFailure comparaHoraServidor Login statusCode "+String.valueOf(statusCode));
+                    Log.d(AppHelper.LOG_TAG, "onFailure comparaHoraServidor Login responseBody "+String.valueOf(responseBody));
+                    Log.d(AppHelper.LOG_TAG, "onFailure comparaHoraServidor Login error "+String.valueOf(Log.getStackTraceString(error)));
+
+                    Util.alertDialog(Login.this, "onFailure comparaHoraServidor Login ", String.valueOf(Log.getStackTraceString(error)));
                    cliente.cancelRequests(App.context, true);
                 }
 
