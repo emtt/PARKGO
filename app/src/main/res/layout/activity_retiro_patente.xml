@@ -10,6 +10,15 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="cl.suministra.parkgo.RetiroPatente">
 
+    <Button
+        android:id="@+id/BTN_Scan"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/activity_button_height"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/button_red_selector"
+        android:text="ESCANEAR"
+        android:textColor="@color/white"
+        android:textSize="@dimen/activity_button_text_size"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -18,6 +27,7 @@
         android:textSize="@dimen/activity_text_size_small"
         android:text=" "
         android:id="@+id/LB_Patente"
+        android:layout_below="@+id/BTN_Scan"
         android:layout_centerHorizontal="true" />
 
     <EditText
@@ -44,6 +54,7 @@
         android:id="@+id/MSJ_Patente"
         android:layout_below="@+id/EDT_Patente"
         android:layout_centerHorizontal="true" />
+
 
     <LinearLayout
         android:id="@+id/CNT_Botones"

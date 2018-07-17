@@ -146,7 +146,7 @@ public class IngresoPatente extends AppCompatActivity {
                 }
                 //Si tiene conexion a internet, entonces verifica si la patente registra deuda.
                 if(Util.internetStatus(IngresoPatente.this)){
-                    verificaPatenteDeuda(patente, 1);
+                    verificaPatenteDeuda(patente, true);
                 }else{
                     iniciarIngresoPatente(patente);
                 }
@@ -300,7 +300,6 @@ public class IngresoPatente extends AppCompatActivity {
                                        String fecha_hora_in, String imagen_nombre, String latitud, String longitud, String comentario){
 
         try{
-
                 int print_result = imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
                 if (print_result == 0) {
                     AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patentes "+
@@ -403,15 +402,14 @@ public class IngresoPatente extends AppCompatActivity {
         return 100;
     }
 
-    private int verificaPatenteDeuda(final String patente, final int resultado){
+    private void verificaPatenteDeuda(final String patente, final boolean verificar_deuda){
 
-        if (resultado == 1){
+        if (verificar_deuda){
            ClienteAsync(AppHelper.getUrl_restful() + "verifica_patente_deuda/" + patente, new ClienteCallback() {
 
                @Override
                public void onResponse(int esError, int statusCode, String responseBody) {
                    if (esError == 0 && !responseBody.equals("")) {
-
                        JSONObject jsonRootObject = null;
                        try {
                            jsonRootObject = new JSONObject(responseBody);
@@ -443,9 +441,10 @@ public class IngresoPatente extends AppCompatActivity {
                }
 
            });
+        }else{
+            iniciarIngresoPatente(patente);
         }
 
-        return resultado;
     }
 
     private void confirmDialogPagaPatenteDeuda(Context context,final String patente, String mensaje, JSONArray jsonArray) {
@@ -580,6 +579,7 @@ public class IngresoPatente extends AppCompatActivity {
                 public void onClick(DialogInterface dialog,int id) {
                     EDT_Patente.setText("");
                     dialog.cancel();
+                    verificaPatenteDeuda(patente, false);
                 }
             });
 

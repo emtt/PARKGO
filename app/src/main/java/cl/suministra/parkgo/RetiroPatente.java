@@ -1,8 +1,11 @@
 package cl.suministra.parkgo;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.os.Build;
@@ -32,6 +35,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import cz.msebera.android.httpclient.Header;
 
 public class RetiroPatente extends AppCompatActivity {
@@ -39,6 +45,10 @@ public class RetiroPatente extends AppCompatActivity {
     Print_Thread printThread = null;
     private AsyncHttpClient cliente = null;
 
+    private ScanBroadcastReceiver ScanReceiver = null;
+    private IntentFilter ScanIntentFilter      = null;
+
+    private Button   BTN_Scan;
     private EditText EDT_Patente;
     private Button   BTN_Efectivo;
     private Button   BTN_Prepago;
@@ -129,6 +139,27 @@ public class RetiroPatente extends AppCompatActivity {
                     TextView label = (TextView) findViewById(R.id.LB_Patente);
                     label.setText("");
                 }
+            }
+        });
+
+        BTN_Scan = (Button) findViewById(R.id.BTN_Scan);
+        BTN_Scan.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick (View v){
+
+                EDT_Patente.setText("");
+
+                Intent intent = new Intent ("ACTION_BAR_TRIGSCAN");
+                intent.putExtra("timeout", 3);
+                //levanta el scanner
+                getApplicationContext().sendBroadcast(intent);
+                //crea los objetos
+                ScanReceiver     = new ScanBroadcastReceiver();
+                ScanIntentFilter = new IntentFilter("ACTION_BAR_SCAN");
+                //envia los objetos para obtener el resultado del scan
+                getApplicationContext().registerReceiver(ScanReceiver, ScanIntentFilter);
+
             }
         });
 
@@ -610,6 +641,40 @@ public class RetiroPatente extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+
+    private class ScanBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            /*****EXTRAS POSIBLES*****
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                Set<String> keys = bundle.keySet();
+                Iterator<String> it = keys.iterator();
+                while (it.hasNext()) {
+                    String key = it.next();
+                    Log.d(AppHelper.LOG_TAG, "[" + key + "=" + bundle.get(key) + "]");
+                }
+            }
+
+                EXTRA_SCAN_STATE
+                EXTRA_SCAN_ENCODE_MODE
+                EXTRA_SCAN_LENGTH
+                EXTRA_SCAN_DATA
+            **************************/
+             final String scanResult = intent.getStringExtra("EXTRA_SCAN_DATA");
+
+            if (scanResult.length() > 0) {
+                EDT_Patente.setText(scanResult);
+                retiroPatente();
+            }
+            if (ScanReceiver != null) {
+                context.unregisterReceiver(ScanReceiver);
+                ScanReceiver = null;
+            }
+        }
     }
 
 

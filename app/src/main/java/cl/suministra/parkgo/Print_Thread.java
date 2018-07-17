@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -165,6 +167,7 @@ public class Print_Thread extends Thread {
                     RESULT_CODE = 0;
                 }
 
+                String lb_fecha_actual      = Util.formateaLineaEtiqueta("Fecha: "+ AppHelper.fechaFormat.format(new Date()));
                 String lb_fechahora_actual  = Util.formateaLineaEtiqueta("Fecha hora: "+ AppHelper.fechaHoraFormat.format(new Date()));
                 String lb_ubicacion         = Util.formateaLineaEtiqueta("Zona: "+AppHelper.getUbicacion_nombre());
                 String lb_operador          = Util.formateaLineaEtiqueta("Operador: "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre());
@@ -201,8 +204,9 @@ public class Print_Thread extends Thread {
                         posApiHelper.PrintSetFont((byte) 24, (byte) 24, (byte) 0x00);
                         posApiHelper.PrintStr(lb_espacios+"\n");
                         posApiHelper.PrintStr(lb_fecha_hora_in+"\n");
-
-                        //posApiHelper.PrintBarcode(patente, 180, 180, BarcodeFormat.QR_CODE);
+                        posApiHelper.PrintStr("\n");
+                        posApiHelper.PrintStr("\n");
+                        posApiHelper.PrintBarcode(patente, 360, 120, BarcodeFormat.CODE_128);
                         posApiHelper.PrintStr("\n");
                         posApiHelper.PrintStr("\n");
                         posApiHelper.PrintStr("\n");
@@ -313,13 +317,14 @@ public class Print_Thread extends Thread {
                         posApiHelper.PrintSetFont((byte) 24, (byte) 16, (byte) 0x00);
                         posApiHelper.PrintStr(AppHelper.getVoucher_estacionados()+"\n");
                         posApiHelper.PrintSetFont((byte) 24, (byte) 24, (byte) 0x00);
-                        posApiHelper.PrintStr(lb_fechahora_actual+"\n");
+                        posApiHelper.PrintStr(lb_fecha_actual+"\n");
                         posApiHelper.PrintStr(lb_ubicacion+"\n");
                         posApiHelper.PrintStr(lb_operador+"\n");
                         posApiHelper.PrintStr("\n");
-                        posApiHelper.PrintSetFont((byte) 24, (byte) 16, (byte) 0x00);
+                        posApiHelper.PrintSetFont((byte) 24, (byte) 24, (byte) 0x33);
                         for (int i = 0; i < patentesList.size(); i++) {
-                            posApiHelper.PrintStr(patentesList.get(i).patente +" "+ patentesList.get(i).fecha_in+"\n");
+                                String hora_in = patentesList.get(i).fecha_in.substring(11,16);
+                                posApiHelper.PrintStr(patentesList.get(i).patente +" "+ hora_in +"\n");
                         }
                         posApiHelper.PrintStr("\n");
                         posApiHelper.PrintStr("\n");

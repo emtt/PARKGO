@@ -32,6 +32,7 @@ public class AppHelper {
     public static DateFormat fechaHoraFormat   = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static DateFormat fechaHoraFormatID = new SimpleDateFormat("yyyyMMddHHmmss");
     public static DateFormat fechaFormat       = new SimpleDateFormat("dd-MM-yyyy",Locale.US);
+    public static DateFormat horaFormat        = new SimpleDateFormat("HH:mm:ss",Locale.US);
 
     public static int cliente_id     = 0;
     public static int ubicacion_id   = 0;
