@@ -396,8 +396,9 @@ public class Login extends AppCompatActivity {
     private void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
         AsyncHttpClient cliente = new AsyncHttpClient();
-        cliente.setConnectTimeout(AppHelper.timeout);
-        cliente.setResponseTimeout(AppHelper.timeout);
+        cliente.setTimeout(AppHelper.getTimeout());
+        cliente.setConnectTimeout(AppHelper.getTimeout());
+        cliente.setResponseTimeout(AppHelper.getTimeout());
         cliente.get(url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -809,12 +810,19 @@ public class Login extends AppCompatActivity {
                     AppHelper.setVoucher_rollo_max(Integer.parseInt(c.getString(2)));
                 }else if (c.getString(0).equals("VOUCHER") && c.getString(1).equals("CANTIDAD_ROLLO_ALERT")) {
                     AppHelper.setVoucher_rollo_alert(Integer.parseInt(c.getString(2)));
+                }else if (c.getString(0).equals("CONEXION") && c.getString(1).equals("SEGUNDOS_TIMEOUT")) {
+                    AppHelper.setTimeout(Integer.parseInt(c.getString(2)));
+                }else if (c.getString(0).equals("CONEXION") && c.getString(1).equals("SEGUNDOS_SLEEP_THREAD")) {
+                    AppHelper.setTimesleep(Integer.parseInt(c.getString(2)));
                 }
             }while(c.moveToNext());
         }
         c.close();
 
        if(!AppHelper.getUrl_restful().isEmpty() && !AppHelper.getPagina_test().isEmpty()) {
+
+           //Toast.makeText(Login.this, "Timeout: "+AppHelper.getTimeout(), Toast.LENGTH_SHORT).show();
+           //Toast.makeText(Login.this, "Timesleep: "+AppHelper.getTimesleep(), Toast.LENGTH_SHORT).show();
 
            //AsyncTask.Status.PENDING (Tarea no se ha iniciado)
            //AsyncTask.Status.RUNNING (Tarea se encuentra realizando el trabajo en doInBackground())
@@ -960,8 +968,9 @@ public class Login extends AppCompatActivity {
 
         String fecha_hora_maquina   = AppHelper.fechaHoraFormat.format(new Date());
         final AsyncHttpClient cliente = new AsyncHttpClient();
-        cliente.setConnectTimeout(AppHelper.timeout);
-        cliente.setResponseTimeout(AppHelper.timeout);
+        cliente.setTimeout(AppHelper.getTimeout());
+        cliente.setConnectTimeout(AppHelper.getTimeout());
+        cliente.setResponseTimeout(AppHelper.getTimeout());
 
         JSONObject jsonParams  = null;
         StringEntity entity    = null;

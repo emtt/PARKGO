@@ -22,7 +22,8 @@ public class AppHelper {
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
-    public static int timeout = 5000;
+    private static int timeout   = 60000; //60 Segundos = 60000 Milisegundos
+    private static int timesleep = 60; //60 Segundos
 
     private static String serial_no  = "";
     private static String usuario_rut= "";
@@ -59,7 +60,7 @@ public class AppHelper {
 
     public static int minutos_diff   = 0; //diferencia máxima de minutos posible entre hora máquina y hora servidor. (se configura en tabla configuración);
     public static String LOG_TAG     = "parkgo_log";
-    public static String LOG_PRINT     = "parkgo_printer";
+    public static String LOG_PRINT   = "parkgo_printer";
     public static String LOG_TST     = "parkgo_tst";
 
     public static int imagen_calidad   = 0;
@@ -288,6 +289,23 @@ public class AppHelper {
         //File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DCIM);
         return storageDir;
 
+    }
+
+    public static int getTimeout() {
+        return timeout;
+    }
+
+    public static void setTimeout(int timeout) {
+        //Convierte el timeout de segundos a milisegundos.
+        AppHelper.timeout = timeout * 1000;
+    }
+
+    public static int getTimesleep() {
+        return timesleep;
+    }
+
+    public static void setTimesleep(int timesleep) {
+        AppHelper.timesleep = timesleep;
     }
 
 

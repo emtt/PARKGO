@@ -47,7 +47,7 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
              do{
                 publishProgress(i);
                 i++;
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(AppHelper.getTimesleep());
                 isCancelled();
             }while(!isCancelled());
         } catch (InterruptedException e) {
@@ -110,8 +110,9 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
                                             final String latitud, final String longitud, final String fecha_hora) {
 
         cliente = new AsyncHttpClient();
-        cliente.setConnectTimeout(AppHelper.timeout);
-        cliente.setResponseTimeout(AppHelper.timeout);
+        cliente.setTimeout(AppHelper.getTimeout());
+        cliente.setConnectTimeout(AppHelper.getTimeout());
+        cliente.setResponseTimeout(AppHelper.getTimeout());
 
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
@@ -207,8 +208,9 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
                                    final String fecha_hora) {
 
         cliente = new AsyncHttpClient();
-        cliente.setConnectTimeout(AppHelper.timeout);
-        cliente.setResponseTimeout(AppHelper.timeout);
+        cliente.setTimeout(AppHelper.getTimeout());
+        cliente.setConnectTimeout(AppHelper.getTimeout());
+        cliente.setResponseTimeout(AppHelper.getTimeout());
 
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
@@ -305,8 +307,9 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
                                              final int monto) {
 
         cliente = new AsyncHttpClient();
-        cliente.setConnectTimeout(AppHelper.timeout);
-        cliente.setResponseTimeout(AppHelper.timeout);
+        cliente.setTimeout(AppHelper.getTimeout());
+        cliente.setConnectTimeout(AppHelper.getTimeout());
+        cliente.setResponseTimeout(AppHelper.getTimeout());
 
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
@@ -465,8 +468,9 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
     public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
         cliente = new AsyncHttpClient();
-        cliente.setConnectTimeout(AppHelper.timeout);
-        cliente.setResponseTimeout(AppHelper.timeout);
+        cliente.setTimeout(AppHelper.getTimeout());
+        cliente.setConnectTimeout(AppHelper.getTimeout());
+        cliente.setResponseTimeout(AppHelper.getTimeout());
 
         cliente.get(App.context, url, new AsyncHttpResponseHandler() {
             @Override

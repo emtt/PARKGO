@@ -740,8 +740,9 @@ public class IngresoPatente extends AppCompatActivity {
     public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
 
         cliente = new AsyncHttpClient();
-        cliente.setConnectTimeout(AppHelper.timeout);
-        cliente.setResponseTimeout(AppHelper.timeout);
+        cliente.setTimeout(AppHelper.getTimeout());
+        cliente.setConnectTimeout(AppHelper.getTimeout());
+        cliente.setResponseTimeout(AppHelper.getTimeout());
 
         cliente.get(App.context, url, new AsyncHttpResponseHandler() {
             @Override

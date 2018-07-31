@@ -60,7 +60,7 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
             do{
                 publishProgress(i);
                 i++;
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(AppHelper.getTimesleep());
                 isCancelled();
             }while(!isCancelled());
         } catch (InterruptedException e) {
@@ -219,8 +219,9 @@ public class AsyncSENDIngresoPatente extends AsyncTask<Void, Integer,  Boolean> 
                                          final String latitud, final String longitud, final String comentario) {
 
         cliente = new AsyncHttpClient();
-        cliente.setConnectTimeout(AppHelper.timeout);
-        cliente.setResponseTimeout(AppHelper.timeout);
+        cliente.setTimeout(AppHelper.getTimeout());
+        cliente.setConnectTimeout(AppHelper.getTimeout());
+        cliente.setResponseTimeout(AppHelper.getTimeout());
 
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
