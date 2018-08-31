@@ -57,14 +57,22 @@ public class ListaPatente extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(patentesList.size() > 0) {
-                    /** IMPRIME LA ETIQUETA **/
-                    if (printThread != null && !printThread.isThreadFinished()) {
-                        Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
-                        return;
-                    }
 
-                    printThread = new Print_Thread(2,patentesList);
-                    printThread.start();
+                    try{
+                        /** IMPRIME LA ETIQUETA **/
+                        if (printThread != null && !printThread.isThreadFinished()) {
+                            Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+                            return;
+                        }
+
+                        printThread = new Print_Thread(2,patentesList);
+                        printThread.start();
+                        printThread.join();
+                        //printThread.getRESULT_CODE();
+
+                    } catch (InterruptedException e) {
+                        Util.alertDialog(ListaPatente.this,"InterruptedException Lista Patente", e.getMessage());
+                    }
 
                 }else{
                     Util.alertDialog(ListaPatente.this,"Lista Patentes", "No hay patentes para imprimir");

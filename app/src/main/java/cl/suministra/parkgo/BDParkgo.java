@@ -134,7 +134,7 @@ public class BDParkgo extends SQLiteOpenHelper {
                            ");\n"+
                        "DROP TABLE IF EXISTS [tb_configuracion];\n"+
                        "CREATE TABLE [tb_configuracion] (\n" +
-                           "[codigo] INTEGER  NULL,\n" +
+                           "[codigo] INTEGER  NOT NULL PRIMARY KEY,\n" +
                            "[seccion] VARCHAR(24)  NULL,\n" +
                            "[clave] VARCHAR(24)  NULL,\n" +
                            "[valor] VARCHAR(1024)  NULL\n" +
@@ -159,10 +159,11 @@ public class BDParkgo extends SQLiteOpenHelper {
                            "[ing_mobile] INTEGER  NULL,\n" +
                            "[es_recaudador] INTEGER  NULL\n" +
                        ");\n"+
-                       "DROP TABLE IF EXISTS [tb_etiquetas];\n"+
-                       "CREATE TABLE [tb_etiquetas] (\n" +
-                           "[num_etiqueta_actual] INTEGER  NOT NULL PRIMARY KEY\n" +
-                           ");";
+                       "DROP TABLE IF EXISTS [tb_maquinas];\n"+
+                       "CREATE TABLE [tb_maquinas] (\n" +
+                       "[id] VARCHAR(32)  PRIMARY KEY NULL,\n" +
+                       "[id_cliente_ubicacion] INTEGER  NULL\n" +
+                       ");";
 
 
     public BDParkgo(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {

@@ -55,7 +55,6 @@ import cz.msebera.android.httpclient.Header;
 public class IngresoPatente extends AppCompatActivity {
 
     Print_Thread printThread = null;
-    private AsyncHttpClient cliente = null;
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
@@ -71,9 +70,7 @@ public class IngresoPatente extends AppCompatActivity {
     private String g_imagen_path   = "";
     private String g_imagen_nombre = "";
 
-    private AppGPS appGPS;
-    private String g_latitud;
-    private String g_longitud;
+
 
     //CONTROLES PAGO DEUDA DIALOG.
     private TextView TXT_LB_Transaccion;
@@ -95,7 +92,6 @@ public class IngresoPatente extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ingreso_patente);
         this.setTitle("Ingresar Vehículo");
-        appGPS = new AppGPS();
         inicio();
     }
 
@@ -144,12 +140,8 @@ public class IngresoPatente extends AppCompatActivity {
                 if (validaPatente() == 0){
                     return;
                 }
-                //Si tiene conexion a internet, entonces verifica si la patente registra deuda.
-                if(Util.internetStatus(IngresoPatente.this)){
-                    verificaPatenteDeuda(patente, true);
-                }else{
-                    iniciarIngresoPatente(patente);
-                }
+                iniciarIngresoPatente(patente);
+
 
             }
 
@@ -183,37 +175,26 @@ public class IngresoPatente extends AppCompatActivity {
         String fecha_hora_in = AppHelper.fechaHoraFormat.format(fechahora_in);
         String id_registro_patente  = AppHelper.fechaHoraFormatID.format(fechahora_in)+"_"+AppHelper.getSerialNum()+"_"+patente;
 
-        //confirmDialog(IngresoPatente.this,"Confirme para ingresar la patente "+patente, id_registro_patente ,patente, espacios, fecha_hora_in);
-        finalizarIngresoPatente(id_registro_patente ,patente, espacios, fecha_hora_in);
+         finalizarIngresoPatente(id_registro_patente ,patente, espacios, fecha_hora_in);
     }
 
     public void finalizarIngresoPatente(final String id_registro_patente, final String patente, final int espacios, final String fecha_hora_in){
 
         String Resultado = consultaPatenteIngreso(patente);
+
         if (Resultado.equals("1")){ //patente existe
             reiniciaIngreso();
         }else if (Resultado.equals("0")){ //patente no existe (inserta)
             //Intenta obtener la ubicación GPS
-            AppGPS.getLastLocation(new GPSCallback() {
-                @Override
-                public void onResponseSuccess(Location location) {
-                    if(location != null){
-                        g_latitud  = Double.toString(location.getLatitude());
-                        g_longitud = Double.toString(location.getLongitude());
-                    }else{
-                        g_latitud = "";
-                        g_longitud= "";
-                    }
-                    insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
-                }
-                @Override
-                public void onResponseFailure(Exception e) {
-                    g_latitud = "";
-                    g_longitud= "";
-                    insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
-                    Log.d(AppHelper.LOG_TAG, "Ingreso Patente onResponseFailure "+e.getMessage());
-                }
-            });
+            String latitud = "";
+            String longitud= "";
+            GpsTracker gt = new GpsTracker(getApplicationContext());
+            Location location = gt.getLocation();
+            if( location != null){
+                latitud  = Double.toString(location.getLatitude());
+                longitud = Double.toString(location.getLongitude());
+            }
+            insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, latitud, longitud, g_comentario);
 
         }else{ //error SQL consulta patente
             reiniciaIngreso();
@@ -221,56 +202,6 @@ public class IngresoPatente extends AppCompatActivity {
         }
 
     }
-
-    /*
-    public void confirmDialog(Context context, String mensaje, final String id_registro_patente, final String patente, final String espacios, final String fecha_hora_in) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder
-                .setMessage(mensaje)
-                .setPositiveButton("Si",  new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        String Resultado = consultaPatenteIngreso(patente);
-                        if (Resultado.equals("1")){ //patente existe
-                            reiniciaIngreso();
-                        }else if (Resultado.equals("0")){ //patente no existe (inserta)
-                            //Intenta obtener la ubicación GPS
-                            AppGPS.getLastLocation(new GPSCallback() {
-                                @Override
-                                public void onResponseSuccess(Location location) {
-                                    if(location != null){
-                                        g_latitud  = Double.toString(location.getLatitude());
-                                        g_longitud = Double.toString(location.getLongitude());
-                                      }else{
-                                        g_latitud = "";
-                                        g_longitud= "";
-                                    }
-                                    insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
-                                }
-                                @Override
-                                public void onResponseFailure(Exception e) {
-                                    g_latitud = "";
-                                    g_longitud= "";
-                                    insertaPatenteIngreso(id_registro_patente, patente, espacios, fecha_hora_in, g_imagen_nombre, g_latitud, g_longitud, g_comentario);
-                                    Log.d(AppHelper.LOG_TAG, "Ingreso Patente onResponseFailure "+e.getMessage());
-                                }
-                            });
-
-                        }else{ //error SQL consulta patente
-                            reiniciaIngreso();
-                            Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente",Resultado);
-                        }
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog,int id) {
-                        dialog.cancel();
-                    }
-                })
-                .show();
-    }
-    */
 
     private String consultaPatenteIngreso(String patente){
 
@@ -301,7 +232,7 @@ public class IngresoPatente extends AppCompatActivity {
 
         try{
                 int print_result = imprimeVoucherIngreso(patente, espacios, fecha_hora_in);
-                if (print_result == 0) {
+                if (print_result == 0 || print_result == -2) {
                     AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_registro_patentes "+
                                                         "(id, id_cliente_ubicacion, patente," +
                                                         "espacios, fecha_hora_in, rut_usuario_in, " +
@@ -331,48 +262,23 @@ public class IngresoPatente extends AppCompatActivity {
 
     private int imprimeVoucherIngreso(String patente, int espacios, String fecha_hora_in){
 
-        /** IMPRIME LA ETIQUETA **/
-        if (printThread != null && !printThread.isThreadFinished()) {
-            Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+        try {
+            /** IMPRIME LA ETIQUETA **/
+            if (printThread != null && !printThread.isThreadFinished()) {
+                Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+                return -1;
+            }else {
+                printThread = new Print_Thread(0, patente, espacios, fecha_hora_in);
+                printThread.start();
+                    //Espera que el thread finalice la ejecución.
+                    printThread.join();
+                return printThread.getRESULT_CODE();
+            }
+
+         } catch (InterruptedException e) {
+            Util.alertDialog(IngresoPatente.this,"InterruptedException Ingreso Patente", e.getMessage());
             return -1;
-        }else {
-            printThread = new Print_Thread(0, patente, espacios, fecha_hora_in);
-            printThread.start();
-            try {
-                //Espera que el thread finalice la ejecución.
-                printThread.join();
-            } catch (InterruptedException e) {
-                System.out.println("Main thread Interrupted");
-            }
-            return printThread.getRESULT_CODE();
         }
-
-        /** SUMA UNA ETIQUETA IMPRESA
-        int num_etiqueta_actual = 0;
-        try{
-            String[] args = new String[] {};
-            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT num_etiqueta_actual FROM tb_etiquetas",args);
-            if (c.moveToFirst()) {
-                num_etiqueta_actual = c.getInt(0);
-            }else{
-                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_etiquetas (num_etiqueta_actual) VALUES (0);");
-            }
-
-            c.close();
-
-            int etiquetas_restantes = AppHelper.getVoucher_rollo_max() - num_etiqueta_actual;
-            if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual < AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_SHORT).show();
-            }else if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual >= AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_SHORT).show();
-            }
-
-            AppCRUD.actualizaNumeroEtiqueta(IngresoPatente.this, num_etiqueta_actual, num_etiqueta_actual, true);
-
-        }catch(SQLException e){
-            Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente", e.getMessage());
-        }
-         **/
     }
 
     private void reiniciaIngreso(){
@@ -382,8 +288,6 @@ public class IngresoPatente extends AppCompatActivity {
         IMG_IngresoPatente.setImageResource(R.drawable.ic_photo);
         g_imagen_nombre = "";
         g_comentario = "";
-        g_latitud    = "";
-        g_longitud   = "";
         BTN_Comentario.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue));
         BTN_Camara.setBackgroundTintList(ContextCompat.getColorStateList(getApplicationContext(), R.color.blue));
     }
@@ -400,369 +304,6 @@ public class IngresoPatente extends AppCompatActivity {
             return 0;
         }
         return 100;
-    }
-
-    private void verificaPatenteDeuda(final String patente, final boolean verificar_deuda){
-
-        if (verificar_deuda){
-           ClienteAsync(AppHelper.getUrl_restful() + "verifica_patente_deuda/" + patente, new ClienteCallback() {
-
-               @Override
-               public void onResponse(int esError, int statusCode, String responseBody) {
-                   if (esError == 0 && !responseBody.equals("")) {
-                       JSONObject jsonRootObject = null;
-                       try {
-                           jsonRootObject = new JSONObject(responseBody);
-                           JSONArray jsonArray = jsonRootObject.optJSONArray("verifica_patente_deuda");
-
-                           if(jsonArray != null){
-                               //Si el vehiculo no registra deuda, continua el ingreso de la patente.
-                               if(jsonArray.length() == 0){
-                                  iniciarIngresoPatente(patente);
-                               }else{
-                                   //Si el vehiculo registra deuda, entonces solicita confirmar el pago de esta para continuar.
-                                   confirmDialogPagaPatenteDeuda(IngresoPatente.this, patente, "El vehículo ingresado registra deuda. Confirme el pago y luego ingrese el vehículo.", jsonArray);
-                               }
-                           }else{
-                               jsonArray = jsonRootObject.optJSONArray("error");
-                               if(jsonArray != null){
-                                   JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                   Util.alertDialog(IngresoPatente.this,"AsyncError Ingreso Patente",jsonObject.optString("text"));
-                               }
-                           }
-
-                       } catch (JSONException e) {
-                           Util.alertDialog(IngresoPatente.this, "JSONException Ingreso Patente", e.getMessage());
-                       }
-
-                   } else {
-                       Util.alertDialog(IngresoPatente.this, "Async Ingreso Patente", "ERROR SYNC Código: " + statusCode + "\n" + responseBody);
-                   }
-               }
-
-           });
-        }else{
-            iniciarIngresoPatente(patente);
-        }
-
-    }
-
-    private void confirmDialogPagaPatenteDeuda(Context context,final String patente, String mensaje, JSONArray jsonArray) {
-
-        String id_registro_patente = "";
-        String fechahora_in        = "";
-        String nombre_ubicacion    = "";
-        int espacios               = 0;
-        String nombre_usuario_in   = "";
-        int precio                 = 0;
-
-        try {
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                id_registro_patente = jsonObject.optString("id");
-                fechahora_in        = jsonObject.optString("fecha_hora_in");
-                nombre_ubicacion    = jsonObject.optString("nombre_ubicacion");
-                espacios            = jsonObject.optInt("espacios");
-                nombre_usuario_in   = jsonObject.optString("nombre_usuario_in");
-                precio              = jsonObject.optInt("precio");
-            }
-
-            final String cadena    = id_registro_patente+"/"+AppHelper.getUsuario_rut() +"/"+AppHelper.getSerialNum()+"/"+0+"/"+precio;
-
-            LinearLayout lilav = new LinearLayout(this);
-            lilav.setOrientation(LinearLayout.VERTICAL);
-
-            LinearLayout lilah = new LinearLayout(this);
-            lilah.setOrientation(LinearLayout.HORIZONTAL);
-            lilah.setPadding(35,0,10,0);
-
-            TXT_LB_Transaccion = new TextView(this);
-            TXT_LB_Transaccion.setTextColor(Color.BLACK);
-            TXT_LB_Transaccion.setTextSize(15);
-            TXT_LB_Transaccion.setText("ID: ");
-            TXT_Transaccion    = new TextView(this);
-            TXT_Transaccion.setTextColor(Color.GRAY);
-            TXT_Transaccion.setTextSize(15);
-            TXT_Transaccion.setText(id_registro_patente);
-            lilah.addView(TXT_LB_Transaccion);
-            lilah.addView(TXT_Transaccion);
-            lilav.addView(lilah);
-
-            lilah = new LinearLayout(this);
-            lilah.setOrientation(LinearLayout.HORIZONTAL);
-            lilah.setPadding(35,0,10,0);
-            TXT_LB_FechaHora = new TextView(this);
-            TXT_LB_FechaHora.setTextColor(Color.BLACK);
-            TXT_LB_FechaHora.setTextSize(15);
-            TXT_LB_FechaHora.setText("Fecha: ");
-            TXT_FechaHora    = new TextView(this);
-            TXT_FechaHora.setTextColor(Color.GRAY);
-            TXT_FechaHora.setTextSize(15);
-            TXT_FechaHora.setText(fechahora_in);
-            lilah.addView(TXT_LB_FechaHora);
-            lilah.addView(TXT_FechaHora);
-            lilav.addView(lilah);
-
-            lilah = new LinearLayout(this);
-            lilah.setOrientation(LinearLayout.HORIZONTAL);
-            lilah.setPadding(35,0,10,0);
-            TXT_LB_Ubicacion = new TextView(this);
-            TXT_LB_Ubicacion.setTextColor(Color.BLACK);
-            TXT_LB_Ubicacion.setTextSize(15);
-            TXT_LB_Ubicacion.setText("Ubicación: ");
-            TXT_Ubicacion    = new TextView(this);
-            TXT_Ubicacion.setTextColor(Color.GRAY);
-            TXT_Ubicacion.setTextSize(15);
-            TXT_Ubicacion.setText(nombre_ubicacion);
-            lilah.addView(TXT_LB_Ubicacion);
-            lilah.addView(TXT_Ubicacion);
-            lilav.addView(lilah);
-
-            lilah = new LinearLayout(this);
-            lilah.setOrientation(LinearLayout.HORIZONTAL);
-            lilah.setPadding(35,0,10,0);
-            TXT_LB_Espacios = new TextView(this);
-            TXT_LB_Espacios.setTextColor(Color.BLACK);
-            TXT_LB_Espacios.setTextSize(15);
-            TXT_LB_Espacios.setText("Espacios: ");
-            TXT_Espacios    = new TextView(this);
-            TXT_Espacios.setTextColor(Color.GRAY);
-            TXT_Espacios.setTextSize(15);
-            TXT_Espacios.setText(String.valueOf(espacios));
-            lilah.addView(TXT_LB_Espacios);
-            lilah.addView(TXT_Espacios);
-            lilav.addView(lilah);
-
-            lilah = new LinearLayout(this);
-            lilah.setOrientation(LinearLayout.HORIZONTAL);
-            lilah.setPadding(35,0,10,0);
-            TXT_LB_Operador = new TextView(this);
-            TXT_LB_Operador.setTextColor(Color.BLACK);
-            TXT_LB_Operador.setTextSize(15);
-            TXT_LB_Operador.setText("Operador: ");
-            TXT_Operador    = new TextView(this);
-            TXT_Operador.setTextColor(Color.GRAY);
-            TXT_Operador.setTextSize(15);
-            TXT_Operador.setText(nombre_usuario_in);
-            lilah.addView(TXT_LB_Operador);
-            lilah.addView(TXT_Operador);
-            lilav.addView(lilah);
-
-            lilah = new LinearLayout(this);
-            lilah.setOrientation(LinearLayout.HORIZONTAL);
-            lilah.setPadding(35,0,10,0);
-            TXT_LB_Precio = new TextView(this);
-            TXT_LB_Precio.setTextColor(Color.BLACK);
-            TXT_LB_Precio.setTextSize(15);
-            TXT_LB_Precio.setText("Precio: ");
-            TXT_Precio    = new TextView(this);
-            TXT_Precio.setTextColor(Color.GRAY);
-            TXT_Precio.setTextSize(15);
-            TXT_Precio.setText("$"+String.format("%,d", precio).replace(",","."));
-            lilah.addView(TXT_LB_Precio);
-            lilah.addView(TXT_Precio);
-            lilav.addView(lilah);
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle("Regularizar Deuda Pendiente");
-            builder.setMessage(mensaje);
-            builder.setView(lilav);
-            builder.setPositiveButton("Confirmar",  new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-
-                }
-            });
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog,int id) {
-                    EDT_Patente.setText("");
-                    dialog.cancel();
-                    verificaPatenteDeuda(patente, false);
-                }
-            });
-
-            final AlertDialog dialog = builder.create();
-            dialog.show();
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    ClienteAsync(AppHelper.getUrl_restful() + "verifica_patente_deuda_upt/"+ cadena, new ClienteCallback() {
-
-                        @Override
-                        public void onResponse(int esError, int statusCode, String responseBody) {
-                            if(esError == 0 && !responseBody.equals("")) {
-                                //Si no hay error entonces recibira
-                                try {
-                                    JSONObject jsonRootObject = new JSONObject(responseBody);
-                                    JSONArray jsonArray       = jsonRootObject.optJSONArray("registro_patente_deuda");
-                                    if(jsonArray != null){
-                                        try{
-
-                                            JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                            AppHelper.getParkgoSQLite().execSQL("INSERT OR REPLACE INTO tb_registro_patentes "+
-                                                                                "(id, id_cliente_ubicacion, patente," +
-                                                                                "espacios, fecha_hora_in, rut_usuario_in, " +
-                                                                                "maquina_in, imagen_in, enviado_in, " +
-                                                                                "fecha_hora_out, rut_usuario_out, maquina_out, " +
-                                                                                "enviado_out, minutos, precio, " +
-                                                                                "prepago, efectivo, latitud, " +
-                                                                                "longitud, comentario ,finalizado," +
-                                                                                "id_estado_deuda, fecha_hora_estado_deuda)"+
-                                                                                "VALUES " +
-                                                                                "('"+jsonObject.optString("id")+"','"+jsonObject.optInt("id_cliente_ubicacion")+"','"+jsonObject.optString("patente")+"'," +
-                                                                                "'"+jsonObject.optInt("espacios")+"','"+jsonObject.optString("fecha_hora_in")+"' ,'"+jsonObject.optString("rut_usuario_in")+"'," +
-                                                                                "'"+jsonObject.optString("maquina_in")+"' ,'"+jsonObject.optString("imagen_in")+"', '"+jsonObject.optInt("enviado_in")+"', " +
-                                                                                "'"+jsonObject.optString("fecha_hora_out")+"', '"+jsonObject.optString("rut_usuario_out")+"', '"+jsonObject.optString("maquina_out")+"'," +
-                                                                                "'"+jsonObject.optInt("enviado_out")+"','"+jsonObject.optInt("minutos")+"','"+jsonObject.optInt("precio")+"'," +
-                                                                                "'"+jsonObject.optInt("prepago")+"','"+jsonObject.optInt("efectivo")+"','"+jsonObject.optString("latitud")+"'," +
-                                                                                "'"+jsonObject.optString("longitud")+"','"+jsonObject.optString("comentario")+"','"+jsonObject.optInt("finalizado")+"'," +
-                                                                                "'"+jsonObject.optInt("id_estado_deuda")+"', '"+jsonObject.optString("fecha_hora_estado_deuda")+"');");
-
-                                            dialog.dismiss();
-                                            int descuento_porciento = AppCRUD.getDescuentoGrupoConductor(IngresoPatente.this, jsonObject.optString("patente"));
-                                            imprimeVoucherPagaPatenteDeuda(jsonObject.optString("patente"), jsonObject.optInt("espacios"), jsonObject.optString("fecha_hora_in"),
-                                                                           jsonObject.optString("fecha_hora_out"), jsonObject.optInt("minutos"), AppHelper.getMinutos_gratis(),
-                                                                           jsonObject.optInt("precio"), descuento_porciento);
-                                            //Util.alertDialog(IngresoPatente.this,"Ingreso Patente","Pago registrado correctamente. Ahora puede ingresar el vehículo.");
-
-                                        }catch(SQLException e){
-                                            dialog.dismiss();
-                                            Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente", e.getMessage());
-                                        }
-                                    }else{
-                                        jsonArray = jsonRootObject.optJSONArray("error");
-                                        if(jsonArray != null){
-                                            dialog.dismiss();
-                                            JSONObject jsonObject = jsonArray.getJSONObject(0);
-                                            Util.alertDialog(IngresoPatente.this,"AsyncError Ingreso Patente", jsonObject.optString("text"));
-                                        }
-                                    }
-                                } catch (JSONException e) {
-                                    dialog.dismiss();
-                                    Util.alertDialog(IngresoPatente.this,"JSONException Ingreso Patente", e.getMessage());
-                                }
-
-                            }else{
-                                dialog.dismiss();
-                                Util.alertDialog(IngresoPatente.this,"Async Ingreso Patente", "ERROR SYNC Código: "+ statusCode + "\n" + responseBody );
-                            }
-                        }
-
-                    });
-
-                }
-
-            });
-
-        }catch (JSONException e1) {
-            Util.alertDialog(IngresoPatente.this,"JSONException Ingreso Patente",e1.getMessage());
-        }
-
-    }
-
-    private void imprimeVoucherPagaPatenteDeuda(final String patente, final int espacios, final String fecha_hora_in,
-                                                final String fecha_hora_out, final int minutos, final int minutos_gratis, final int precio,
-                                                final int porcent_descuento){
-
-        int print_result = 0;
-
-        /** IMPRIME LA ETIQUETA **/
-        if (printThread != null && !printThread.isThreadFinished()) {
-            Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
-            print_result = -1;
-        }else {
-            printThread = new Print_Thread(1, patente, espacios, fecha_hora_in, fecha_hora_out,
-                                            minutos, minutos_gratis, precio, porcent_descuento);
-            printThread.start();
-            try {
-                //Espera que el thread finalice la ejecución.
-                printThread.join();
-            } catch (InterruptedException e) {
-                System.out.println("Main thread Interrupted");
-            }
-            print_result =  printThread.getRESULT_CODE();
-        }
-
-        /** SI SE PRODUCE UN ERROR AL IMPRIMIR, EJEMPLO NO HAY PAPEL, ETC.. INFORMA Y REINTENTA 3 VECES**/
-        if (print_result == 0){
-            EDT_Patente.setText("");
-        }else{
-              AlertDialog.Builder builder = new AlertDialog.Builder(IngresoPatente.this);
-              builder
-                        .setMessage("¿Desea reintentar la impresión?")
-                        .setPositiveButton("Si",  new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                imprimeVoucherPagaPatenteDeuda(patente, espacios, fecha_hora_in, fecha_hora_out,
-                                                               minutos, minutos_gratis, precio, porcent_descuento);
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog,int id) {
-                                dialog.cancel();
-                            }
-                        })
-                        .show();
-        }
-
-        /** SUMA UNA ETIQUETA IMPRESA
-        int num_etiqueta_actual = 0;
-        try{
-            String[] args = new String[] {};
-            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT num_etiqueta_actual FROM tb_etiquetas",args);
-            if (c.moveToFirst()) {
-                num_etiqueta_actual = c.getInt(0);
-            }else{
-                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_etiquetas (num_etiqueta_actual) VALUES (0);");
-            }
-            c.close();
-
-            int etiquetas_restantes = AppHelper.getVoucher_rollo_max() - num_etiqueta_actual;
-            if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual < AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_SHORT).show();
-            }else if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual >= AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(IngresoPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_SHORT).show();
-            }
-
-            AppCRUD.actualizaNumeroEtiqueta(IngresoPatente.this, num_etiqueta_actual, num_etiqueta_actual, true);
-
-        }catch(SQLException e){
-            Util.alertDialog(IngresoPatente.this,"SQLException Ingreso Patente", e.getMessage());
-        }
-        **/
-    }
-
-    public void ClienteAsync(String url, final ClienteCallback clienteCallback) {
-
-        cliente = new AsyncHttpClient();
-        cliente.setTimeout(AppHelper.getTimeout());
-        cliente.setConnectTimeout(AppHelper.getTimeout());
-        cliente.setResponseTimeout(AppHelper.getTimeout());
-
-        cliente.get(App.context, url, new AsyncHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onSuccess " + new String(responseBody));
-                clienteCallback.onResponse(0, statusCode, new String(responseBody));
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-
-                Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onFailure statusCode "+String.valueOf(statusCode));
-                Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onFailure responseBody "+String.valueOf(responseBody));
-                Log.d(AppHelper.LOG_TAG, "AsyncGETIngresoPatente onFailure error "+String.valueOf(Log.getStackTraceString(error)));
-
-                cliente.cancelRequests(App.context, true);
-                Log.d(AppHelper.LOG_TAG,"AsyncGETIngresoPatente onFailure cancelRequests");
-            }
-
-        });
     }
 
     private void abrirCamara() {
@@ -890,9 +431,6 @@ public class IngresoPatente extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (appGPS.verificaConexionGoogleApi(IngresoPatente.this)) {
-            appGPS.conectaGPS();
-        }
     }
 
     @Override
@@ -903,17 +441,11 @@ public class IngresoPatente extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (appGPS.verificaConexionGoogleApi(IngresoPatente.this)) {
-            appGPS.pausarGPS();
-        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (appGPS.verificaConexionGoogleApi(IngresoPatente.this)) {
-            appGPS.desconectaGPS();
-        }
     }
 
     @Override

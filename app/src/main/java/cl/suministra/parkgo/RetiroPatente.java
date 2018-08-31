@@ -409,7 +409,7 @@ public class RetiroPatente extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
 
                         int print_result =  imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
-                        if (print_result == 0) {
+                        if (print_result == 0 || print_result == -2) {
                             String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, 0, g_precio);
                             if (Resultado.equals("1")) {
                                 //Util.alertDialog(RetiroPatente.this,"Retiro Patente","Patente: "+g_patente+" retirada correctamente");
@@ -465,7 +465,7 @@ public class RetiroPatente extends AppCompatActivity {
                 }else {
                     dialog.dismiss();
                     int print_result = imprimeVoucherRetiro(g_patente, g_espacios, g_fecha_hora_in, g_fecha_hora_out, g_minutos, g_minutos_gratis, g_precio, g_porcent_descuento);
-                    if (print_result == 0) {
+                    if (print_result == 0 || print_result == -2) {
                         String Resultado = actualizaRetiroPatente(g_id_registro_patente, g_fecha_hora_out, g_minutos, g_precio, prepago, efectivo);
                         if (Resultado.equals("1")) {
                             //Util.alertDialog(RetiroPatente.this, "Retiro Patente", "Patente " + g_patente + " retirada correctamente");
@@ -525,52 +525,23 @@ public class RetiroPatente extends AppCompatActivity {
     private int imprimeVoucherRetiro(String patente, int espacios, String fecha_hora_in,
                                       String fecha_hora_out, int minutos, int minutos_gratis, int precio,
                                       int porcent_descuento){
-
-
-        /** IMPRIME LA ETIQUETA **/
-        if (printThread != null && !printThread.isThreadFinished()) {
-            Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+        try {
+            /** IMPRIME LA ETIQUETA **/
+            if (printThread != null && !printThread.isThreadFinished()) {
+                Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+                return -1;
+            }else {
+                printThread = new Print_Thread(1, patente, espacios, fecha_hora_in, fecha_hora_out,
+                                               minutos, minutos_gratis, precio, porcent_descuento);
+                printThread.start();
+                    printThread.join();
+                EDT_Patente.setText("");
+                return printThread.getRESULT_CODE();
+            }
+        } catch (InterruptedException e) {
+            Util.alertDialog(RetiroPatente.this,"InterruptedException Retiro Patente", e.getMessage());
             return -1;
-        }else {
-            printThread = new Print_Thread(1, patente, espacios, fecha_hora_in, fecha_hora_out,
-                                           minutos, minutos_gratis, precio, porcent_descuento);
-            printThread.start();
-            try {
-                printThread.join();
-            } catch (InterruptedException e) {
-                System.out.println("Main thread Interrupted");
-            }
-            EDT_Patente.setText("");
-            return printThread.getRESULT_CODE();
         }
-
-
-
-        /** SUMA UNA ETIQUETA IMPRESA
-        int num_etiqueta_actual = 0;
-        try{
-            String[] args = new String[] {};
-            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT num_etiqueta_actual FROM tb_etiquetas",args);
-            if (c.moveToFirst()) {
-                num_etiqueta_actual = c.getInt(0);
-            }else{
-                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_etiquetas (num_etiqueta_actual) VALUES (0);");
-            }
-            c.close();
-
-            int etiquetas_restantes = AppHelper.getVoucher_rollo_max() - num_etiqueta_actual;
-            if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual < AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(RetiroPatente.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_SHORT).show();
-            }else if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual >= AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(RetiroPatente.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_SHORT).show();
-            }
-
-            AppCRUD.actualizaNumeroEtiqueta(RetiroPatente.this, num_etiqueta_actual, num_etiqueta_actual, true);
-
-        }catch(SQLException e){
-            Util.alertDialog(RetiroPatente.this,"SQLException Retiro Patente", e.getMessage());
-        }
-         **/
     }
 
     private void reiniciaRetiro(){

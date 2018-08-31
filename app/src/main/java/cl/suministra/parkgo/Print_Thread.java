@@ -235,8 +235,11 @@ public class Print_Thread extends Thread {
                                 SendMsg("Error, la temperatura de la impresora es muy alta");
                             } else if (ret == -3) {
                                 SendMsg("Queda poca batería");
-                            } else {
-                                SendMsg("Impresión fallida, intente nuevamente");
+                            } else if (ret == -1001){
+                                    RESULT_CODE = -2;
+                                SendMsg("Dispositivo sin impresora");
+                            } else{
+                                SendMsg("Impresión fallida");
                             }
                         } else {
                             RESULT_CODE = 0;
@@ -297,8 +300,11 @@ public class Print_Thread extends Thread {
                                 SendMsg("Error, la temperatura de la impresora es muy alta");
                             } else if (ret == -3) {
                                 SendMsg("Queda poca batería");
-                            } else {
-                                SendMsg("Impresión fallida, intente nuevamente");
+                            } else if (ret == -1001){
+                                RESULT_CODE = -2;
+                                SendMsg("Dispositivo sin impresora");
+                            } else{
+                                SendMsg("Impresión fallida");
                             }
                         } else {
                             RESULT_CODE = 0;
@@ -354,8 +360,11 @@ public class Print_Thread extends Thread {
                                 SendMsg("Error, la temperatura de la impresora es muy alta");
                             } else if (ret == -3) {
                                 SendMsg("Queda poca batería");
-                            } else {
-                                SendMsg("Impresión fallida, intente nuevamente");
+                            } else if (ret == -1001){
+                                RESULT_CODE = -2;
+                                SendMsg("Dispositivo sin impresora");
+                            } else{
+                                SendMsg("Impresión fallida");
                             }
                         } else {
                             RESULT_CODE = 0;
@@ -412,8 +421,11 @@ public class Print_Thread extends Thread {
                                 SendMsg("Error, la temperatura de la impresora es muy alta");
                             } else if (ret == -3) {
                                 SendMsg("Queda poca batería");
-                            } else {
-                                SendMsg("Impresión fallida, intente nuevamente");
+                            } else if (ret == -1001){
+                                RESULT_CODE = -2;
+                                SendMsg("Dispositivo sin impresora");
+                            } else{
+                                SendMsg("Impresión fallida");
                             }
                         } else {
                             RESULT_CODE = 0;

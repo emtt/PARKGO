@@ -119,7 +119,7 @@
         android:id="@+id/space4" />
 
     <Spinner
-        android:id="@+id/SPIN_UsuarioUbicacion"
+        android:id="@+id/SPIN_MaquinaUbicacion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:drawSelectorOnTop="true"
@@ -132,14 +132,14 @@
         android:textSize="@dimen/activity_text_padding"
         android:text=" "
         android:textColor="@color/alert"
-        android:id="@+id/MSJ_UsuarioUbicacion"
-        android:layout_below="@+id/SPIN_UsuarioUbicacion"
+        android:id="@+id/MSJ_MaquinaUbicacion"
+        android:layout_below="@+id/SPIN_MaquinaUbicacion"
         android:layout_centerHorizontal="true" />
 
     <Space
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:layout_below="@+id/MSJ_UsuarioUbicacion"
+        android:layout_below="@+id/MSJ_MaquinaUbicacion"
         android:layout_centerHorizontal="true"
         android:id="@+id/space5" />
 
@@ -197,9 +197,19 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textAlignment="textEnd"
+        android:text=""
+        android:id="@+id/TV_Numero_Serie"
+        android:layout_below="@+id/CNT_Botones" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textAlignment="textEnd"
         android:text="@string/version"
         android:id="@+id/Version"
-        android:layout_below="@+id/CNT_Botones" />
+        android:layout_below="@+id/TV_Numero_Serie" />
+
 
 </RelativeLayout>
 

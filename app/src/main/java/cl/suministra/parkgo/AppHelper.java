@@ -22,6 +22,8 @@ public class AppHelper {
     private static BDParkgo parkgoDB;
     private static SQLiteDatabase SQLiteParkgo;
 
+    private static int respaldar_bd_dias = 1; //cantidad de dias que mantiene los datos guardados.
+
     private static int timeout   = 60000; //60 Segundos = 60000 Milisegundos
     private static int timesleep = 60; //60 Segundos
 
@@ -76,6 +78,14 @@ public class AppHelper {
 
     public static SQLiteDatabase getParkgoSQLite(){
         return SQLiteParkgo;
+    }
+
+    public static int getRespaldar_bd_dias() {
+        return respaldar_bd_dias;
+    }
+
+    public static void setRespaldar_bd_dias(int respaldar_bd_dias) {
+        AppHelper.respaldar_bd_dias = respaldar_bd_dias;
     }
 
     public static String getUsuario_rut() {

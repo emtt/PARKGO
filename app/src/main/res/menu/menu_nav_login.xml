@@ -1,14 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <!-- "Mark Favorite", should appear as action button if possible -->
-    <!--
-    <item
-        android:id="@+id/item_etiquetas"
-        android:icon="@drawable/ic_label_18dp"
-        android:title="@string/m_item_etiqueta"
-        app:showAsAction="ifRoom"
-        android:onClick="cambiarEtiqueta"/>
-        -->
 
     <item
         android:id="@+id/item_configuracion"

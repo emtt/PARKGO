@@ -79,7 +79,6 @@ public class Menu extends AppCompatActivity {
                 TV_Usuario_Ubicacion_Dir.setText(extras.getString("usuario_ubicacion_dir").toUpperCase());
             }
         }
-
         nombre_dia_actual = Util.nombreDiaSemana(AppHelper.fechaHoraFormat.format(fechahora_actual));
 
         String[] args = new String[] {String.valueOf(AppHelper.getUbicacion_id()),nombre_dia_actual};
@@ -93,6 +92,7 @@ public class Menu extends AppCompatActivity {
             horario_hora_desde = c.getString(2);
             horario_dia_hasta  = c.getString(3);
             horario_hora_hasta = c.getString(4);
+
             TV_Usuario_Ubicacion_Horario.setText(horario_dia_desde+" desde las "+horario_hora_desde+ " hrs. hasta "+horario_dia_hasta+" a las "+horario_hora_hasta+" hrs.");
         }else{
             horario_definido   = false;
@@ -108,11 +108,14 @@ public class Menu extends AppCompatActivity {
 
                 if(horario_definido){
                     try {
+                        Date fechahora_now   = new Date();
+
                         Date fechahora_desde = AppHelper.fechaHoraFormat.parse(AppHelper.fechaHoraFormat.format(fechahora_actual).substring(0, 10) + " " + horario_hora_desde);
                         Date fechahora_hasta = AppHelper.fechaHoraFormat.parse(AppHelper.fechaHoraFormat.format(fechahora_actual).substring(0, 10) + " " + horario_hora_hasta);
                         fechahora_hasta = new Date(fechahora_hasta.getTime() + TimeUnit.DAYS.toMillis(horario_suma_dia));
+
                         //Si la fechahora_acual no se encuentra entre el horario fijado. Entonces no puede ingresar patentes.
-                        if (fechahora_actual.before(fechahora_desde) || fechahora_actual.after(fechahora_hasta) ) {
+                        if (fechahora_now.before(fechahora_desde) || fechahora_now.after(fechahora_hasta) ) {
                             Util.alertDialog(Menu.this, "Menu", "No puede ingresar vehículos. \nEl horario fijado para hoy "+horario_dia_desde+
                                     " es a partir de las "+horario_hora_desde+" hrs. hasta el "+horario_dia_hasta+" a las "+horario_hora_hasta+" hrs.");
                         }else{

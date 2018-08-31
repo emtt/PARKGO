@@ -23,6 +23,7 @@ import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -65,9 +66,10 @@ public class Login extends AppCompatActivity {
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private EditText EDT_UsuarioCodigo;
     private EditText EDT_UsuarioClave;
-    private Spinner SPIN_UsuarioUbicacion;
+    private Spinner SPIN_MaquinaUbicacion;
     private Button BTN_Login;
     private Button BTN_Sincronizar;
+    private TextView TV_Numero_Serie;
     private String UsuarioCodigo;
     private String UsuarioClave;
     private int    UsuarioUbicacionID;
@@ -77,14 +79,8 @@ public class Login extends AppCompatActivity {
     String g_maestro_nombre;
     String g_maestro_alias;
     int  g_num_etiqueta_actual;
-    /* GPS */
-    AppGPS appGPS;
-    /* Tareas Async */
-    AsyncSENDIngresoPatente asyncSENDIngresoPatente;
-    AsyncGETIngresoPatente asyncGETIngresoPatente;
-    AsyncSENDRetiroPatente asyncSENDRetiroPatente;
-    AsyncGETRetiroPatente asyncGETRetiroPatente;
 
+    /* Tarea Async */
     AsyncGenerico asyncGenerico;
 
     @Override
@@ -94,7 +90,6 @@ public class Login extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         setContentView(R.layout.activity_login);
-        this.setTitle("PARKGO");
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.abrir, R.string.cerrar);
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
@@ -103,22 +98,17 @@ public class Login extends AppCompatActivity {
 
         AppHelper.initParkgoDB(this);
         AppHelper.initSerialNum(this);
-        appGPS = new AppGPS();
         init();
 
-        //crea los objetos para recepcion y envio de datos.
-        asyncSENDIngresoPatente = new AsyncSENDIngresoPatente();
-        asyncSENDRetiroPatente  = new AsyncSENDRetiroPatente();
-        asyncGETIngresoPatente  = new AsyncGETIngresoPatente();
-        asyncGETRetiroPatente   = new AsyncGETRetiroPatente();
-        asyncGenerico           = new AsyncGenerico();
+        //objeto para recepcion y envio de datos.
+        asyncGenerico  = new AsyncGenerico();
 
         procesoSincronizarMaestros();
 
     }
 
     ArrayList<String> spinUbicacionNombre = new ArrayList<String>();
-    ArrayList<Integer> spinUbicacionID    = new  ArrayList<Integer>();
+    ArrayList<Integer> spinUbicacionID    = new ArrayList<Integer>();
 
     private void init() {
 
@@ -152,85 +142,6 @@ public class Login extends AppCompatActivity {
 
         });
 
-        SPIN_UsuarioUbicacion = (Spinner) findViewById(R.id.SPIN_UsuarioUbicacion);
-
-        spinUbicacionID.add(0);
-        spinUbicacionNombre.add("SELECCIONE UBICACIÓN");
-
-        ArrayAdapter<CharSequence> adapter = new ArrayAdapter(Login.this, android.R.layout.simple_spinner_dropdown_item, spinUbicacionNombre);
-        SPIN_UsuarioUbicacion.setAdapter(adapter);
-
-        SPIN_UsuarioUbicacion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                TextView tview = (TextView) findViewById(R.id.MSJ_UsuarioUbicacion);
-                if (spinUbicacionID.get(position) > 0){
-                    tview.setText("");
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        EDT_UsuarioCodigo.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus)
-
-                    try {
-
-                        spinUbicacionID.clear();
-                        spinUbicacionNombre.clear();
-
-                        spinUbicacionID.add(0);
-                        spinUbicacionNombre.add("SELECCIONE UBICACIÓN");
-
-                        int ubicacionDefaultIndex = 0;
-
-                        String[] args = new String[]{EDT_UsuarioCodigo.getText().toString()};
-
-                        //OBTIENE EL LISTADO DE UBICACIONES PARA EL USUARIO QUE SE ENCUENTREN EN LA MISMA COMUNA DE SU UBICACION POR DEFECTO.
-                        String qry = "SELECT tcu2.id, tcu2.descripcion, tcu2.direccion, tu.id_cliente_ubicacion AS id_ubicacion_default, tcu1.id_comuna \n" +
-                                "FROM tb_usuario tu \n" +
-                                "LEFT JOIN tb_cliente_ubicaciones tcu1 ON tcu1.id = tu.id_cliente_ubicacion \n" +
-                                "LEFT JOIN tb_cliente_ubicaciones tcu2 ON tcu2.id_comuna = tcu1.id_comuna \n" +
-                                "WHERE tu.codigo = ? \n" +
-                                "ORDER BY tcu2.descripcion";
-
-                        Cursor c = AppHelper.getParkgoSQLite().rawQuery(qry, args);
-                        if (c.moveToFirst()) {
-
-                            do{
-                                spinUbicacionID.add(c.getInt(0));
-                                spinUbicacionNombre.add(c.getString(1));
-                                Log.d(AppHelper.LOG_TAG, c.getInt(0)+" "+c.getString(1)+" "+spinUbicacionID.size());
-
-
-                                if(ubicacionDefaultIndex == 0){
-                                    if (c.getInt(0) == c.getInt(3)){
-                                        ubicacionDefaultIndex = spinUbicacionID.size() - 1;
-                                    }
-                                }
-
-                            }while(c.moveToNext());
-                        }
-                        c.close();
-
-                        ArrayAdapter<CharSequence> adapter = new ArrayAdapter(Login.this, android.R.layout.simple_spinner_dropdown_item, spinUbicacionNombre);
-                        SPIN_UsuarioUbicacion.setAdapter(adapter);
-                        SPIN_UsuarioUbicacion.setSelection(ubicacionDefaultIndex);
-
-                    } catch (SQLException e) {
-                        Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
-                    }
-
-            }
-        });
-
         EDT_UsuarioClave = (EditText) findViewById(R.id.EDT_UsuarioClave);
         EDT_UsuarioClave.addTextChangedListener(new TextWatcher() {
             @Override
@@ -259,6 +170,66 @@ public class Login extends AppCompatActivity {
             }
         });
 
+        SPIN_MaquinaUbicacion = (Spinner) findViewById(R.id.SPIN_MaquinaUbicacion);
+
+        SPIN_MaquinaUbicacion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                TextView tview = (TextView) findViewById(R.id.MSJ_MaquinaUbicacion);
+                if (spinUbicacionID.get(position) > 0){
+                    tview.setText("");
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        SPIN_MaquinaUbicacion.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                try {
+
+                    spinUbicacionID.clear();
+                    spinUbicacionNombre.clear();
+
+                    String[] args = new String[]{AppHelper.getSerialNum()};
+
+                    //OBTIENE EL LISTADO DE UBICACIONES PARA EL USUARIO QUE SE ENCUENTREN EN LA MISMA COMUNA DE SU UBICACION POR DEFECTO.
+                    String qry = "SELECT tm.id_cliente_ubicacion, tcu.descripcion \n" +
+                                 "FROM tb_maquinas tm \n" +
+                                 "INNER JOIN tb_cliente_ubicaciones tcu ON tcu.id = tm.id_cliente_ubicacion \n" +
+                                 "WHERE tm.id = ?";
+
+                    Cursor c = AppHelper.getParkgoSQLite().rawQuery(qry, args);
+                    if (c.moveToFirst()) {
+
+                        do{
+                            spinUbicacionID.add(c.getInt(0));
+                            spinUbicacionNombre.add(c.getString(1));
+
+                        }while(c.moveToNext());
+                    }
+                    c.close();
+
+                    ArrayAdapter<CharSequence> adapter = new ArrayAdapter(Login.this, android.R.layout.simple_spinner_dropdown_item, spinUbicacionNombre);
+                    SPIN_MaquinaUbicacion.setAdapter(adapter);
+                    SPIN_MaquinaUbicacion.setSelection(0);
+
+                } catch (SQLException e) {
+                    Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
+                }
+
+                return false;
+            }
+        });
+
+        iniciarControles();
+
         BTN_Login = (Button) findViewById(R.id.BTN_Login);
         BTN_Login.setOnClickListener(new View.OnClickListener()
 
@@ -283,6 +254,24 @@ public class Login extends AppCompatActivity {
               procesoSincronizarMaestros();
             }
         });
+
+        TV_Numero_Serie = (TextView) findViewById(R.id.TV_Numero_Serie);
+        TV_Numero_Serie.setText(AppHelper.getSerialNum());
+
+    }
+
+    private void iniciarControles(){
+
+        EDT_UsuarioCodigo.setText("");
+        EDT_UsuarioCodigo.requestFocus();
+        EDT_UsuarioClave.setText("");
+
+        spinUbicacionID.clear();
+        spinUbicacionNombre.clear();
+        spinUbicacionID.add(0);
+        spinUbicacionNombre.add("SELECCIONE UBICACIÓN");
+        ArrayAdapter<CharSequence> adapter = new ArrayAdapter(Login.this, android.R.layout.simple_spinner_dropdown_item, spinUbicacionNombre);
+        SPIN_MaquinaUbicacion.setAdapter(adapter);
 
     }
 
@@ -321,9 +310,9 @@ public class Login extends AppCompatActivity {
         }
 
 
-        UsuarioUbicacionID = Integer.parseInt(spinUbicacionID.get(SPIN_UsuarioUbicacion.getSelectedItemPosition()).toString());
+        UsuarioUbicacionID = Integer.parseInt(spinUbicacionID.get(SPIN_MaquinaUbicacion.getSelectedItemPosition()).toString());
         if(UsuarioUbicacionID == 0){
-            TextView view = (TextView) findViewById(R.id.MSJ_UsuarioUbicacion);
+            TextView view = (TextView) findViewById(R.id.MSJ_MaquinaUbicacion);
             view.setText("Selecione una ubicación válida");
             return;
         }
@@ -424,12 +413,14 @@ public class Login extends AppCompatActivity {
 
     private void procesoSincronizarMaestros(){
 
+        iniciarControles();
+
         if (!configuracionInicial()){
         }else {
 
             g_maestro_numero = 0;
             g_maestro_nombre = "configuracion";
-            g_maestro_alias = "1/10 Configuración";
+            g_maestro_alias = "1/11 Configuración";
 
             if (esperaDialog != null && esperaDialog.isShowing()) {
                 esperaDialog.setMessage(g_maestro_alias);
@@ -507,6 +498,19 @@ public class Login extends AppCompatActivity {
                             break;
 
                         case 1:
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_maquinas;");
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                String id                = jsonObject.optString("id");
+                                int id_cliente_ubicacion = jsonObject.optInt("id_cliente_ubicacion");
+                                qry = "INSERT INTO tb_maquinas (id, id_cliente_ubicacion) VALUES " +
+                                        "('" + id + "'," + id_cliente_ubicacion + ");";
+                                AppHelper.getParkgoSQLite().execSQL(qry);
+                            }
+                            break;
+
+                        case 2:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_rol;");
 
                             for (int i = 0; i < jsonArray.length(); i++) {
@@ -523,7 +527,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 2:
+                        case 3:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_usuario;");
 
                             for (int i = 0; i < jsonArray.length(); i++) {
@@ -540,7 +544,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 3:
+                        case 4:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -556,7 +560,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 4:
+                        case 5:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente_ubicaciones;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -580,7 +584,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 5:
+                        case 6:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_cliente_ubicaciones_horarios;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -598,7 +602,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 6:
+                        case 7:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor;");
 
                             for (int i = 0; i < jsonArray.length(); i++) {
@@ -617,7 +621,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 7:
+                        case 8:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_grupo;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -633,7 +637,7 @@ public class Login extends AppCompatActivity {
                             }
                             break;
 
-                        case 8:
+                        case 9:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_grupo_ubicacion_descuento;");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -648,7 +652,7 @@ public class Login extends AppCompatActivity {
                             break;
 
 
-                        case 9:
+                        case 10:
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_conductor_patentes;");
 
                             for (int i = 0; i < jsonArray.length(); i++) {
@@ -666,7 +670,7 @@ public class Login extends AppCompatActivity {
                     }
 
                 } catch (SQLException e0) {
-                    Util.alertDialog(Login.this, "SQLException Login maestro"+numeroMaestro, e0.getMessage());
+                    Util.alertDialog(Login.this, "SQLException Login maestro "+numeroMaestro, e0.getMessage());
                 } catch (JSONException e1) {
                     Util.alertDialog(Login.this, "JSONException Login", e1.getMessage());
                 }
@@ -674,44 +678,48 @@ public class Login extends AppCompatActivity {
                 g_maestro_numero++;
                 switch (g_maestro_numero) {
                     case 1:
-                        g_maestro_nombre = "roles";
-                        g_maestro_alias = "2/10 Roles";
+                        g_maestro_nombre = "maquinas";
+                        g_maestro_alias = "2/11 Maquinas";
                         break;
                     case 2:
-                        g_maestro_nombre = "usuarios";
-                        g_maestro_alias = "3/10 Usuarios";
+                        g_maestro_nombre = "roles";
+                        g_maestro_alias = "3/11 Roles";
                         break;
                     case 3:
-                        g_maestro_nombre = "clientes";
-                        g_maestro_alias = "4/10 Clientes";
+                        g_maestro_nombre = "usuarios";
+                        g_maestro_alias = "4/11 Usuarios";
                         break;
                     case 4:
-                        g_maestro_nombre = "cliente_ubicaciones";
-                        g_maestro_alias = "5/10 Ubicaciones por cliente";
+                        g_maestro_nombre = "clientes";
+                        g_maestro_alias = "5/11 Clientes";
                         break;
                     case 5:
-                        g_maestro_nombre = "cliente_ubicaciones_horarios";
-                        g_maestro_alias = "6/10 Horarios por ubicación cliente";
+                        g_maestro_nombre = "cliente_ubicaciones";
+                        g_maestro_alias = "6/11 Ubicaciones por cliente";
                         break;
                     case 6:
-                        g_maestro_nombre = "conductores";
-                        g_maestro_alias = "7/10 Conductores";
+                        g_maestro_nombre = "cliente_ubicaciones_horarios";
+                        g_maestro_alias = "7/11 Horarios por ubicación cliente";
                         break;
                     case 7:
-                        g_maestro_nombre = "conductores_grupo";
-                        g_maestro_alias = "8/10 Grupo Conductores";
+                        g_maestro_nombre = "conductores";
+                        g_maestro_alias = "8/11 Conductores";
                         break;
                     case 8:
-                        g_maestro_nombre = "conductores_grupo_ubicacion_descuento";
-                        g_maestro_alias = "9/10 Descuento para grupo conductores por ubicación";
+                        g_maestro_nombre = "conductores_grupo";
+                        g_maestro_alias = "9/11 Grupo Conductores";
                         break;
                     case 9:
+                        g_maestro_nombre = "conductores_grupo_ubicacion_descuento";
+                        g_maestro_alias = "10/11 Descuento para grupo conductores por ubicación";
+                        break;
+                    case 10:
                         g_maestro_nombre = "conductor_patentes";
-                        g_maestro_alias = "10/10 Conductor Patentes";
+                        g_maestro_alias = "11/11 Conductor Patentes";
                         break;
                 }
 
-                if (g_maestro_numero <= 9) {
+                if (g_maestro_numero <= 10) {
                     ClienteAsync(AppHelper.getUrl_restful() + g_maestro_nombre, new ClienteCallback() {
                         @Override
                         public void onResponse(int esError, int statusCode, String responseBody) {
@@ -743,43 +751,88 @@ public class Login extends AppCompatActivity {
                         }
                     });
                 } else {
-                    esperaDialog.dismiss();
+                    if (!configuracionInicial()){
+                    }else {
+                        limpiaBD("Registro Patentes 1/4", 1);
+                    }
                 }
 
             }
 
         }, 1000);
 
+    }
+
+    public void limpiaBD(final String nombreTabla, final int numeroTabla) {
+
+        if (esperaDialog != null && esperaDialog.isShowing()) {
+            esperaDialog.setTitle("Limpiando datos...");
+            esperaDialog.setMessage(nombreTabla);
+        } else {
+            esperaDialog = ProgressDialog.show(Login.this, "Limpiando datos...", nombreTabla);
+        }
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                try{
+
+                    switch (numeroTabla) {
+                        case 1: //Registro Patentes
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_registro_patentes WHERE date(fecha_hora_in) <= (select date(MAX(fecha_hora_in),'-"+AppHelper.getRespaldar_bd_dias()+" day') from tb_registro_patentes);");
+                            limpiaBD("Recaudacion Retiro 2/4", 2);
+                            break;
+                        case 2: //Recaudacion Retiro
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_recaudacion_retiro WHERE date(fecha_recaudacion) <= (select date(MAX(fecha_recaudacion),'-"+AppHelper.getRespaldar_bd_dias()+" day') from tb_recaudacion_retiro);");
+                            limpiaBD("Usuario Ubicaciones 3/4", 3);
+                            break;
+                        case 3: //Usuario Ubicaciones
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_usuario_ubicaciones WHERE date(fecha_hora) <= (select date(MAX(fecha_hora),'-"+AppHelper.getRespaldar_bd_dias()+" day') from tb_usuario_ubicaciones);");
+                            limpiaBD("Alertas 4/4", 4);
+                            break;
+                        case 4: //Alertas
+                            AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_alertas WHERE date(fecha_hora) <= (select date(MAX(fecha_hora),'-"+AppHelper.getRespaldar_bd_dias()+" day') from tb_alertas);");
+                            esperaDialog.dismiss();
+                            break;
+                    }
+
+                } catch (SQLException e) {
+                    esperaDialog.dismiss();
+                    Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
+                }
+
+            }
+        }, 1000);
 
     }
 
     private void registraUsuarioUbicacion(final String rut_usuario, final int id_ubicacion_usuario){
 
-        AppGPS.getLastLocation(new GPSCallback() {
-            @Override
-            public void onResponseSuccess(Location location) {
-                if(location != null){
+        //Intenta obtener la ubicación GPS
+        String latitud = "";
+        String longitud= "";
+        GpsTracker gt = new GpsTracker(getApplicationContext());
+        Location location = gt.getLocation();
+        if( location != null){
+            latitud  = Double.toString(location.getLatitude());
+            longitud = Double.toString(location.getLongitude());
+        }
+        if (!latitud.equals("") && !longitud.equals("")) {
+            String fecha_hora = AppHelper.fechaHoraFormat.format(new Date());
+            String id_usuario_ubicacion = AppHelper.fechaHoraFormatID.format(new Date()) + "_" + AppHelper.getSerialNum() + "_" + rut_usuario;
+            try {
 
+                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_usuario_ubicaciones " +
+                        "(id, rut_usuario, id_cliente_ubicacion, latitud, longitud, fecha_hora, enviado) " +
+                        "VALUES " +
+                        "('" + id_usuario_ubicacion + "','" + rut_usuario + "', " + id_ubicacion_usuario + " ," +
+                        "'" + latitud + "'," + "'" + longitud + "', '" + fecha_hora + "', '0');");
 
-                    String fecha_hora   = AppHelper.fechaHoraFormat.format(new Date());
-                    String id_usuario_ubicacion  = AppHelper.fechaHoraFormatID.format(new Date())+"_"+AppHelper.getSerialNum()+"_"+rut_usuario;
-                    try{
-
-                        AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_usuario_ubicaciones " +
-                                                            "(id, rut_usuario, id_cliente_ubicacion, latitud, longitud, fecha_hora, enviado) " +
-                                                            "VALUES " +
-                                                            "('"+id_usuario_ubicacion+"','"+rut_usuario+"', "+id_ubicacion_usuario+" ," +
-                                                            "'"+ Double.toString(location.getLatitude())+"'," + "'"+Double.toString(location.getLongitude())+"', '"+fecha_hora+"', '0');");
-
-                    }catch(SQLException e){  Util.alertDialog(Login.this, "SQLException Login",e.getMessage());   }
-
-                }
+            } catch (SQLException e) {
+                Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
             }
-            @Override
-            public void onResponseFailure(Exception e) {
-                Util.alertDialog(Login.this, "onResponseFailure Login",e.getMessage());
-            }
-        });
+
+        }
 
     }
 
@@ -814,6 +867,8 @@ public class Login extends AppCompatActivity {
                     AppHelper.setTimeout(Integer.parseInt(c.getString(2)));
                 }else if (c.getString(0).equals("CONEXION") && c.getString(1).equals("SEGUNDOS_SLEEP_THREAD")) {
                     AppHelper.setTimesleep(Integer.parseInt(c.getString(2)));
+                }else if (c.getString(0).equals("BD_RESPALDO") && c.getString(1).equals("DIAS")) {
+                    AppHelper.setRespaldar_bd_dias(Integer.parseInt(c.getString(2)));
                 }
             }while(c.moveToNext());
         }
@@ -823,32 +878,11 @@ public class Login extends AppCompatActivity {
 
            //Toast.makeText(Login.this, "Timeout: "+AppHelper.getTimeout(), Toast.LENGTH_SHORT).show();
            //Toast.makeText(Login.this, "Timesleep: "+AppHelper.getTimesleep(), Toast.LENGTH_SHORT).show();
-
            //AsyncTask.Status.PENDING (Tarea no se ha iniciado)
            //AsyncTask.Status.RUNNING (Tarea se encuentra realizando el trabajo en doInBackground())
            //AsyncTask.Status.FINISHED (Tarea se ha ejecutado y se encuentra en onPostExecute())
 
-           //inicia la tarea de envio patenes ingresadas.
-           if(asyncSENDIngresoPatente.getStatus() == AsyncTask.Status.PENDING){
-               asyncSENDIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-           }
-
-           //inicia la tarea de envio patenes retiradas.
-           if(asyncSENDRetiroPatente.getStatus() == AsyncTask.Status.PENDING){
-               asyncSENDRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-           }
-
-           //inicia la tarea que recibe patentes ingresadas externas.
-           if(asyncGETIngresoPatente.getStatus() == AsyncTask.Status.PENDING) {
-               asyncGETIngresoPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-           }
-
-           //inicia la tarea que recibe patentes retiradas externas.
-           if(asyncGETRetiroPatente.getStatus() == AsyncTask.Status.PENDING) {
-               asyncGETRetiroPatente.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-           }
-
-           //inicia la tarea de envío genérico.
+           //inicia la tarea de envío y recepción.
            if(asyncGenerico.getStatus() == AsyncTask.Status.PENDING) {
                asyncGenerico.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
            }
@@ -905,63 +939,6 @@ public class Login extends AppCompatActivity {
 
     public void salirApp(MenuItem item){
        System.exit(0);
-    }
-
-    public void cambiarEtiqueta(MenuItem item){
-
-        g_num_etiqueta_actual = 0;
-        try{
-            String[] args = new String[] {};
-            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT num_etiqueta_actual FROM tb_etiquetas",args);
-            if (c.moveToFirst()) {
-                g_num_etiqueta_actual = c.getInt(0);
-            }else{
-                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_etiquetas (num_etiqueta_actual) VALUES (0);");
-            }
-
-            c.close();
-
-        }catch(SQLException e){
-            Util.alertDialog(Login.this,"SQLException Login", e.getMessage());
-        }
-
-        final EditText EDT_EtiquetaActual = new EditText(Login.this);
-        EDT_EtiquetaActual.setInputType(InputType.TYPE_CLASS_NUMBER);
-        EDT_EtiquetaActual.setFilters(new InputFilter[]{new InputFilter.LengthFilter(4)});
-        EDT_EtiquetaActual.setText(String.valueOf(g_num_etiqueta_actual));
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
-        builder.setTitle("Cambio de Rollo Etiqueta");
-        builder.setMessage("Ingrese el número de la etiqueta inicial");
-        builder.setView(EDT_EtiquetaActual);
-        builder.setPositiveButton("Reiniciar",  new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-
-            }
-        });
-        builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog,int id) {
-                dialog.cancel();
-            }
-        });
-
-        final AlertDialog dialog = builder.create();
-        dialog.show();
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                    int num_etiqueta_nueva = Integer.parseInt(EDT_EtiquetaActual.getText().toString());
-                    if (AppCRUD.actualizaNumeroEtiqueta(Login.this, g_num_etiqueta_actual, num_etiqueta_nueva, false) == 100){
-                        Util.alertDialog(Login.this, "Login","Número etiqueta actualizado correctamente");
-                    }
-                    dialog.dismiss();
-            }
-
-        });
     }
 
     public void comparaHoraServidor(){
@@ -1060,9 +1037,6 @@ public class Login extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (appGPS.verificaConexionGoogleApi(Login.this)) {
-            appGPS.conectaGPS();
-        }
     }
 
     @Override
@@ -1073,19 +1047,11 @@ public class Login extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (appGPS.verificaConexionGoogleApi(Login.this)) {
-            appGPS.pausarGPS();
-        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (appGPS.verificaConexionGoogleApi(Login.this)) {
-            appGPS.desconectaGPS();
-        }
     }
-
-
 
 }

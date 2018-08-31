@@ -401,7 +401,7 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
                                     fecha_recaudacion = new SimpleDateFormat("yyyy-MM-dd").format(new SimpleDateFormat("dd-MM-yyyy").parse(fecha_recaudacion));
 
                                     int print_result = imprimeVoucherRetiroRecaudacion(fecha_recaudacion, rs_rut_usuario_retiro, rs_nombre_usuario_retiro, monto);
-                                    if (print_result == 0) {
+                                    if (print_result == 0 || print_result == -2) {
                                         Date fechahora = new Date();
                                         String id_recaudacion_retiro = AppHelper.fechaHoraFormatID.format(fechahora) + "_" + AppHelper.getSerialNum() + "_" + EDT_Usuario.getText().toString();
 
@@ -483,48 +483,23 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
 
     private int imprimeVoucherRetiroRecaudacion(String fecha_recaudacion, String rut_usuario_retiro, String nombre_usuario_retiro, int monto){
 
-
-        /** IMPRIME LA ETIQUETA **/
-        if (printThread != null && !printThread.isThreadFinished()) {
-            Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
-            return -1;
-        }else {
-            printThread = new Print_Thread(3, fecha_recaudacion, rut_usuario_retiro, nombre_usuario_retiro, monto);
-            printThread.start();
-            try {
-                printThread.join();
-            } catch (InterruptedException e) {
-                System.out.println("Main thread Interrupted");
+        try {
+            /** IMPRIME LA ETIQUETA **/
+            if (printThread != null && !printThread.isThreadFinished()) {
+                Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
+                return -1;
+            }else {
+                printThread = new Print_Thread(3, fecha_recaudacion, rut_usuario_retiro, nombre_usuario_retiro, monto);
+                printThread.start();
+                    printThread.join();
+                return printThread.getRESULT_CODE();
             }
-            return printThread.getRESULT_CODE();
+        } catch (InterruptedException e) {
+            Util.alertDialog(Recaudacion.this,"InterruptedException Recaudación", e.getMessage());
+            return -1;
         }
 
 
-        /** SUMA UNA ETIQUETA IMPRESA
-        int num_etiqueta_actual = 0;
-        try{
-            String[] args = new String[] {};
-            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT num_etiqueta_actual FROM tb_etiquetas",args);
-            if (c.moveToFirst()) {
-                num_etiqueta_actual = c.getInt(0);
-            }else{
-                AppHelper.getParkgoSQLite().execSQL("INSERT INTO tb_etiquetas (num_etiqueta_actual) VALUES (0);");
-            }
-
-            c.close();
-
-            int etiquetas_restantes = AppHelper.getVoucher_rollo_max() - num_etiqueta_actual;
-            if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual < AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(Recaudacion.this, "El rollo de etiquetas ya casi se acaba, quedan cerca de "+etiquetas_restantes+" etiquetas disponibles para imprimir.", Toast.LENGTH_LONG).show();
-            }else if (num_etiqueta_actual >= AppHelper.getVoucher_rollo_alert() && num_etiqueta_actual >= AppHelper.getVoucher_rollo_max()){
-                Toast.makeText(Recaudacion.this, "El rollo de etiquetas se acabó, inserte otro y reinicie el contador en el Menú de pantalla de inicio opción Reiniciar Etiquetas.", Toast.LENGTH_LONG).show();
-            }
-
-            AppCRUD.actualizaNumeroEtiqueta(Recaudacion.this, num_etiqueta_actual, num_etiqueta_actual, true);
-
-        }catch(SQLException e){
-            Util.alertDialog(Recaudacion.this,"SQLException Recaudación", e.getMessage());
-        } **/
     }
 
     @Override
