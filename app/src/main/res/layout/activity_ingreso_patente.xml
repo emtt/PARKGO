@@ -29,8 +29,8 @@
         android:id="@+id/EDT_Patente"
         android:background="@drawable/text_border_selector"
         android:hint="Patente"
+        android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         android:inputType="textCapCharacters"
-        android:textAllCaps="true"
         android:layout_below="@+id/LB_Patente"
         android:layout_alignParentStart="true" />
 
@@ -126,8 +126,5 @@
         app:srcCompat="@drawable/ic_photo"
         android:layout_below="@+id/BTN_IngresoPatente"
         android:layout_alignParentStart="true" />
-
-
-
 
 </RelativeLayout>

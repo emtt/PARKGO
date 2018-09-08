@@ -29,13 +29,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Menu" />
-        <activity android:name=".IngresoPatente" />
-        <activity android:name=".RetiroPatente" />
-        <activity android:name=".ListaPatente" />
-        <activity android:name=".Configuracion" />
-        <activity android:name=".Alertas" />
-        <activity android:name=".Recaudacion"></activity>
+        <activity android:name=".Menu"
+            android:label="Menú"
+            />
+        <activity android:name=".IngresoPatente"
+            android:label="Ingresar Vehículo"/>
+        <activity android:name=".RetiroPatente"
+            android:label="Retirar Vehículo"/>
+        <activity android:name=".ListaPatente"
+            android:label="Vehículos Estacionados"/>
+        <activity android:name=".Configuracion"
+            android:label="Configuración"/>
+        <activity android:name=".Alertas"
+            android:label="Enviar Alertas"/>
+        <activity android:name=".Recaudacion"
+            android:label="Recaudación"></activity>
     </application>
 
 </manifest>

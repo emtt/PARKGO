@@ -60,6 +60,7 @@ public class Print_Thread extends Thread {
         String rut_usuario_retiro;
         String nombre_usuario_retiro;
         int monto;
+        int total_recaudado;
 
         //CONSTRUCTOR PARA IMPRIMIR TICKET DE INGRESO.
         public Print_Thread(int type, String patente, int espacios, String fecha_hora_in)
@@ -88,12 +89,13 @@ public class Print_Thread extends Thread {
 
 
         //CONSTRUCTOR PARA IMPRIMIR RECAUDACION.
-        public Print_Thread(int type, String fecha_recaudacion, String rut_usuario_retiro, String nombre_usuario_retiro, int monto)
+        public Print_Thread(int type, String fecha_recaudacion, String rut_usuario_retiro, String nombre_usuario_retiro, int monto, int total_recaudado)
         {
             this.fecha_recaudacion  = fecha_recaudacion;
             this.rut_usuario_retiro = rut_usuario_retiro;
             this.nombre_usuario_retiro = nombre_usuario_retiro;
             this.monto = monto;
+            this.total_recaudado = total_recaudado;
             this.type = type;
         }
 
@@ -168,6 +170,7 @@ public class Print_Thread extends Thread {
                 }
 
                 String lb_fecha_actual      = Util.formateaLineaEtiqueta("Fecha: "+ AppHelper.fechaFormat.format(new Date()));
+                String lb_hora_actual       = Util.formateaLineaEtiqueta("Hora: "+ AppHelper.horaFormat.format(new Date()));
                 String lb_fechahora_actual  = Util.formateaLineaEtiqueta("Fecha hora: "+ AppHelper.fechaHoraFormat.format(new Date()));
                 String lb_ubicacion         = Util.formateaLineaEtiqueta("Zona: "+AppHelper.getUbicacion_nombre());
                 String lb_operador          = Util.formateaLineaEtiqueta("Operador: "+AppHelper.getUsuario_codigo()+" "+AppHelper.getUsuario_nombre());
@@ -184,6 +187,7 @@ public class Print_Thread extends Thread {
                 String lb_maquina           = Util.formateaLineaEtiqueta("Maquina: "+AppHelper.getSerialNum());
                 String lb_recaudador        = Util.formateaLineaEtiqueta("Recaudador:"+rut_usuario_retiro+" "+nombre_usuario_retiro);
                 String lb_monto             = Util.formateaLineaEtiqueta("Monto: "+String.format("%,d", monto).replace(",","."));
+                String lb_total_recaudado   = Util.formateaLineaEtiqueta("Total Recaudado: "+String.format("%,d", total_recaudado).replace(",","."));
                 String lb_firma             = Util.formateaLineaEtiqueta("Firma:__________________________");
 
                 switch (type) {
@@ -382,10 +386,11 @@ public class Print_Thread extends Thread {
                         posApiHelper.PrintSetFont((byte) 24, (byte) 16, (byte) 0x00);
                         posApiHelper.PrintStr(AppHelper.getVoucher_retiro_recaudacion()+"\n");
                         posApiHelper.PrintSetFont((byte) 24, (byte) 24, (byte) 0x00);
-                        posApiHelper.PrintStr(lb_fecha_recaudacion+"\n");
-                        posApiHelper.PrintStr(lb_ubicacion+"\n");
+                        posApiHelper.PrintStr(lb_fechahora_actual+"\n");
+                         posApiHelper.PrintStr(lb_ubicacion+"\n");
                         posApiHelper.PrintStr(lb_maquina+"\n");
                         posApiHelper.PrintStr(lb_recaudador+"\n");
+                        posApiHelper.PrintStr(lb_total_recaudado+"\n");
                         posApiHelper.PrintSetFont((byte) 24, (byte) 24, (byte) 0x33);
                         posApiHelper.PrintStr(lb_monto+"\n");
                         posApiHelper.PrintStr("\n");

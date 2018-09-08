@@ -692,6 +692,7 @@ public class AsyncGenerico extends AsyncTask<Void, Integer,  Boolean> {
                     jsonParams.put("prepago",c.getInt(6));
                     jsonParams.put("efectivo",c.getInt(7));
                     jsonParams.put("finalizado",1);
+                    jsonParams.put("maquina", AppHelper.getSerialNum());
 
                     registrosArray.put(i, jsonParams);
                     i++;

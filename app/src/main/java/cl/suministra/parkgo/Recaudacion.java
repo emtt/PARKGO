@@ -17,7 +17,10 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -64,8 +67,14 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
         setContentView(R.layout.activity_recaudacion);
-        this.setTitle("Recaudación");
         inicio();
         setDateTimeField();
         getRecaudacion();
@@ -74,6 +83,7 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
     private void inicio(){
 
         EDT_FechaRecaudacion = (EditText) findViewById(R.id.EDT_FechaRecaudacion);
+        EDT_FechaRecaudacion.setEnabled(false);
         TV_Operador          = (TextView) findViewById(R.id.TV_Operador);
         TV_Ubicacion         = (TextView) findViewById(R.id.TV_Ubicacion);
         TV_Transacciones     = (TextView) findViewById(R.id.TV_Transacciones);
@@ -414,6 +424,7 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
 
                                     }
                                     dialog.dismiss();
+                                    getRecaudacion();
 
                                 } catch (SQLException e) {
                                     Util.alertDialog(Recaudacion.this, "SQLException Recaudación", e.getMessage());
@@ -489,7 +500,7 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
                 Log.d(AppHelper.LOG_PRINT, "Thread is still running...");
                 return -1;
             }else {
-                printThread = new Print_Thread(3, fecha_recaudacion, rut_usuario_retiro, nombre_usuario_retiro, monto);
+                printThread = new Print_Thread(3, fecha_recaudacion, rut_usuario_retiro, nombre_usuario_retiro, monto, g_total_recaudado);
                 printThread.start();
                     printThread.join();
                 return printThread.getRESULT_CODE();
@@ -500,6 +511,18 @@ public class Recaudacion extends AppCompatActivity implements View.OnClickListen
         }
 
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                //Write your logic here
+                this.finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

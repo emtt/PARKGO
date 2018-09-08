@@ -26,6 +26,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -87,8 +89,12 @@ public class Login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+
         setContentView(R.layout.activity_login);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.abrir, R.string.cerrar);
@@ -176,6 +182,7 @@ public class Login extends AppCompatActivity {
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
                 TextView tview = (TextView) findViewById(R.id.MSJ_MaquinaUbicacion);
                 if (spinUbicacionID.get(position) > 0){
                     tview.setText("");
@@ -188,18 +195,15 @@ public class Login extends AppCompatActivity {
             }
         });
 
+
         SPIN_MaquinaUbicacion.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
                 try {
 
-                    spinUbicacionID.clear();
-                    spinUbicacionNombre.clear();
-
                     String[] args = new String[]{AppHelper.getSerialNum()};
 
-                    //OBTIENE EL LISTADO DE UBICACIONES PARA EL USUARIO QUE SE ENCUENTREN EN LA MISMA COMUNA DE SU UBICACION POR DEFECTO.
                     String qry = "SELECT tm.id_cliente_ubicacion, tcu.descripcion \n" +
                                  "FROM tb_maquinas tm \n" +
                                  "INNER JOIN tb_cliente_ubicaciones tcu ON tcu.id = tm.id_cliente_ubicacion \n" +
@@ -207,6 +211,9 @@ public class Login extends AppCompatActivity {
 
                     Cursor c = AppHelper.getParkgoSQLite().rawQuery(qry, args);
                     if (c.moveToFirst()) {
+
+                        spinUbicacionID.clear();
+                        spinUbicacionNombre.clear();
 
                         do{
                             spinUbicacionID.add(c.getInt(0));
@@ -220,11 +227,12 @@ public class Login extends AppCompatActivity {
                     SPIN_MaquinaUbicacion.setAdapter(adapter);
                     SPIN_MaquinaUbicacion.setSelection(0);
 
+
                 } catch (SQLException e) {
                     Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
                 }
 
-                return false;
+                return true;
             }
         });
 
@@ -258,6 +266,27 @@ public class Login extends AppCompatActivity {
         TV_Numero_Serie = (TextView) findViewById(R.id.TV_Numero_Serie);
         TV_Numero_Serie.setText(AppHelper.getSerialNum());
 
+    }
+
+    boolean doubleBackToExitPressedOnce = false;
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            finishAffinity();
+            System.exit(0);
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Pulse nuevamente la tecla volver para salir de la aplicación", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
     }
 
     private void iniciarControles(){
@@ -938,6 +967,7 @@ public class Login extends AppCompatActivity {
     }
 
     public void salirApp(MenuItem item){
+       finishAffinity();
        System.exit(0);
     }
 

@@ -24,7 +24,10 @@ import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -90,8 +93,14 @@ public class IngresoPatente extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
         setContentView(R.layout.activity_ingreso_patente);
-        this.setTitle("Ingresar Vehículo");
         inicio();
     }
 
@@ -114,6 +123,7 @@ public class IngresoPatente extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 TextView label = (TextView) findViewById(R.id.MSJ_Patente);
                 label.setText("");
+
             }
 
             @Override
@@ -426,6 +436,18 @@ public class IngresoPatente extends AppCompatActivity {
             }
         });
         builder.show();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                //Write your logic here
+                this.finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

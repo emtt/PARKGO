@@ -21,7 +21,10 @@ import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -107,8 +110,14 @@ public class RetiroPatente extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
         setContentView(R.layout.activity_retiro_patente);
-        this.setTitle("Retirar Vehículo");
         inicio();
     }
 
@@ -151,7 +160,7 @@ public class RetiroPatente extends AppCompatActivity {
                 EDT_Patente.setText("");
 
                 Intent intent = new Intent ("ACTION_BAR_TRIGSCAN");
-                intent.putExtra("timeout", 3);
+                intent.putExtra("timeout", 1);
                 //levanta el scanner
                 getApplicationContext().sendBroadcast(intent);
                 //crea los objetos
@@ -159,6 +168,7 @@ public class RetiroPatente extends AppCompatActivity {
                 ScanIntentFilter = new IntentFilter("ACTION_BAR_SCAN");
                 //envia los objetos para obtener el resultado del scan
                 getApplicationContext().registerReceiver(ScanReceiver, ScanIntentFilter);
+
 
             }
         });
@@ -257,7 +267,7 @@ public class RetiroPatente extends AppCompatActivity {
                 procesoRetiroPatente();
                 esperaDialog.dismiss();
             }
-        }, 1500);
+        }, 200);
 
     }
 
@@ -608,6 +618,18 @@ public class RetiroPatente extends AppCompatActivity {
                 break;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                //Write your logic here
+                this.finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
