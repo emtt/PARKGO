@@ -163,6 +163,12 @@ public class RetiroPatente extends AppCompatActivity {
                 intent.putExtra("timeout", 1);
                 //levanta el scanner
                 getApplicationContext().sendBroadcast(intent);
+
+                if (ScanReceiver != null) {
+                    getApplicationContext().unregisterReceiver(ScanReceiver);
+                    ScanReceiver = null;
+                }
+
                 //crea los objetos
                 ScanReceiver     = new ScanBroadcastReceiver();
                 ScanIntentFilter = new IntentFilter("ACTION_BAR_SCAN");
@@ -637,6 +643,14 @@ public class RetiroPatente extends AppCompatActivity {
         super.onDestroy();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (ScanReceiver != null) {
+            getApplicationContext().unregisterReceiver(ScanReceiver);
+            ScanReceiver = null;
+        }
+    }
 
     private class ScanBroadcastReceiver extends BroadcastReceiver {
         @Override
@@ -658,16 +672,14 @@ public class RetiroPatente extends AppCompatActivity {
                 EXTRA_SCAN_LENGTH
                 EXTRA_SCAN_DATA
             **************************/
-             final String scanResult = intent.getStringExtra("EXTRA_SCAN_DATA");
+            final String scanResult = intent.getStringExtra("EXTRA_SCAN_DATA");
+
 
             if (scanResult.length() > 0) {
                 EDT_Patente.setText(scanResult);
                 retiroPatente();
             }
-            if (ScanReceiver != null) {
-                context.unregisterReceiver(ScanReceiver);
-                ScanReceiver = null;
-            }
+
         }
     }
 
