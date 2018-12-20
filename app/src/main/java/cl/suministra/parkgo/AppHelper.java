@@ -24,7 +24,7 @@ public class AppHelper {
 
     private static int respaldar_bd_dias = 1; //cantidad de dias que mantiene los datos guardados.
 
-    private static int timeout   = 60000; //60 Segundos = 60000 Milisegundos
+    private static int timeout   = 5000; //5 Segundos = 5000 Milisegundos
     private static int timesleep = 60; //60 Segundos
 
     private static String serial_no  = "";

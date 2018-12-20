@@ -47,9 +47,11 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import cz.msebera.android.httpclient.Header;
@@ -177,7 +179,6 @@ public class Login extends AppCompatActivity {
         });
 
         SPIN_MaquinaUbicacion = (Spinner) findViewById(R.id.SPIN_MaquinaUbicacion);
-
         SPIN_MaquinaUbicacion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
 
             @Override
@@ -194,8 +195,6 @@ public class Login extends AppCompatActivity {
 
             }
         });
-
-
         SPIN_MaquinaUbicacion.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -247,7 +246,27 @@ public class Login extends AppCompatActivity {
 
                 if (!configuracionInicial()){
                 }else {
-                    comparaHoraServidor();
+                    //Verifica el estado de la sincronización antes de continuar.
+                    List<String> sincronizacion_estado = estadoSincronizacion();
+                    if(sincronizacion_estado != null && !sincronizacion_estado.isEmpty()){
+                        if (sincronizacion_estado.get(0).equals("1")){
+                            esperaDialog = ProgressDialog.show(Login.this, "", "Verificando hora servidor...", true);
+                            esperaDialog.show();
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                public void run() {
+                                    comparaHoraServidor();
+                                }
+                            }, 500);
+
+                        }else{
+                            Util.alertDialog(Login.this,"Error Login","No existe registro de una sincornización exitosa que permita continuar, intente sincronizar." );
+                        }
+
+                    }else{
+                        Util.alertDialog(Login.this,"Error Login","No existe registro de una sincornización exitosa que permita continuar, intente sincronizar." );
+                    }
+
                 }
 
             }
@@ -304,18 +323,6 @@ public class Login extends AppCompatActivity {
 
     }
 
-    private void loginUsuario() {
-        esperaDialog = ProgressDialog.show(this, "", "Autenticando...", true);
-        esperaDialog.show();
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            public void run() {
-                procesoLoginUsuario();
-                esperaDialog.dismiss();
-            }
-        }, 500);
-    }
-
     private void procesoLoginUsuario() {
 
         UsuarioCodigo = EDT_UsuarioCodigo.getText().toString();
@@ -344,6 +351,10 @@ public class Login extends AppCompatActivity {
             TextView view = (TextView) findViewById(R.id.MSJ_MaquinaUbicacion);
             view.setText("Selecione una ubicación válida");
             return;
+        }
+
+        if (esperaDialog != null && esperaDialog.isShowing()) {
+            esperaDialog.setMessage("Autenticando...");
         }
 
         Cursor c;
@@ -391,6 +402,7 @@ public class Login extends AppCompatActivity {
                 AppHelper.setMinutos_gratis(rs_minutos_gratis);
                 AppHelper.setDescripcion_tarifa(rs_descripcion_tarifa);
 
+                esperaDialog.dismiss();
                 //graba latitud y longitud del ingreso.
                 registraUsuarioUbicacion(rs_usuario_rut, rs_ubicacion_id);
 
@@ -402,11 +414,13 @@ public class Login extends AppCompatActivity {
                 startActivity(intent);
 
             } else {
+                esperaDialog.dismiss();
                 Util.alertDialog(Login.this, "Login", "Usuario y clave ingresados no existe, sincronize y verifique");
             }
             c.close();
 
         } catch (SQLException e) {
+            esperaDialog.dismiss();
             Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
         }
     }
@@ -433,7 +447,26 @@ public class Login extends AppCompatActivity {
                 Log.d(AppHelper.LOG_TAG, "onFailure Login error "+String.valueOf(Log.getStackTraceString(error)));
 
                 esperaDialog.dismiss();
-                Util.alertDialog(Login.this, "onFailure Login ", String.valueOf(Log.getStackTraceString(error)));
+
+                List<String> sincronizacion_estado = estadoSincronizacion();
+                if(sincronizacion_estado != null && !sincronizacion_estado.isEmpty()){
+                    if (sincronizacion_estado.get(0).equals("1")){
+
+                        try {
+                            Date fecha = new SimpleDateFormat("yyyy-MM-dd").parse(sincronizacion_estado.get(1));
+                            Util.alertDialog(Login.this,"Alerta Sincronización","Sincronización fallida. Se trabajará con datos de la última sincronización exitosa registrada con fecha "+AppHelper.fechaFormat.format(fecha)+"." );
+                        } catch (ParseException e) {
+                            Util.alertDialog(Login.this,"Alerta Sincronización","Error :"+e.getMessage());
+                        }
+
+                    }else{
+                        Util.alertDialog(Login.this,"Error Sincronización","Sincronización fallida. No existe registro de una sincornización exitosa que permita continuar, reintente sincronizar." );
+                    }
+
+                 }else{
+                    Util.alertDialog(Login.this,"Error Sincronización","Sincronización fallida. No existe registro de una sincornización exitosa que permita continuar, reintente sincronizar." );
+                }
+             
             }
 
         });
@@ -523,6 +556,14 @@ public class Login extends AppCompatActivity {
                                 qry = "INSERT INTO tb_configuracion (codigo, seccion, clave, valor) VALUES " +
                                         "('" + codigo + "','" + seccion + "','" + clave + "','" + valor + "');";
                                 AppHelper.getParkgoSQLite().execSQL(qry);
+                                if(i == 0){
+                                    qry = "INSERT INTO tb_configuracion (codigo, seccion, clave, valor) " +
+                                            "VALUES " +
+                                            "('100','SINCRONIZACION','ESTADO','0')," +
+                                            "('101','SINCRONIZACION','FECHA', date('now'));";
+                                            ;
+                                    AppHelper.getParkgoSQLite().execSQL(qry);
+                                }
                             }
                             break;
 
@@ -782,7 +823,8 @@ public class Login extends AppCompatActivity {
                 } else {
                     if (!configuracionInicial()){
                     }else {
-                        limpiaBD("Registro Patentes 1/4", 1);
+                        limpiaBD("Registro Patentes 1/5", 1);
+
                     }
                 }
 
@@ -809,18 +851,26 @@ public class Login extends AppCompatActivity {
                     switch (numeroTabla) {
                         case 1: //Registro Patentes
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_registro_patentes WHERE date(fecha_hora_in) <= (select date(MAX(fecha_hora_in),'-"+AppHelper.getRespaldar_bd_dias()+" day') from tb_registro_patentes);");
-                            limpiaBD("Recaudacion Retiro 2/4", 2);
+                            limpiaBD("Recaudacion Retiro 2/5", 2);
                             break;
                         case 2: //Recaudacion Retiro
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_recaudacion_retiro WHERE date(fecha_recaudacion) <= (select date(MAX(fecha_recaudacion),'-"+AppHelper.getRespaldar_bd_dias()+" day') from tb_recaudacion_retiro);");
-                            limpiaBD("Usuario Ubicaciones 3/4", 3);
+                            limpiaBD("Usuario Ubicaciones 3/5", 3);
                             break;
                         case 3: //Usuario Ubicaciones
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_usuario_ubicaciones WHERE date(fecha_hora) <= (select date(MAX(fecha_hora),'-"+AppHelper.getRespaldar_bd_dias()+" day') from tb_usuario_ubicaciones);");
-                            limpiaBD("Alertas 4/4", 4);
+                            limpiaBD("Alertas 4/5", 4);
                             break;
                         case 4: //Alertas
                             AppHelper.getParkgoSQLite().execSQL("DELETE FROM tb_alertas WHERE date(fecha_hora) <= (select date(MAX(fecha_hora),'-"+AppHelper.getRespaldar_bd_dias()+" day') from tb_alertas);");
+                            limpiaBD("Registra Sincronización Correcta 5/5", 5);
+                            break;
+                        case 5: //Registra la sincronización completa correctamente.
+                            String qry = "UPDATE tb_configuracion " +
+                                         "SET valor = CASE WHEN codigo = '100' THEN '1' ELSE date('now') END " +
+                                         "WHERE codigo IN ('100','101');";
+
+                            AppHelper.getParkgoSQLite().execSQL(qry);
                             esperaDialog.dismiss();
                             break;
                     }
@@ -982,7 +1032,6 @@ public class Login extends AppCompatActivity {
         JSONObject jsonParams  = null;
         StringEntity entity    = null;
 
-
         try {
 
             jsonParams = new JSONObject();
@@ -1026,17 +1075,19 @@ public class Login extends AppCompatActivity {
                                 builder.show();
 
                             }else{
-                                loginUsuario();
+                                procesoLoginUsuario();
                             }
 
                         }else{
                             jsonArray = jsonRootObject.optJSONArray("error");
                             if(jsonArray != null){
                                 JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                esperaDialog.dismiss();
                                 Util.alertDialog(Login.this,"Error comparaHoraServidor Login", jsonObject.optString("text"));
                               }
                         }
                     } catch (JSONException e) {
+                        esperaDialog.dismiss();
                         Util.alertDialog(Login.this, "JSONException comparaHoraServidor Login", e.getMessage());
                     }
 
@@ -1049,18 +1100,86 @@ public class Login extends AppCompatActivity {
                     Log.d(AppHelper.LOG_TAG, "onFailure comparaHoraServidor Login responseBody "+String.valueOf(responseBody));
                     Log.d(AppHelper.LOG_TAG, "onFailure comparaHoraServidor Login error "+String.valueOf(Log.getStackTraceString(error)));
 
-                    Util.alertDialog(Login.this, "onFailure comparaHoraServidor Login ", String.valueOf(Log.getStackTraceString(error)));
-                   cliente.cancelRequests(App.context, true);
+                    esperaDialog.dismiss();
+                    //Util.alertDialog(Login.this, "onFailure comparaHoraServidor Login ", String.valueOf(Log.getStackTraceString(error)));
+                    cliente.cancelRequests(App.context, true);
+
+                    //Si falla la verificación de hora con el servidor, muestra el dialogo donde se le indica la fecha y hora actual para continuar
+                    //sin validar con el servidor o podrá ir a configurar la hora.
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+                    builder
+                            .setTitle("Información")
+                            .setMessage("La fecha y hora actual es "+AppHelper.fechaHoraFormat.format(new Date())+". Seleccione una opción")
+                            .setPositiveButton("Continuar",  new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                    esperaDialog = ProgressDialog.show(Login.this, "", "Autenticando...", true);
+                                    esperaDialog.show();
+                                    Handler handler = new Handler();
+                                    handler.postDelayed(new Runnable() {
+                                        public void run() {
+                                            procesoLoginUsuario();
+                                        }
+                                    }, 500);
+
+                                }
+                            })
+                            .setNegativeButton("Configurar fecha y hora", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog,int id) {
+                                    dialog.cancel();
+                                    startActivityForResult(new Intent(android.provider.Settings.ACTION_DATE_SETTINGS), 0);
+                                }
+                            })
+                            .setNeutralButton("Cancelar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int i) {
+                                    dialog.cancel();
+                                }
+                            })
+                            .show();
+
                 }
 
             });
 
         } catch (UnsupportedEncodingException e0) {
+            esperaDialog.dismiss();
             Util.alertDialog(Login.this, "UnsupportedEncodingException comparaHoraServidor Login", e0.getMessage());
         } catch (JSONException e1) {
+            esperaDialog.dismiss();
             Util.alertDialog(Login.this, "JSONException comparaHoraServidor Login", e1.getMessage());
         }
 
+
+    }
+
+    public List<String> estadoSincronizacion(){
+
+        List<String> sincronizacion_estado = new ArrayList<String>();
+
+        try{
+
+            Cursor c = AppHelper.getParkgoSQLite().rawQuery("SELECT codigo, valor FROM tb_configuracion WHERE codigo IN ('100','101') ORDER BY codigo", null);
+            if (c.moveToFirst()){
+                do{
+                    if(c.getString(0).equals("100")){
+                        sincronizacion_estado.add(0, c.getString(1));
+                    }else if(c.getString(0).equals("101")) {
+                        sincronizacion_estado.add(1, c.getString(1));
+                    }
+
+                } while(c.moveToNext());
+            }
+            c.close();
+
+        } catch (SQLException e) {
+            Util.alertDialog(Login.this, "SQLException Login", e.getMessage());
+            return sincronizacion_estado;
+        }
+
+        return sincronizacion_estado;
 
     }
 
